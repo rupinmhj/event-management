@@ -60,7 +60,7 @@ const OTPVerification = ({ setShowOtp }) => {
 
         try {
             const otpCode = otp.join('');
-            console.log('email',email)
+            console.log('email', email)
             const response = await api.post('/api/account/verify-otp/', {
                 email,
                 otp: otpCode,
@@ -115,85 +115,93 @@ const OTPVerification = ({ setShowOtp }) => {
     };
 
     return (
-        <div className="w-full max-w-md mx-auto animate-fade-in font-sans">
-            <div className="mb-8 text-center">
-                <div className="w-16 h-16 bg-event-blue-light rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg className="w-8 h-8 text-event-blue" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                        <polyline points="22,6 12,13 2,6" />
-                    </svg>
-                </div>
-                <h2 className="text-2xl font-bold text-foreground mb-2">Verify Your Account</h2>
-                <p className="text-muted-foreground text-sm">
-                    We've sent a 6-digit verification code to your email and phone number
-                </p>
-                <p className="text-sm font-medium text-foreground mt-2">{email}</p>
-            </div>
-
-            <div className="mb-6">
-                <div className="flex justify-center space-x-3 mb-4">
-                    {otp.map((digit, index) => (
-                        <input
-                            key={index}
-                            ref={el => inputRefs.current[index] = el}
-                            type="text"
-                            inputMode="numeric"
-                            maxLength={1}
-                            value={digit}
-                            onChange={(e) => handleInputChange(index, e.target.value)}
-                            onKeyDown={(e) => handleKeyDown(index, e)}
-                            onPaste={handlePaste}
-                            className="w-12 h-12 text-center text-lg font-semibold border border-input-border rounded-lg bg-input focus:ring-2 focus:ring-ring focus:border-ring transition-colors"
-                        />
-                    ))}
-                </div>
-                {error && <p className="text-destructive text-sm text-center mb-4">{error}</p>}
-            </div>
-
-            <div className="space-y-4">
-                <Button
-                    onClick={handleVerify}
-                    variant="event"
-                    size="lg"
-                    className="w-full"
-                    disabled={!isOtpComplete || isVerifying}
-                >
-                    {isVerifying ? (
-                        <div className="flex items-center space-x-2">
-                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                            <span>Verifying...</span>
-                        </div>
-                    ) : (
-                        'Verify OTP'
-                    )}
-                </Button>
-
-                <div className="text-center">
-                    {timeLeft > 0 ? (
-                        <p className="text-sm text-muted-foreground">
-                            Resend OTP in <span className="font-medium text-foreground">{formatTime(timeLeft)}</span>
-                        </p>
-                    ) : (
-                        <button
-                            onClick={handleResendOTP}
-                            disabled={isResending}
-                            className="text-sm text-event-blue hover:underline font-medium disabled:opacity-50"
-                        >
-                            {isResending ? 'Resending...' : 'Resend OTP'}
-                        </button>
-                    )}
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3, delay: 0.15 }}
+        >
+            <div className="w-full max-w-md mx-auto animate-fade-in font-sans">
+                <div className="mb-8 text-center">
+                    <div className="w-16 h-16 bg-event-blue-light rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg className="w-8 h-8 text-event-blue" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                            <polyline points="22,6 12,13 2,6" />
+                        </svg>
+                    </div>
+                    <h2 className="text-2xl font-bold text-foreground mb-2">Verify Your Account</h2>
+                    <p className="text-muted-foreground text-sm">
+                        We've sent a 6-digit verification code to your email and phone number
+                    </p>
+                    <p className="text-sm font-medium text-foreground mt-2">{email}</p>
                 </div>
 
-                <div className="text-center">
-                    <button
-                        onClick={onBack}
-                        className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                <div className="mb-6">
+                    <div className="flex justify-center space-x-3 mb-4">
+                        {otp.map((digit, index) => (
+                            <input
+                                key={index}
+                                ref={el => inputRefs.current[index] = el}
+                                type="text"
+                                inputMode="numeric"
+                                maxLength={1}
+                                value={digit}
+                                onChange={(e) => handleInputChange(index, e.target.value)}
+                                onKeyDown={(e) => handleKeyDown(index, e)}
+                                onPaste={handlePaste}
+                                className="w-12 h-12 text-center text-lg font-semibold border border-input-border rounded-lg bg-input focus:ring-2 focus:ring-ring focus:border-ring transition-colors"
+                            />
+                        ))}
+                    </div>
+                    {error && <p className="text-destructive text-sm text-center mb-4">{error}</p>}
+                </div>
+
+                <div className="space-y-4">
+                    <Button
+                        onClick={handleVerify}
+                        variant="event"
+                        size="lg"
+                        className="w-full"
+                        disabled={!isOtpComplete || isVerifying}
                     >
-                        ← Back to registration
-                    </button>
+                        {isVerifying ? (
+                            <div className="flex items-center space-x-2">
+                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                <span>Verifying...</span>
+                            </div>
+                        ) : (
+                            'Verify OTP'
+                        )}
+                    </Button>
+
+                    <div className="text-center">
+                        {timeLeft > 0 ? (
+                            <p className="text-sm text-muted-foreground">
+                                Resend OTP in <span className="font-medium text-foreground">{formatTime(timeLeft)}</span>
+                            </p>
+                        ) : (
+                            <button
+                                onClick={handleResendOTP}
+                                disabled={isResending}
+                                className="text-sm text-event-blue hover:underline font-medium disabled:opacity-50"
+                            >
+                                {isResending ? 'Resending...' : 'Resend OTP'}
+                            </button>
+                        )}
+                    </div>
+
+                    <div className="text-center">
+                        <button
+                            onClick={onBack}
+                            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                            ← Back to registration
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
+        </motion.div>
+
     );
 };
 

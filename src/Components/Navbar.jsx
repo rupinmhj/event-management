@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useContext } from "react"
 import { Button } from "@/components/ui/button"
 import {
   NavigationMenu,
@@ -18,7 +18,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Bell, HelpCircle, User } from "lucide-react"
-
+import AuthContext from "@/context/AuthContext"
+import { useNavigate } from "react-router-dom"
 // Logo Component
 const Logo = () => (
   <div className="flex items-center gap-2">
@@ -31,13 +32,13 @@ const Logo = () => (
 
 // Info Menu Component
 const InfoMenu = () => (
-  <DropdownMenu>
+  <DropdownMenu modal={false}>
     <DropdownMenuTrigger asChild>
       <Button variant="ghost" size="icon" className="size-8">
         <HelpCircle className="size-4" />
       </Button>
     </DropdownMenuTrigger>
-    <DropdownMenuContent align="end">
+    <DropdownMenuContent align="end" portalled={false}>
       <DropdownMenuItem>Help Center</DropdownMenuItem>
       <DropdownMenuItem>Documentation</DropdownMenuItem>
       <DropdownMenuItem>Contact Support</DropdownMenuItem>
@@ -47,14 +48,14 @@ const InfoMenu = () => (
 
 // Notification Menu Component
 const NotificationMenu = () => (
-  <DropdownMenu>
+  <DropdownMenu modal={false}>
     <DropdownMenuTrigger asChild>
       <Button variant="ghost" size="icon" className="size-8 relative">
         <Bell className="size-4" />
         <span className="absolute -top-1 -right-1 size-2 bg-red-500 rounded-full" />
       </Button>
     </DropdownMenuTrigger>
-    <DropdownMenuContent align="end" className="w-80">
+    <DropdownMenuContent align="end" className="w-80" portalled={false}>
       <div className="p-2">
         <p className="font-medium mb-2">Notifications</p>
         <div className="space-y-2">
@@ -73,20 +74,29 @@ const NotificationMenu = () => (
 )
 
 // User Menu Component
-const UserMenu = () => (
-  <DropdownMenu>
-    <DropdownMenuTrigger asChild>
-      <Button variant="ghost" size="icon" className="size-8">
-        <User className="size-4" />
-      </Button>
-    </DropdownMenuTrigger>
-    <DropdownMenuContent align="end">
-      <DropdownMenuItem>Profile</DropdownMenuItem>
-      <DropdownMenuItem>Settings</DropdownMenuItem>
-      <DropdownMenuItem>Sign in</DropdownMenuItem>
-    </DropdownMenuContent>
-  </DropdownMenu>
-)
+const UserMenu = ({ mode, logout }) => {
+  console.log('mode2', mode);
+  const navigate = useNavigate();
+  return (
+    <DropdownMenu modal={false}>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" className="size-8">
+          <User className="size-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" portalled={false}>
+        <DropdownMenuItem>Profile</DropdownMenuItem>
+        <DropdownMenuItem>Settings</DropdownMenuItem>
+        {mode === 'login' ? (
+          <DropdownMenuItem onClick={() => { logout(), navigate('/') }}>Log out</DropdownMenuItem>
+        ) : (
+          <DropdownMenuItem>Sign in</DropdownMenuItem>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
+
 
 // Navigation links array to be used in both desktop and mobile menus
 const navigationLinks = [
@@ -96,14 +106,16 @@ const navigationLinks = [
   { href: "#registration", label: "Registration" },
 ]
 
-const Navbar = () => {
+const Navbar = ({ mode }) => {
+  const { logout } = useContext(AuthContext)
   return (
-    <header className="border-b px-4 md:px-6 font-sans">
-      <div className="flex h-16 items-center justify-between gap-4">
+
+    <header className="border-b font-sans bg-white">
+      <div className="px-12 flex h-16 items-center justify-between gap-4">
         {/* Left side */}
         <div className="flex items-center gap-2">
           {/* Mobile menu trigger */}
-          <Popover>
+          <Popover modal={false}>
             <PopoverTrigger asChild>
               <Button
                 className="group size-8 md:hidden"
@@ -137,11 +149,11 @@ const Navbar = () => {
                 </svg>
               </Button>
             </PopoverTrigger>
-            <PopoverContent align="start" className="w-36 p-1 md:hidden ">
-              <NavigationMenu className="max-w-none *:w-full ">
-                <NavigationMenuList className="flex-col items-start gap-0 md:gap-2 ">
+            <PopoverContent align="start" className="w-36 p-1 md:hidden" portalled={false}>
+              <NavigationMenu className="max-w-none *:w-full">
+                <NavigationMenuList className="flex-col items-start gap-0 md:gap-2">
                   {navigationLinks.map((link, index) => (
-                    <NavigationMenuItem key={index} className="w-full  hover:">
+                    <NavigationMenuItem key={index} className="w-full">
                       <NavigationMenuLink href={link.href} className="py-1.5">
                         {link.label}
                       </NavigationMenuLink>
@@ -157,13 +169,13 @@ const Navbar = () => {
               <Logo />
             </a>
             {/* Navigation menu */}
-            <NavigationMenu className="max-md:hidden  ">
-              <NavigationMenuList className="gap-10  pl-10">
+            <NavigationMenu className="max-md:hidden">
+              <NavigationMenuList className="gap-10 pl-10">
                 {navigationLinks.map((link, index) => (
                   <NavigationMenuItem key={index}>
                     <NavigationMenuLink
                       href={link.href}
-                      className="text-muted-foreground hover:text-blue py-1.5 font-medium "
+                      className="text-muted-foreground hover:text-blue py-1.5 font-medium"
                     >
                       {link.label}
                     </NavigationMenuLink>
@@ -182,7 +194,8 @@ const Navbar = () => {
             <NotificationMenu />
           </div>
           {/* User menu */}
-          <UserMenu />
+          {console.log('mode:', mode)}
+          <UserMenu mode={mode} logout={logout} />
         </div>
       </div>
     </header>

@@ -13,18 +13,21 @@ export default function useAxiosAuth() {
 
     // 1. Request: attach token
     instance.interceptors.request.use((config) => {
-      if (authTokens?.access) {
-        config.headers.Authorization = `Bearer ${authTokens.access}`;
-         console.log("Authorization header set:", config.headers.Authorization);
-      }else {
-    console.log("No auth token found");}
+      if (authTokens) {
+        config.headers.Authorization = `Bearer ${authTokens}`;
+        console.log("Authorization header set:", config.headers.Authorization);
+      } else {
+        console.log("No auth token found");
+      }
       return config;
     });
 
-  
+
 
     return instance;
   }, [authTokens, login, logout]);
+
+ 
 
   return api;
 }

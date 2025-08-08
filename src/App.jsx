@@ -2,18 +2,20 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import { Signup } from './Pages/Signup'
 import { Signin } from './Pages/Signin'
 import Main from './Pages/Main'
+import Setup from './Pages/Setup'
+import Dashboard from './Pages/Dashboard'
 const router = createBrowserRouter([
   {
     path: "/",
     element: <Main />
   },
   {
-    path: '/signin',
-    element: <Signin />
+    path: '/setup-profile',
+    element: <Setup />
   },
   {
-    path: '/signup',
-    element: <signup />
+    path:'/dashboard',
+    element: <Dashboard />
   }
 ])
 const App = () => {

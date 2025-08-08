@@ -5,7 +5,8 @@ import { AiOutlineIdcard, AiOutlineLock } from "react-icons/ai";
 import { toast, ToastContainer } from 'react-toastify';
 import useAxiosAuth from '@/hooks/useAxiosAuth';
 import AuthContext from '@/context/AuthContext';
-
+import { useNavigate } from 'react-router-dom';
+import apiPublic from '../../api'
 export const Signin = ({ switchToSignup, setShowOtp }) => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -13,9 +14,8 @@ export const Signin = ({ switchToSignup, setShowOtp }) => {
     const [passwordError, setPasswordError] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
-    const api = useAxiosAuth();
-    const { login, logout } = useContext(AuthContext)
-
+    const { login, logout, authTokens } = useContext(AuthContext)
+    const navigate = useNavigate();
     const validate = () => {
         let valid = true;
         setEmailError("");
@@ -29,17 +29,17 @@ export const Signin = ({ switchToSignup, setShowOtp }) => {
             valid = false;
         }
 
-        if (!password) {
-            setPasswordError("Password is required.");
-            valid = false;
-        } else if (
-            !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(password)
-        ) {
-            setPasswordError(
-                "Password must be at least 8 characters and include uppercase, lowercase, number, and special character."
-            );
-            valid = false;
-        }
+        // if (!password) {
+        //     setPasswordError("Password is required.");
+        //     valid = false;
+        // } else if (
+        //     !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(password)
+        // ) {
+        //     setPasswordError(
+        //         "Password must be at least 8 characters and include uppercase, lowercase, number, and special character."
+        //     );
+        //     valid = false;
+        // }
 
         return valid;
     };
@@ -51,29 +51,37 @@ export const Signin = ({ switchToSignup, setShowOtp }) => {
         setLoading(true);
 
         try {
-            const response = await api.post('/api/account/login/', {
+            const response = await apiPublic.post('/api/account/login/', {
                 email,
                 password,
             });
             console.log(response.data)
 
             const { detail, otp_required, email: returnedEmail, access, refresh, user } = response.data;
-            console.log(access, refresh, user);
             logout();
             if (access) {
-
-                login(access, refresh, user.email, user.role, user.user_full_name);
+                login(access, refresh, user.id, user.email, user.role, user.user_full_name);
             }
-            toast.success(detail || 'Signed in successfully');
+            else {
+                localStorage.setItem('email', returnedEmail);
 
-            localStorage.setItem('email', returnedEmail);
+            }
 
-            setEmail('');
-            setPassword('');
-            console.log('bool', otp_required)
             if (otp_required) {
                 setShowOtp(true);
             }
+
+
+            if (access) {
+                navigate(user.has_profile ? '/dashboard' : '/setup-profile');
+                toast.success(detail || 'Signed in successfully');
+
+
+                setEmail('');
+                setPassword('');
+            }
+
+
 
         } catch (error) {
             const msg = error.response?.data?.detail || error.response?.data?.message || 'Login failed, try again';

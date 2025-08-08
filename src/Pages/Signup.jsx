@@ -9,6 +9,7 @@ import { CgProfile } from "react-icons/cg";
 import { useNavigate } from 'react-router-dom';
 // import AuthContext from '@/context/AuthContext';
 import useAxiosAuth from '@/hooks/useAxiosAuth';
+import apiPublic from '../../api'
 export const Signup = ({ switchToSignin }) => {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
@@ -84,7 +85,7 @@ export const Signup = ({ switchToSignin }) => {
         if (!validate()) return;
         setLoading(true);
         try {
-            const response = await api.post('/api/account/register/', {
+            const response = await apiPublic.post('/api/account/register/', {
                 full_name_en: name,
                 email,
                 phone_number: phone,

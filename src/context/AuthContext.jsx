@@ -1,7 +1,6 @@
 import { createContext, useEffect, useState } from 'react';
 import CryptoJS from 'crypto-js';
 import Cookies from 'js-cookie';
-
 const SECRET_KEY = import.meta.env.VITE_SECRET_KEY;
 const AuthContext = createContext();
 
@@ -11,12 +10,14 @@ export const AuthProvider = ({ children }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [email, setEmail] = useState(null);
     const [role, setRole] = useState(null);
+    const [id, setId] = useState(null);
 
 
     useEffect(() => {
         const encryptedAccess = Cookies.get('access_token');
         const storedEmail = localStorage.getItem('email');
-        const storedRole = localStorage.getItem('role')
+        const storedRole = localStorage.getItem('role');
+        const storedId = localStorage.getItem('id');
         const init = () => {
             if (encryptedAccess) {
                 try {
@@ -34,6 +35,9 @@ export const AuthProvider = ({ children }) => {
             if (storedRole) {
                 setRole(storedRole);
             }
+            if (storedId) {
+                setId(storedId);
+            }
 
             setAuthReady(true);
             setIsLoading(false);
@@ -42,23 +46,27 @@ export const AuthProvider = ({ children }) => {
         init();
     }, []);
 
-    const login = (access, refresh, email, role, user_full_name) => {
+    const login = (access, refresh, id, email, role, user_full_name) => {
         if (access) {
             const encryptedAccess = CryptoJS.AES.encrypt(access, SECRET_KEY).toString();
             Cookies.set('access_token', encryptedAccess, { expires: 1 });
-            setAuthTokens({ access: access });
+            setAuthTokens(access);
         }
+        localStorage.setItem('id', id)
         localStorage.setItem('email', email);
         localStorage.setItem('role', role);
-        localStorage.user_full_name('user_full_name', user_full_name);
+        localStorage.setItem('user_full_name', user_full_name);
     };
 
     const logout = () => {
+
         setAuthTokens(null);
         setEmail(null);
-        Cookies.remove('access');
+        Cookies.remove('access_token');
         localStorage.removeItem('email');
         localStorage.removeItem('role');
+        localStorage.removeItem('user_full_name');
+        localStorage.removeItem('id')
 
     };
 
