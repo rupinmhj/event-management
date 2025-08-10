@@ -11,13 +11,19 @@ export const AuthProvider = ({ children }) => {
     const [email, setEmail] = useState(null);
     const [role, setRole] = useState(null);
     const [id, setId] = useState(null);
+    const [phone_number, setPhone_number] = useState(null);
+    const [fullName, setFullName] = useState(null);
 
 
     useEffect(() => {
         const encryptedAccess = Cookies.get('access_token');
+        // console.log('encrypted', encryptedAccess);
         const storedEmail = localStorage.getItem('email');
         const storedRole = localStorage.getItem('role');
         const storedId = localStorage.getItem('id');
+        const storedFullname = localStorage.getItem('user_full_name');
+        const storedPhoneno = localStorage.getItem('phone_number');
+
         const init = () => {
             if (encryptedAccess) {
                 try {
@@ -38,6 +44,12 @@ export const AuthProvider = ({ children }) => {
             if (storedId) {
                 setId(storedId);
             }
+            if (storedPhoneno) {
+                setPhone_number(storedPhoneno);
+            }
+            if (storedFullname) {
+                setFullName(storedFullname);
+            }
 
             setAuthReady(true);
             setIsLoading(false);
@@ -46,16 +58,18 @@ export const AuthProvider = ({ children }) => {
         init();
     }, []);
 
-    const login = (access, refresh, id, email, role, user_full_name) => {
+    const login = (access, refresh, id, email, role, user_full_name, phone_number) => {
         if (access) {
             const encryptedAccess = CryptoJS.AES.encrypt(access, SECRET_KEY).toString();
             Cookies.set('access_token', encryptedAccess, { expires: 1 });
-            setAuthTokens(access);
+            setAuthTokens({ access });
         }
         localStorage.setItem('id', id)
         localStorage.setItem('email', email);
         localStorage.setItem('role', role);
         localStorage.setItem('user_full_name', user_full_name);
+        localStorage.setItem('phone_number', phone_number);
+
     };
 
     const logout = () => {
@@ -80,6 +94,11 @@ export const AuthProvider = ({ children }) => {
                 setEmail,
                 authReady,
                 isLoading,
+                phone_number,
+                setPhone_number,
+                fullName,
+                setFullName,
+
             }}
         >
             {children}

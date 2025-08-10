@@ -241,7 +241,7 @@ const ProfileSetup = () => {
 
             setProfileImage(file);
             setPreviewUrl(URL.createObjectURL(file));
-            setIsProfileActive(true);
+            // setIsProfileActive(true);
             // Clear any previous errors
             setErrors(prev => ({ ...prev, profileImage: "" }));
         }
@@ -291,6 +291,7 @@ const ProfileSetup = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
 
         if (!validateForm()) {
             return;
@@ -299,6 +300,7 @@ const ProfileSetup = () => {
         setIsLoading(true);
 
         try {
+            
             // Create FormData for file uploads
             // console.log('id', id);
             const formData = new FormData();
@@ -321,6 +323,7 @@ const ProfileSetup = () => {
             if (supportDocument) {
                 formData.append('support_document', supportDocument);
             }
+
 
 
 
@@ -488,11 +491,11 @@ const ProfileSetup = () => {
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="HIGH_SCHOOL">High School</SelectItem>
-                                            <SelectItem value="DIPLOMA">Diploma</SelectItem>
+                                            {/* <SelectItem value="DIPLOMA">Diploma</SelectItem> */}
                                             <SelectItem value="BACHELORS">Bachelor's Degree</SelectItem>
                                             <SelectItem value="MASTERS">Master's Degree</SelectItem>
                                             <SelectItem value="PHD">PhD</SelectItem>
-                                            <SelectItem value="OTHER">Other</SelectItem>
+                                            {/* <SelectItem value="OTHER">Other</SelectItem> */}
                                         </SelectContent>
                                     </Select>
                                     {errors.educationLevel && (

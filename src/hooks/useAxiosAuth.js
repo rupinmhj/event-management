@@ -11,10 +11,12 @@ export default function useAxiosAuth() {
   const api = useMemo(() => {
     const instance = axios.create({ baseURL: BASE_URL });
 
+
     // 1. Request: attach token
     instance.interceptors.request.use((config) => {
+      console.log('authtokens', authTokens);
       if (authTokens) {
-        config.headers.Authorization = `Bearer ${authTokens}`;
+        config.headers.Authorization = `Bearer ${authTokens.access}`;
         console.log("Authorization header set:", config.headers.Authorization);
       } else {
         console.log("No auth token found");
@@ -27,7 +29,7 @@ export default function useAxiosAuth() {
     return instance;
   }, [authTokens, login, logout]);
 
- 
+
 
   return api;
 }

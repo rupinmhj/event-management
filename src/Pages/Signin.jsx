@@ -60,7 +60,7 @@ export const Signin = ({ switchToSignup, setShowOtp }) => {
             const { detail, otp_required, email: returnedEmail, access, refresh, user } = response.data;
             logout();
             if (access) {
-                login(access, refresh, user.id, user.email, user.role, user.user_full_name);
+                login(access, refresh, user.id, user.email, user.role, user.user_full_name,user.phone_number );
             }
             else {
                 localStorage.setItem('email', returnedEmail);
