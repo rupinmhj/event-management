@@ -4,7 +4,7 @@ import {
   FaUser, FaMapMarkerAlt, FaPhone, FaEdit, FaBirthdayCake,
   FaVenusMars, FaBuilding, FaIdBadge, FaFileAlt,
   FaGraduationCap, FaInfoCircle, FaUpload, FaCamera,
-  FaCalendar, FaChevronLeft, FaChevronRight, FaSave, FaTimes
+  FaCalendar, FaChevronLeft, FaChevronRight, FaSave, FaTimes, FaEye
 } from "react-icons/fa";
 import { toast, ToastContainer } from 'react-toastify';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -189,6 +189,37 @@ const DetailItem = ({ icon, label, value, className = "" }) => (
   </div>
 );
 
+const DetailItemDocument = ({ icon, label, value, className = "" }) => {
+  const hasDocument = Boolean(value);
+
+  return (
+    <div className={`flex items-start gap-3 group ${className}`}>
+      <span className="text-muted-foreground mt-1 group-hover:text-primary transition-colors">
+        {icon}
+      </span>
+
+      <div className="min-w-0 flex-1">
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+          {label}
+        </p>
+
+        {hasDocument ? (
+          <button
+            onClick={() => window.open(value, "_blank")}
+            className="mt-1 text-primary hover:text-blue flex items-center gap-1 text-sm font-medium"
+          >
+            <FaEye className="inline-block" /> View Document
+          </button>
+        ) : (
+          <p className="text-sm font-medium text-muted-foreground mt-1">
+            No document uploaded
+          </p>
+        )}
+      </div>
+    </div>
+  );
+};
+
 /* Helper: safely set nested fields like "user_detail.phone_number" */
 const setByPath = (obj, path, value) => {
   const keys = path.split(".");
@@ -242,9 +273,7 @@ const UserProfile = () => {
     }
   }, [authReady, phone_number, fullName, email]);
 
-  useEffect(() => {
-    // console.log('Updated formData:', formData);
-  }, [formData]);
+
 
   const [profileImage, setProfileImage] = useState(null);
   const [previewUrl, setPreviewUrl] = useState("");
@@ -356,6 +385,8 @@ const UserProfile = () => {
   };
 
   const handleSubmit = async (e) => {
+
+    console.log('Event list', res2);
     e.preventDefault();
     if (!validateForm()) return;
 
@@ -387,6 +418,7 @@ const UserProfile = () => {
         title: "Profile Updated",
         description: "Your profile has been successfully updated.",
       });
+      fetchUserData();
       setIsEditing(false);
     } catch (error) {
       console.log('error', error);
@@ -749,7 +781,7 @@ const UserProfile = () => {
 
                     }
                   />
-                  <DetailItem
+                  <DetailItemDocument
                     icon={<FaFileAlt />}
                     label="Document"
                     value={formData.support_document || "No document uploaded"}

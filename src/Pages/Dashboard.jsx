@@ -6,6 +6,7 @@ import Footer from '@/Components/Footer'
 const Dashboard = () => {
     const [authView, setAuthView] = useState('signup')
     const [showOtp, setShowOtp] = useState(0)
+    
     return (
         <>
             <div className="h-full">

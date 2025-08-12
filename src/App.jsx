@@ -4,6 +4,7 @@ import { Signin } from './Pages/Signin'
 import Main from './Pages/Main'
 import Setup from './Pages/Setup'
 import Dashboard from './Pages/Dashboard'
+import DashboardAdmin from './Pages/DashboardAdmin'
 const router = createBrowserRouter([
   {
     path: "/",
@@ -16,6 +17,10 @@ const router = createBrowserRouter([
   {
     path:'/dashboard',
     element: <Dashboard />
+  },
+  {
+    path:'/dashboard-admin',
+    element: <DashboardAdmin />
   }
 ])
 const App = () => {

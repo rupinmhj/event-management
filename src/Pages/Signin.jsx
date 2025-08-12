@@ -73,6 +73,7 @@ export const Signin = ({ switchToSignup, setShowOtp }) => {
 
 
             if (access) {
+                user.role==="ADMIN"?navigate('/dashboard-admin'):
                 navigate(user.has_profile ? '/dashboard' : '/setup-profile');
                 toast.success(detail || 'Signed in successfully');
 
