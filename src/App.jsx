@@ -5,24 +5,25 @@ import Main from './Pages/Main'
 import Setup from './Pages/Setup'
 import Dashboard from './Pages/Dashboard'
 import DashboardAdmin from './Pages/DashboardAdmin'
-const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <Main />
-  },
-  {
-    path: '/setup-profile',
-    element: <Setup />
-  },
-  {
-    path:'/dashboard',
-    element: <Dashboard />
-  },
-  {
-    path:'/dashboard-admin',
-    element: <DashboardAdmin />
-  }
-])
+// const router = createBrowserRouter([
+//   {
+//     path: "/",
+//     element: <Main />
+//   },
+//   {
+//     path: '/setup-profile',
+//     element: <Setup />
+//   },
+//   {
+//     path:'/dashboard',
+//     element: <Dashboard />
+//   },
+//   {
+//     path:'/dashboard-admin',
+//     element: <DashboardAdmin />
+//   }
+// ])
+import router from './routes/AppRoutes'
 const App = () => {
   return (
     <>

@@ -1,11 +1,9 @@
 import React, { useContext, useState } from 'react'
-import NavbarAdmin from '../Components/NavbarAdmin'
-import Footer from '@/Components/Footer'
-import EventList from '../Components/EventList'
+import EventList from '@/Components/EventList'
 import { motion } from 'framer-motion'
-import GeneralContext from '../context/GeneralContext'
+import GeneralContext from "../../context/GeneralContext"
 import CreateEvent from '@/Components/CreateEvent'
-const Dashboard = () => {
+export const Events = () => {
     const [authView, setAuthView] = useState('signup')
     const [showOtp, setShowOtp] = useState(0)
     const { setIsCreateEvent, isCreateEvent } = useContext(GeneralContext)
@@ -18,15 +16,11 @@ const Dashboard = () => {
                 transition={{ duration: 0.3, delay: 0.15 }}
             >
                 <div className="h-full">
-                    <div className="fixed top-0 right-0 left-0 z-40 ">
-                        <NavbarAdmin mode='login' />
+                   {/* {console.log('event',isCreateEvent)} */}
+                    <div className="pt-20 min-h-screen ">
+                        {isCreateEvent ? <CreateEvent /> : <EventList />}
                     </div>
-                    <section className='min-h-screen flex items-center justify-center'>
-                            Dashboard
-                    </section>
-                    <div >
-                        <Footer />
-                    </div>
+                   
                 </div>
             </motion.div>
 
@@ -35,4 +29,3 @@ const Dashboard = () => {
     )
 }
 
-export default Dashboard;

@@ -1,8 +1,8 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { useForm, useFieldArray, Controller } from "react-hook-form";
 import {
     FaPlus, FaTrash, FaSave, FaTimes, FaCalendar, FaMapMarkerAlt,
-    FaFileImage, FaMoneyBillWave, FaListUl, FaInfoCircle
+    FaFileImage, FaMoneyBillWave, FaListUl, FaInfoCircle, FaSpinner
 } from 'react-icons/fa';
 import { SiMaterialdesignicons } from "react-icons/si";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,18 +15,26 @@ import GeneralContext from '@/context/GeneralContext';
 import { motion } from 'framer-motion'
 import DatePicker from '../utils/DatePicker'
 import useAxiosAuth from '@/hooks/useAxiosAuth';
-const CreateEvent = ({ onCancel, onSubmit }) => {
+import { useParams, useNavigate } from 'react-router-dom';
+
+const EditEvent = ({ eventId, onCancel, onSubmit }) => {
     const [isLoading, setIsLoading] = useState(false);
+    const [isLoadingData, setIsLoadingData] = useState(true);
     const [bannerPreview, setBannerPreview] = useState('');
     const [iconPreview, setIconPreview] = useState('');
+    const [eventData, setEventData] = useState(null);
     const { submitCreate, create } = useContext(GeneralContext)
     const api = useAxiosAuth();
+    const { id } = useParams();
+    const navigate = useNavigate();
+
     const {
         register,
         handleSubmit,
         control,
         watch,
         setValue,
+        reset,
         formState: { errors }
     } = useForm({
         defaultValues: {
@@ -37,7 +45,7 @@ const CreateEvent = ({ onCancel, onSubmit }) => {
             duration: '',
             location: '',
             banner: null,
-            icon:null,
+            icon: null,
             is_payment_required: 'False',
             requirements: [
                 {
@@ -49,6 +57,7 @@ const CreateEvent = ({ onCancel, onSubmit }) => {
             ]
         }
     });
+
     const is_payment_required = watch("is_payment_required");
     const { fields, append, remove } = useFieldArray({
         control,
@@ -56,6 +65,65 @@ const CreateEvent = ({ onCancel, onSubmit }) => {
     });
 
     const watchedBanner = watch("banner");
+    const watchedIcon = watch('icon');
+
+    // Fetch existing event data
+    useEffect(() => {
+        const fetchEventData = async () => {
+            try {
+                setIsLoadingData(true);
+                console.log("get data by id")
+                const response = await api.get(`/api/event/get-event-detail/${id}/`);
+                const data = response.data;
+                console.log(data);
+
+                setEventData(data);
+
+                // Reset form with fetched data
+                reset({
+                    title: data.title || '',
+                    description: data.description || '',
+                    event_type: data.event_type || '',
+                    start_date: data.start_date || '',
+                    duration: data.duration || '',
+                    location: data.location || '',
+                    banner: null, // We'll handle existing images separately
+                    icon: null,
+                    is_payment_required: data.is_payment_required ? 'True' : 'False',
+                    requirements: data.requirements && data.requirements.length > 0
+                        ? data.requirements.map(req => ({
+                            label: req.label || '',
+                            value: req.value || '',
+                            fee: req.fee || '',
+                            file: null
+                        }))
+                        : [{
+                            label: '',
+                            value: '',
+                            fee: '',
+                            file: null
+                        }]
+                });
+
+                // Set image previews if they exist
+                if (data.banner) {
+                    setBannerPreview(data.banner);
+                }
+                if (data.icon) {
+                    setIconPreview(data.icon);
+                }
+
+            } catch (error) {
+                console.error('Error fetching event data:', error);
+            } finally {
+                setIsLoadingData(false);
+            }
+        };
+
+        if (id) {
+            fetchEventData();
+        }
+    }, [id, api, reset]);
 
     // Handle banner file upload
     const handleBannerChange = (e) => {
@@ -72,8 +140,8 @@ const CreateEvent = ({ onCancel, onSubmit }) => {
             setBannerPreview(URL.createObjectURL(file));
         }
     };
+
     // Handle icon file upload
-    const watchedIcon=watch('icon');
     const handleIconChange = (e) => {
         const file = e.target.files?.[0];
         if (file) {
@@ -123,12 +191,14 @@ const CreateEvent = ({ onCancel, onSubmit }) => {
             submitData.append('location', data.location);
             submitData.append('is_payment_required', data.is_payment_required);
 
-            // Add banner if selected
-            if (data.banner) {
+            // Add banner if a new file is selected
+            if (data.banner && data.banner instanceof File) {
                 submitData.append('banner', data.banner);
             }
-            if(data.banner){
-                submitData.append('icon',data.icon)
+
+            // Add icon if a new file is selected
+            if (data.icon && data.icon instanceof File) {
+                submitData.append('icon', data.icon);
             }
 
             // Add requirements
@@ -140,20 +210,41 @@ const CreateEvent = ({ onCancel, onSubmit }) => {
                     submitData.append(`requirements[${index}]file`, req.file);
                 }
             });
+
             console.log("submit form data:")
             for (let [key, value] of submitData.entries()) {
                 console.log(key, value);
             }
 
-            const res = await api.post('/api/event/create-event/', submitData)
+            const res = await api.put(`/api/event/update-event/${id}/`, submitData);
             console.log(res.data);
-            submitCreate();
+
+            if (onSubmit) {
+                onSubmit(res.data);
+            } else {
+                submitCreate();
+            }
+            navigate('/admin/events');
         } catch (error) {
-            console.error('Error creating event:', error);
+            console.error('Error updating event:', error);
         } finally {
             setIsLoading(false);
         }
     };
+
+    if (isLoadingData) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-background to-muted/30 flex items-center justify-center">
+                <div className="text-center">
+                    <FaSpinner className="animate-spin h-8 w-8 text-blue mx-auto mb-4" />
+                    <p className="text-muted-foreground">Loading event data...</p>
+                </div>
+            </div>
+        );
+    }
+    const cancel=()=>{
+        navigate('/admin/events');
+    }
 
     return (
         <motion.div
@@ -163,10 +254,10 @@ const CreateEvent = ({ onCancel, onSubmit }) => {
             transition={{ duration: 0.3, delay: 0.15 }}
         >
             <div className="min-h-screen bg-gradient-to-br from-background to-muted/30 px-4 sm:px-6 lg:px-8 py-6">
-                <div className="max-w-4xl  mx-auto">
+                <div className="max-w-4xl mx-auto">
                     <div className="text-center mb-8">
-                        <h1 className="text-3xl font-semibold text-gray-800 mb-2">Create New Event</h1>
-                        <p className="text-muted-foreground">Fill in the details to create your event</p>
+                        <h1 className="text-3xl font-semibold text-gray-800 mb-2">Edit Event</h1>
+                        <p className="text-muted-foreground">Update your event details</p>
                     </div>
 
                     <Card className="shadow-xl border bg-card">
@@ -202,22 +293,27 @@ const CreateEvent = ({ onCancel, onSubmit }) => {
 
                                         <div className="space-y-2">
                                             <Label htmlFor="event_type">Event Type *</Label>
-                                            <Select onValueChange={(value) => setValue('event_type', value)}>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Select event type" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="PHYSICAL">Physical</SelectItem>
-                                                    <SelectItem value="ONLINE">Online</SelectItem>
-                                                </SelectContent>
-                                            </Select>
+                                            <Controller
+                                                name="event_type"
+                                                control={control}
+                                                rules={{ required: "Event type is required" }}
+                                                render={({ field }) => (
+                                                    <Select onValueChange={field.onChange} value={field.value}>
+                                                        <SelectTrigger>
+                                                            <SelectValue placeholder="Select event type" />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="PHYSICAL">Physical</SelectItem>
+                                                            <SelectItem value="ONLINE">Online</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                )}
+                                            />
                                             {errors.event_type && (
                                                 <p className="text-sm text-destructive">{errors.event_type.message}</p>
                                             )}
                                         </div>
                                     </div>
-
-
 
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                         <div className="space-y-2">
@@ -228,15 +324,14 @@ const CreateEvent = ({ onCancel, onSubmit }) => {
                                                 rules={{ required: "Start date is required" }}
                                                 render={({ field }) => (
                                                     <DatePicker
-                                                        value={field.value}       // string date from RHF state
-                                                        onChange={field.onChange} // pass new date string back to RHF
+                                                        value={field.value}
+                                                        onChange={field.onChange}
                                                         minDate={new Date()}
-                                                        maxDate={new Date(2028,1,1)}
+                                                        maxDate={new Date(2028, 1, 1)}
                                                         placeholder={"Start Date"}
                                                     />
                                                 )}
                                             />
-
                                             {errors.start_date && (
                                                 <p className="text-sm text-destructive">{errors.start_date.message}</p>
                                             )}
@@ -285,7 +380,7 @@ const CreateEvent = ({ onCancel, onSubmit }) => {
                                 {/* Event Icon Upload */}
                                 <div className="space-y-4">
                                     <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                                        <SiMaterialdesignicons  className="text-gray-800" /> {/* replace with an appropriate icon */}
+                                        <SiMaterialdesignicons className="text-gray-800" />
                                         Event Icon
                                     </h3>
 
@@ -317,13 +412,12 @@ const CreateEvent = ({ onCancel, onSubmit }) => {
                                                     type="file"
                                                     className="hidden"
                                                     accept="image/*"
-                                                    onChange={handleIconChange} // define this function like handleBannerChange
+                                                    onChange={handleIconChange}
                                                 />
                                             </label>
                                         </div>
                                     </div>
                                 </div>
-
 
                                 {/* Banner Upload */}
                                 <div className="space-y-4">
@@ -368,148 +462,22 @@ const CreateEvent = ({ onCancel, onSubmit }) => {
                                     </div>
                                 </div>
 
-                                {/* Payment Settings 
-                                <div className="space-y-4">
-                                    <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                                        <FaMoneyBillWave className="text-gray-800" />
-                                        Payment Settings
-                                    </h3>
-
-                                    <div className="space-y-2">
-                                        <Label htmlFor="is_payment_required">Payment Required?</Label>
-                                        <Select onValueChange={(value) => setValue('is_payment_required', value)} defaultValue="False">
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Select payment requirement" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="True">Yes, payment required</SelectItem>
-                                                <SelectItem value="False">No, free event</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                </div> */}
-
-                                {/* Requirements */}
-                                {/* <div className="space-y-4">
-                                    <div className="flex items-center justify-between">
-                                        <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                                            <FaListUl className="text-gray-800" />
-                                            Event Requirements
-                                        </h3>
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={addRequirement}
-                                            className="flex items-center gap-2"
-                                        >
-                                            <FaPlus className="w-3 h-3" />
-                                            Add Requirement
-                                        </Button>
-                                    </div>
-
-                                    <div className="space-y-4">
-                                        {fields.map((field, index) => (
-                                            <Card key={field.id} className="border-2 border-dashed border-muted">
-                                                <CardHeader className="pb-3">
-                                                    <div className="flex items-center justify-between">
-                                                        <CardTitle className="text-sm">Requirement {index + 1}</CardTitle>
-                                                        {fields.length > 1 && (
-                                                            <Button
-                                                                type="button"
-                                                                variant="ghost"
-                                                                size="sm"
-                                                                onClick={() => remove(index)}
-                                                                className="text-destructive hover:text-destructive"
-                                                            >
-                                                                <FaTrash className="w-3 h-3" />
-                                                            </Button>
-                                                        )}
-                                                    </div>
-                                                </CardHeader>
-                                                <CardContent className="space-y-4">
-                                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                                        <div className="space-y-2">
-                                                            <Label htmlFor={`requirements.${index}.label`}>Label *</Label>
-                                                            <Input
-                                                                {...register(`requirements.${index}.label`, {
-                                                                    required: "Label is required"
-                                                                })}
-                                                                placeholder="e.g., General Entry"
-                                                            />
-                                                            {errors.requirements?.[index]?.label && (
-                                                                <p className="text-sm text-destructive">
-                                                                    {errors.requirements[index].label.message}
-                                                                </p>
-                                                            )}
-                                                        </div>
-
-                                                        <div className="space-y-2">
-                                                            <Label htmlFor={`requirements.${index}.value`}>Value/Description *</Label>
-                                                            <Input
-                                                                {...register(`requirements.${index}.value`, {
-                                                                    required: "Value is required"
-                                                                })}
-                                                                placeholder="e.g., Need to bring Pass"
-                                                            />
-                                                            {errors.requirements?.[index]?.value && (
-                                                                <p className="text-sm text-destructive">
-                                                                    {errors.requirements[index].value.message}
-                                                                </p>
-                                                            )}
-                                                        </div>
-                                                       
-                                                        {is_payment_required == 'True' && (
-                                                            <div className="space-y-2">
-                                                                <Label htmlFor={`requirements.${index}.fee`}>Fee *</Label>
-                                                                <Input
-                                                                    {...register(`requirements.${index}.fee`, {
-                                                                        required: "Fee is required"
-                                                                    })}
-                                                                    placeholder="e.g., 1000"
-                                                                    type="number"
-                                                                />
-                                                                {errors.requirements?.[index]?.fee && (
-                                                                    <p className="text-sm text-destructive">
-                                                                        {errors.requirements[index].fee.message}
-                                                                    </p>
-                                                                )}
-                                                            </div>
-                                                        )}
-                                                    </div>
-
-                                                    <div className="space-y-2 pb-4 ">
-                                                        <Label htmlFor={`requirements.${index}.file`}>Additional File (Optional)</Label>
-                                                        <Input
-                                                            type="file"
-                                                            onChange={(e) => handleRequirementFileChange(index, e)}
-                                                            className="file:mr-4 h-[48px]  file:py-2 cursor-pointer  file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue file:text-gray-200 hover:file:bg-blue/80"
-                                                        />
-                                                    </div>
-                                                </CardContent>
-                                            </Card>
-                                        ))}
-                                    </div>
-                                </div>  */}
-
-
                                 {/* Form Actions */}
                                 <div className="flex gap-4 pt-6">
                                     <Button
                                         type="submit"
                                         disabled={isLoading}
-
                                         className="flex-1 bg-blue transition-all duration-300 hover:scale-[1.02] text-primary-foreground hover:bg-blue/90"
                                         size="lg"
                                     >
                                         <FaSave className="w-4 h-4 mr-2" />
-                                        {isLoading ? "Creating Event..." : "Create Event"}
+                                        {isLoading ? "Updating Event..." : "Update Event"}
                                     </Button>
 
                                     <Button
                                         type="button"
                                         variant="outline"
-                                        onClick={submitCreate}
+                                        onClick={()=>{submitCreate();cancel()}}
                                         disabled={isLoading}
                                         size="lg"
                                         className="hover:bg-destructive hover:text-destructive-foreground transition-all duration-300 hover:scale-[1.02]"
@@ -524,8 +492,7 @@ const CreateEvent = ({ onCancel, onSubmit }) => {
                 </div>
             </div>
         </motion.div>
-
     );
 };
 
-export default CreateEvent;
+export default EditEvent;

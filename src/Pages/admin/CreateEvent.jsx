@@ -4,7 +4,6 @@ import {
     FaPlus, FaTrash, FaSave, FaTimes, FaCalendar, FaMapMarkerAlt,
     FaFileImage, FaMoneyBillWave, FaListUl, FaInfoCircle
 } from 'react-icons/fa';
-import { SiMaterialdesignicons } from "react-icons/si";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +17,6 @@ import useAxiosAuth from '@/hooks/useAxiosAuth';
 const CreateEvent = ({ onCancel, onSubmit }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [bannerPreview, setBannerPreview] = useState('');
-    const [iconPreview, setIconPreview] = useState('');
     const { submitCreate, create } = useContext(GeneralContext)
     const api = useAxiosAuth();
     const {
@@ -37,7 +35,6 @@ const CreateEvent = ({ onCancel, onSubmit }) => {
             duration: '',
             location: '',
             banner: null,
-            icon:null,
             is_payment_required: 'False',
             requirements: [
                 {
@@ -70,22 +67,6 @@ const CreateEvent = ({ onCancel, onSubmit }) => {
 
             setValue('banner', file);
             setBannerPreview(URL.createObjectURL(file));
-        }
-    };
-    // Handle icon file upload
-    const watchedIcon=watch('icon');
-    const handleIconChange = (e) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            if (!file.type.startsWith('image/')) {
-                return;
-            }
-            if (file.size > 1 * 1024 * 1024) {
-                return;
-            }
-
-            setValue('icon', file);
-            setIconPreview(URL.createObjectURL(file));
         }
     };
 
@@ -126,9 +107,6 @@ const CreateEvent = ({ onCancel, onSubmit }) => {
             // Add banner if selected
             if (data.banner) {
                 submitData.append('banner', data.banner);
-            }
-            if(data.banner){
-                submitData.append('icon',data.icon)
             }
 
             // Add requirements
@@ -230,8 +208,8 @@ const CreateEvent = ({ onCancel, onSubmit }) => {
                                                     <DatePicker
                                                         value={field.value}       // string date from RHF state
                                                         onChange={field.onChange} // pass new date string back to RHF
-                                                        minDate={new Date()}
-                                                        maxDate={new Date(2028,1,1)}
+                                                        minDate={new Date(1900, 0, 1)}
+                                                        maxDate={new Date()}
                                                         placeholder={"Start Date"}
                                                     />
                                                 )}
@@ -281,49 +259,6 @@ const CreateEvent = ({ onCancel, onSubmit }) => {
                                         <p className="text-sm text-destructive">{errors.description.message}</p>
                                     )}
                                 </div>
-
-                                {/* Event Icon Upload */}
-                                <div className="space-y-4">
-                                    <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                                        <SiMaterialdesignicons  className="text-gray-800" /> {/* replace with an appropriate icon */}
-                                        Event Icon
-                                    </h3>
-
-                                    <div className="space-y-2">
-                                        <Label htmlFor="icon">Upload Icon</Label>
-                                        <div className="flex items-center justify-center w-full">
-                                            <label
-                                                htmlFor="icon"
-                                                className="flex flex-col items-center justify-center w-24 h-24 border-2 border-dashed border-border rounded-lg cursor-pointer bg-muted/30 hover:bg-muted/50 transition-colors"
-                                            >
-                                                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                                    {iconPreview ? (
-                                                        <img
-                                                            src={iconPreview}
-                                                            alt="Icon preview"
-                                                            className="h-12 w-12 object-contain rounded"
-                                                        />
-                                                    ) : (
-                                                        <>
-                                                            <SiMaterialdesignicons className="w-6 h-6 mb-2 text-muted-foreground" />
-                                                            <p className="text-xs text-muted-foreground text-center">
-                                                                <span className="font-semibold">Click to upload</span> icon
-                                                            </p>
-                                                        </>
-                                                    )}
-                                                </div>
-                                                <input
-                                                    id="icon"
-                                                    type="file"
-                                                    className="hidden"
-                                                    accept="image/*"
-                                                    onChange={handleIconChange} // define this function like handleBannerChange
-                                                />
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-
 
                                 {/* Banner Upload */}
                                 <div className="space-y-4">
@@ -390,7 +325,7 @@ const CreateEvent = ({ onCancel, onSubmit }) => {
                                 </div> */}
 
                                 {/* Requirements */}
-                                {/* <div className="space-y-4">
+                               {/* <div className="space-y-4">
                                     <div className="flex items-center justify-between">
                                         <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
                                             <FaListUl className="text-gray-800" />
@@ -491,7 +426,7 @@ const CreateEvent = ({ onCancel, onSubmit }) => {
                                         ))}
                                     </div>
                                 </div>  */}
-
+                                
 
                                 {/* Form Actions */}
                                 <div className="flex gap-4 pt-6">
