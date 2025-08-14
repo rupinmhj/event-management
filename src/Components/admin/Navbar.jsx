@@ -119,15 +119,21 @@ const UserMenu = ({ mode, logout }) => {
 
 // Updated navigation links array
 const navigationLinks = [
-    { to: "events", label: "Events" },
-    { to: "requirement-setup", label: "Requirement Setup" },
-    { to: "tickets-pricing", label: "Tickets/Pricing" },
-    { to: "registered-members", label: "Registered Members" },
+    { to: "/admin/events", label: "Events" },
+    { to: "/admin/requirement-setup", label: "Requirement Setup" },
+    { to: "/admin/tickets-pricing", label: "Tickets/Pricing" },
+    { to: "/admin/registered-members", label: "Registered Members" },
 ];
 
 const Navbar = ({ mode }) => {
     const { logout } = useContext(AuthContext);
     const location = useLocation();
+
+    // Helper function to check if a link is active
+    const isActiveLink = (linkPath) => {
+        return location.pathname === linkPath;
+    };
+
     return (
         <header className="border-b font-sans bg-white">
             <div className="px-12 flex h-16 items-center justify-between gap-4">
@@ -174,10 +180,13 @@ const Navbar = ({ mode }) => {
                                     {navigationLinks.map((link, index) => (
                                         <NavigationMenuItem key={index} className="w-full">
                                             <NavigationMenuLink asChild>
-                                                <Link to={link.to} className={`py-1.5 font-medium ${location.pathname === link.to
-                                                        ? "text-blue border-b-2 border-blue"
-                                                        : "text-muted-foreground hover:text-blue"
-                                                    }`}>
+                                                <Link
+                                                    to={link.to}
+                                                    className={`block w-full py-1.5 font-medium transition-colors ${isActiveLink(link.to)
+                                                            ? "text-blue border-b-2 border-blue"
+                                                            : "text-muted-foreground hover:text-blue"
+                                                        }`}
+                                                >
                                                     {link.label}
                                                 </Link>
                                             </NavigationMenuLink>
@@ -200,7 +209,10 @@ const Navbar = ({ mode }) => {
                                         <NavigationMenuLink asChild>
                                             <Link
                                                 to={link.to}
-                                                className="text-muted-foreground hover:text-blue py-1.5 font-medium"
+                                                className={`relative py-1.5 font-medium transition-all duration-200 ease-in-out ${isActiveLink(link.to)
+                                                        ? "text-blue after:w-full"
+                                                        : "text-muted-foreground hover after:w-0 hover:after:w-full"
+                                                    } `}
                                             >
                                                 {link.label}
                                             </Link>

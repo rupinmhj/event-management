@@ -16,13 +16,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import useAxiosAuth from '@/hooks/useAxiosAuth';
 import AuthContext from '@/context/AuthContext';
-
+import { motion } from 'framer-motion'
+import { useNavigate } from 'react-router-dom';
 /* DatePicker Component (JSX) */
 const DatePicker = ({ value, onChange, minDate, maxDate }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [isYearPickerOpen, setIsYearPickerOpen] = useState(false);
-
   const selectedDate = value ? new Date(value) : null;
 
   const formatDate = (date) =>
@@ -238,6 +238,8 @@ const UserProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const api = useAxiosAuth?.() || null;
+  const { logout } = useContext(AuthContext)
+  const navigate=useNavigate();
   const auth = useContext(AuthContext) || {};
   const { authTokens, authReady, phone_number, fullName, email } = auth;
 
@@ -299,11 +301,15 @@ const UserProfile = () => {
       }));
       // toast({ title: "Profile data loaded", description: "Your profile information has been loaded successfully." });
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to load profile data.",
-        variant: "destructive",
-      });
+      const err = error?.response?.data?.code
+      console.log(err)
+      if (err === "token_not_valid") {
+        toast.error("Token expired, Login again")
+        logout();
+        
+        navigate('/');
+      }
+
     } finally {
       setIsLoading(false);
     }
@@ -386,7 +392,6 @@ const UserProfile = () => {
 
   const handleSubmit = async (e) => {
 
-    console.log('Event list', res2);
     e.preventDefault();
     if (!validateForm()) return;
 
@@ -410,6 +415,10 @@ const UserProfile = () => {
       if (supportDocument) {
         submitData.append('support_document', supportDocument);
       }
+      console.log("submit form data:")
+      for (let [key, value] of submitData.entries()) {
+        console.log(key, value);
+      }
 
       const res = await api.put('/api/account/profile/update/', submitData);
       console.log(res);
@@ -418,6 +427,7 @@ const UserProfile = () => {
         title: "Profile Updated",
         description: "Your profile has been successfully updated.",
       });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       fetchUserData();
       setIsEditing(false);
     } catch (error) {
@@ -435,11 +445,11 @@ const UserProfile = () => {
 
   if (isEditing) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background to-muted/30 px-4 sm:px-6 lg:px-8 py-12">
+      <div className="min-h-screen bg-gradient-to-br from-background to-muted/30 px-4 sm:px-6 lg:px-8 py-12 ">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-semibold text-primary mb-2">Edit Your Profile</h1>
-            <p className="text-muted-foreground">Update your profile information below.</p>
+            <p className="text-muted-foreound">Update your profile information below.</p>
           </div>
 
           <Card className="shadow-xl border bg-card">
@@ -608,11 +618,11 @@ const UserProfile = () => {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="HIGH_SCHOOL">High School</SelectItem>
-                        <SelectItem value="DIPLOMA">Diploma</SelectItem>
+                        {/* <SelectItem value="DIPLOMA">Diploma</SelectItem> */}
                         <SelectItem value="BACHELORS">Bachelor's Degree</SelectItem>
                         <SelectItem value="MASTERS">Master's Degree</SelectItem>
                         <SelectItem value="PHD">PhD</SelectItem>
-                        <SelectItem value="OTHER">Other</SelectItem>
+                        {/* <SelectItem value="OTHER">Other</SelectItem> */}
                       </SelectContent>
                     </Select>
                     {errors?.education_level && <p className="text-sm text-destructive">{errors.education_level}</p>}
@@ -695,113 +705,122 @@ const UserProfile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 px-4 sm:px-6 lg:px-8 py-12">
-      <div className="max-w-4xl mx-auto space-y-6">
-        <div className="relative overflow-hidden rounded-xl border text-gray-800 shadow-lg hover:shadow-xl transition-all duration-300">
-          <div className="absolute inset-0 " />
-          <div className="relative p-6">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <h1 className="text-[18px] font-bold text-gray-800">{formData.user_detail.full_name_en}</h1>
-                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 text-gray-500">
-                  <span className="flex items-center gap-2 text-sm">
-                    <FaMapMarkerAlt />
-                    {formData.address || "—"}
-                  </span>
-                  <span className="flex items-center gap-2 text-sm">
-                    <FaPhone />
-                    {formData.user_detail.phone_number || "—"}
-                  </span>
-                  <span className="flex items-center gap-2 text-sm">
-                    <FaUser />
-                    {formData.user_detail.email || "—"}
-                  </span>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3, delay: 0.15 }}
+    >
+      <div className="min-h-screen  px-4 sm:px-6 lg:px-8 py-12 ">
+        <div className="max-w-4xl mx-auto space-y-6">
+          <div className="relative overflow-hidden rounded-xl border text-gray-800 shadow-lg hover:shadow-xl transition-all duration-300">
+            <div className="absolute inset-0 " />
+            <div className="relative p-6">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <h1 className="text-[18px] font-bold text-gray-800">{formData.user_detail.full_name_en}</h1>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 text-gray-500">
+                    <span className="flex items-center gap-2 text-sm">
+                      <FaMapMarkerAlt />
+                      {formData.address || "—"}
+                    </span>
+                    <span className="flex items-center gap-2 text-sm">
+                      <FaPhone />
+                      {formData.user_detail.phone_number || "—"}
+                    </span>
+                    <span className="flex items-center gap-2 text-sm">
+                      <FaUser />
+                      {formData.user_detail.email || "—"}
+                    </span>
+                  </div>
                 </div>
+                <button
+                  onClick={handleEditClick}
+                  className="group flex items-center gap-2 px-4 py-2 rounded-lg bg-blue/90 hover:bg-blue/80 text-primary-foreground transition-all duration-200 border border-primary/20"
+                >
+                  <FaEdit className="text-sm" />
+                  <span className="text-sm font-medium">Edit</span>
+                </button>
               </div>
-              <button
-                onClick={handleEditClick}
-                className="group flex items-center gap-2 px-4 py-2 rounded-lg bg-blue/90 hover:bg-blue/80 text-primary-foreground transition-all duration-200 border border-primary/20"
-              >
-                <FaEdit className="text-sm" />
-                <span className="text-sm font-medium">Edit</span>
-              </button>
             </div>
           </div>
-        </div>
 
-        <div className="rounded-xl border bg-card shadow-lg overflow-hidden">
-          <div className="p-8">
-            <div className="flex flex-col lg:flex-row gap-8">
-              <div className="flex flex-col items-center lg:items-start space-y-4">
-                <div className="relative group rounded-full border-4 border-green-600">
-                  <img
-                    src={formData.profile_picture}
-                    alt={formData.user_detail.full_name_en || "Profile"}
-                    className="w-32 h-32 rounded-full border-4 border-primary/20 object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                </div>
-                <div className="text-center lg:text-left">
-                  <h2 className="text-xl font-semibold text-card-foreground">
-                    {formData.designation || "—"}
-                  </h2>
-                  <p className="text-sm text-muted-foreground">
-                    {formData.organization || "—"}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-card-foreground mb-6 flex items-center gap-2">
-                  <FaUser className="text-primary" />
-                  Personal Information
-                </h3>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <DetailItem icon={<FaBirthdayCake />} label="Date of Birth" value={formData.date_of_birth || "—"} />
-                  <DetailItem
-                    icon={<FaVenusMars />}
-                    label="Gender"
-                    value={
-                      formData.sex === 'MALE' ? 'Male' :
-                        formData.sex === 'FEMALE' ? 'Female' :
-                          formData.sex ? 'Other' : '—'
-                    }
-                  />
-                  <DetailItem icon={<FaBuilding />} label="Organization" value={formData.organization || "—"} />
-                  <DetailItem icon={<FaIdBadge />} label="Employee ID" value={formData.employee_id || "—"} />
-                  <DetailItem
-                    icon={<FaGraduationCap />}
-                    label="Education"
-                    value={
-                      formData.education_level === 'BACHELORS' ? "Bachelor's Degree" :
-                        formData.education_level === 'MASTERS' ? "Master's Degree" :
-                          formData.education_level === 'HIGH_SCHOOL' ? "High School" :
-                            formData.education_level === 'DIPLOMA' ? "Diploma" : ""
-
-                    }
-                  />
-                  <DetailItemDocument
-                    icon={<FaFileAlt />}
-                    label="Document"
-                    value={formData.support_document || "No document uploaded"}
-                    className="group cursor-pointer hover:bg-accent/50 -mx-2 px-2 py-2 rounded-lg transition-colors"
-                  />
+          <div className="rounded-xl border bg-card shadow-lg overflow-hidden">
+            <div className="p-8">
+              <div className="flex flex-col lg:flex-row gap-8">
+                <div className="flex flex-col items-center lg:items-start space-y-4">
+                  <div className="relative group rounded-full border-4 border-green-600">
+                    <img
+                      src={formData.profile_picture || null}
+                      alt={formData.user_detail.full_name_en || "Profile"}
+                      className="w-32 h-32 rounded-full border-4 border-primary/20 object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  </div>
+                  <div className="text-center lg:text-left">
+                    <h2 className="text-xl font-semibold text-card-foreground">
+                      {formData.designation || "—"}
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                      {formData.organization || "—"}
+                    </p>
+                  </div>
                 </div>
 
-                <div className="mt-8 p-4 rounded-lg bg-muted/30 border">
-                  <DetailItem
-                    icon={<FaInfoCircle />}
-                    label="Bio"
-                    value={formData.bio || "No bio available"}
-                  />
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-card-foreground mb-6 flex items-center gap-2">
+                    <FaUser className="text-primary" />
+                    Personal Information
+                  </h3>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <DetailItem icon={<FaBirthdayCake />} label="Date of Birth" value={formData.date_of_birth || "—"} />
+                    <DetailItem
+                      icon={<FaVenusMars />}
+                      label="Gender"
+                      value={
+                        formData.sex === 'MALE' ? 'Male' :
+                          formData.sex === 'FEMALE' ? 'Female' :
+                            formData.sex ? 'Other' : '—'
+                      }
+                    />
+                    <DetailItem icon={<FaBuilding />} label="Organization" value={formData.organization || "—"} />
+                    <DetailItem icon={<FaIdBadge />} label="Employee ID" value={formData.employee_id || "—"} />
+                    <DetailItem
+                      icon={<FaGraduationCap />}
+                      label="Education"
+                      value={
+                        formData.education_level === 'BACHELORS' ? "Bachelor's Degree" :
+                          formData.education_level === 'MASTERS' ? "Master's Degree" :
+                            formData.education_level === 'HIGH_SCHOOL' ? "High School" :
+                              formData.education_level === 'DIPLOMA' ? "Diploma" : ""
+
+                      }
+                    />
+                    <DetailItemDocument
+                      icon={<FaFileAlt />}
+                      label="Document"
+                      value={formData.support_document || "No document uploaded"}
+                      className="group cursor-pointer hover:bg-accent/50 -mx-2 px-2 py-2 rounded-lg transition-colors"
+                    />
+                  </div>
+
+                  <div className="mt-8 p-4 rounded-lg bg-muted/30 border">
+                    <DetailItem
+                      icon={<FaInfoCircle />}
+                      label="Bio"
+                      value={formData.bio || "No bio available"}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+      <ToastContainer />
+    </motion.div>
+
   );
 };
 

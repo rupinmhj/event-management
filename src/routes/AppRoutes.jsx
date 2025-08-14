@@ -7,7 +7,7 @@ import { Events } from "../pages/admin/Events";
 import { RequirementSetup } from "../pages/admin/RequirementSetup";
 import { TicketsPricing } from "../pages/admin/TicketsPricing";
 import { RegisteredMembers } from "../pages/admin/RegisteredMembers";
-
+import { EventView } from "@/Components/EventView"
 // User pages
 import UserLayout from "../layouts/UserLayout";
 import { Dashboard } from "../pages/user/Dashboard";
@@ -36,6 +36,7 @@ const router = createBrowserRouter([
         children: [
             { index: true, element: <DashboardAdmin /> },
             { path: "events", element: <Events /> },
+            { path: "event/:id", element: <EventView /> },
             { path: "requirement-setup", element: <RequirementSetup /> },
             { path: "tickets-pricing", element: <TicketsPricing /> },
             { path: "registered-members", element: <RegisteredMembers /> },
@@ -49,7 +50,7 @@ const router = createBrowserRouter([
         element: <UserLayout />, // Navbar + Footer fixed
         children: [
             { index: true, element: <Dashboard /> }, // /user
-            {path:'setup-profile',element: <Setup/>},
+            { path: 'setup-profile', element: <Setup /> },
             { path: "home", element: <Home /> },
             { path: "about", element: <About /> },
             { path: "registration", element: <Registration /> },

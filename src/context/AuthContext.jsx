@@ -37,6 +37,8 @@ export const AuthProvider = ({ children }) => {
 
             if (storedEmail) {
                 setEmail(storedEmail);
+                console.log('email', email);
+
             }
             if (storedRole) {
                 setRole(storedRole);

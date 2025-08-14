@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import AuthContext from "@/context/AuthContext";
 import useAxiosAuth from "@/hooks/useAxiosAuth";
 import GeneralContext from "../context/GeneralContext";
+import { MdRemoveRedEye } from "react-icons/md";
 import {
     Plus,
     Edit,
@@ -22,12 +23,16 @@ import {
     ChevronRight,
     Image as ImageIcon,
     Globe,
-    Building
+    Building,
+
 } from "lucide-react";
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from "react-router-dom";
-
 export default function EventCardList() {
+    const navigate = useNavigate();
+    const handleAddRequirements = () => {
+        navigate('/admin/requirements')
+    }
     const [events, setEvents] = useState([]);
     const [filteredEvents, setFilteredEvents] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -40,7 +45,7 @@ export default function EventCardList() {
     const api = useAxiosAuth();
     const { authTokens, authReady } = useContext(AuthContext);
     const { submitCreate, create } = useContext(GeneralContext);
-    const navigate = useNavigate();
+
 
     // Fetch events
     useEffect(() => {
@@ -54,6 +59,8 @@ export default function EventCardList() {
                 console.log('Event list', data);
                 setEvents(data);
                 setFilteredEvents(data);
+                const res2 = await api.get('/api/event/get-event-detail/6/');
+                console.log('individual list:', res2.data)
             } catch (error) {
                 console.error("Error fetching events:", error);
             } finally {
@@ -103,7 +110,7 @@ export default function EventCardList() {
             const newStatus = !currentStatus;
             // API call to update event status
             console.log(newStatus);
-            const res2=await api.put(`/api/event/event-status-change/${eventId}/`, {
+            const res2 = await api.put(`/api/event/event-status-change/${eventId}/`, {
                 is_active: newStatus
             });
             console.log(res2.data);
@@ -121,10 +128,9 @@ export default function EventCardList() {
         }
     };
 
-    // Handle edit
-    const handleEdit = (id) => {
-        navigate(`/admin/event-edit/${id}`);
-    };
+    const handleView = (id) => {
+        navigate(`/admin/event/${id}`)
+    }
 
     // Format date
     const formatDate = (dateString) => {
@@ -150,6 +156,7 @@ export default function EventCardList() {
             </div>
         );
     }
+
 
     return (
         <motion.div
@@ -240,14 +247,14 @@ export default function EventCardList() {
                                     <div className="absolute top-3 right-3 z-10">
                                         <Badge
                                             variant={event.is_active !== false ? "success" : "inactive"}
-                                            // className={`${event.is_active=== true?':green-600':'color:red-500'}`}
+                                        // className={`${event.is_active=== true?':green-600':'color:red-500'}`}
                                         >
                                             {event.is_active !== false ? "Active" : "Inactive"}
                                         </Badge>
                                     </div>
 
                                     {/* Event Banner */}
-                                    <div className="relative h-48 bg-gradient-to-br from-blue/20 to-purple-500/20 overflow-hidden">
+                                    <div className="relative h-36 bg-gradient-to-br from-blue/20 to-purple-500/20 overflow-hidden ">
                                         {event.banner ? (
                                             <img
                                                 src={event.banner}
@@ -332,6 +339,13 @@ export default function EventCardList() {
                                                 {event.is_payment_required ? "Paid" : "Free"}
                                             </Badge>
                                         </div>
+                                        {/* <button
+                                            onClick={handleAddRequirements}
+                                            className="mt-2 text-[14px] bg-blue/80 hover:scale-105 transition-all duration-200 rounded-lg px-2 py-2 text-black"
+                                            
+                                        >
+                                            Add Requirements
+                                        </button> */}
                                     </CardContent>
 
                                     <CardFooter className="pt-4 border-t bg-gray-50/50">
@@ -341,7 +355,7 @@ export default function EventCardList() {
                                                 <Switch
                                                     checked={event.is_active !== false}
                                                     onCheckedChange={(checked) => handleStatusToggle(event.id, event.is_active)}
-                                                      className={event.is_active ? "data-[state=checked]:bg-green-600" : "data-[state=unchecked]:bg-gray-400"}
+                                                    className={event.is_active ? "data-[state=checked]:bg-green-600" : "data-[state=unchecked]:bg-gray-400"}
 
                                                 />
                                                 <span className="text-xs text-muted-foreground">
@@ -349,15 +363,14 @@ export default function EventCardList() {
                                                 </span>
                                             </div>
 
-                                            {/* Edit Button */}
                                             <Button
-                                                onClick={() => handleEdit(event.id)}
+                                                onClick={() => handleView(event.id)}
                                                 size="sm"
                                                 variant="outline"
                                                 className="hover:bg-blue hover:text-white transition-colors"
                                             >
-                                                <Edit className="w-3 h-3 mr-1" />
-                                                Edit
+                                                <MdRemoveRedEye className="w-3 h-3 mr-1" />
+                                                View
                                             </Button>
                                         </div>
                                     </CardFooter>
@@ -391,63 +404,7 @@ export default function EventCardList() {
                 )}
             </AnimatePresence>
 
-            {/* Pagination */}
-            {/* {totalPages > 1 && (
-                <div className="flex items-center justify-between">
-                    <div className="text-sm text-muted-foreground">
-                        Showing {indexOfFirstEvent + 1} to {Math.min(indexOfLastEvent, filteredEvents.length)} of {filteredEvents.length} events
-                    </div>
 
-                    <div className="flex items-center gap-2">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                            disabled={currentPage === 1}
-                        >
-                            <ChevronLeft className="w-4 h-4" />
-                            Previous
-                        </Button>
-
-                        <div className="flex items-center gap-1">
-                            {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                                let pageNumber;
-                                if (totalPages <= 5) {
-                                    pageNumber = i + 1;
-                                } else if (currentPage <= 3) {
-                                    pageNumber = i + 1;
-                                } else if (currentPage >= totalPages - 2) {
-                                    pageNumber = totalPages - 4 + i;
-                                } else {
-                                    pageNumber = currentPage - 2 + i;
-                                }
-
-                                return (
-                                    <Button
-                                        key={pageNumber}
-                                        variant={currentPage === pageNumber ? "default" : "outline"}
-                                        size="sm"
-                                        onClick={() => setCurrentPage(pageNumber)}
-                                        className="w-8 h-8 p-0"
-                                    >
-                                        {pageNumber}
-                                    </Button>
-                                );
-                            })}
-                        </div>
-
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                            disabled={currentPage === totalPages}
-                        >
-                            Next
-                            <ChevronRight className="w-4 h-4" />
-                        </Button>
-                    </div>
-                </div>
-            )} */}
         </motion.div>
     );
 }

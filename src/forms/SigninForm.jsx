@@ -74,7 +74,7 @@ export const SigninForm = ({ switchToSignup, setShowOtp }) => {
 
             if (access) {
                 user.role==="ADMIN"?navigate('/admin'):
-                navigate(user.has_profile ? '/user' : '/setup-profile');
+                navigate(user.has_profile ? '/user' : 'user/setup-profile');
                 toast.success(detail || 'Signed in successfully');
 
 

@@ -331,7 +331,7 @@ const ProfileSetup = () => {
             console.log(res);
 
             toast.success("Profile Updated: Your profile has been successfully updated.");
-            navigate('/dashboard');
+            navigate('/user/home');
 
         } catch (error) {
             console.error("Error submitting form:", error);

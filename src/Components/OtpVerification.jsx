@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useContext } from 'react';
 import { Button } from './ui/button';
 import AuthContext from '@/context/AuthContext';
 import useAxiosAuth from '@/hooks/useAxiosAuth';
-
+import { motion } from 'framer-motion'
 const OTPVerification = ({ setShowOtp }) => {
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
     const [timeLeft, setTimeLeft] = useState(60);
@@ -10,7 +10,8 @@ const OTPVerification = ({ setShowOtp }) => {
     const [isVerifying, setIsVerifying] = useState(false);
     const [error, setError] = useState('');
     const inputRefs = useRef([]);
-    const { login, email } = useContext(AuthContext);
+    const { login } = useContext(AuthContext);
+    const email = localStorage.getItem("email");
     const api = useAxiosAuth();
 
     useEffect(() => {
@@ -19,6 +20,8 @@ const OTPVerification = ({ setShowOtp }) => {
             return () => clearTimeout(timer);
         }
     }, [timeLeft]);
+
+
 
     const handleInputChange = (index, value) => {
         if (!/^\d?$/.test(value)) return;
@@ -59,6 +62,7 @@ const OTPVerification = ({ setShowOtp }) => {
         setError('');
 
         try {
+            if (!email) return;
             const otpCode = otp.join('');
             console.log('email', email)
             const response = await api.post('/api/account/verify-otp/', {
@@ -73,7 +77,8 @@ const OTPVerification = ({ setShowOtp }) => {
                 setError('Verification failed. Please try again.');
             }
         } catch (err) {
-            const msg = err.response?.data?.detail || 'Verification failed. Please try again.';
+            const msg = err?.response?.data?.detail;
+            console.log('msg', msg)
             setError(msg);
         } finally {
             setIsVerifying(false);
@@ -131,7 +136,7 @@ const OTPVerification = ({ setShowOtp }) => {
                     </div>
                     <h2 className="text-2xl font-bold text-foreground mb-2">Verify Your Account</h2>
                     <p className="text-muted-foreground text-sm">
-                        We've sent a 6-digit verification code to your email and phone number
+                        We've sent a 6-digit verification code to your email
                     </p>
                     <p className="text-sm font-medium text-foreground mt-2">{email}</p>
                 </div>
