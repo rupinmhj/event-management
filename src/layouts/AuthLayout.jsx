@@ -1,7 +1,7 @@
 import { Outlet } from "react-router-dom";
 import Navbar from "../components/common/Navbar";
 
-export default function AdminLayout() {
+export default function AuthLayout() {
   return (
     <div className="admin-layout">
       <Navbar />

@@ -1,8 +1,8 @@
 import React, { useContext, useState } from 'react'
-import EventList from '@/Components/EventList'
+import EventList from '@/Components/admin/EventList'
 import { motion } from 'framer-motion'
 import GeneralContext from "../../context/GeneralContext"
-import CreateEvent from '@/Components/CreateEvent'
+import CreateEvent from '@/Components/admin/CreateEvent'
 export const Events = () => {
     const [authView, setAuthView] = useState('signup')
     const [showOtp, setShowOtp] = useState(0)
@@ -16,11 +16,11 @@ export const Events = () => {
                 transition={{ duration: 0.3, delay: 0.15 }}
             >
                 <div className="h-full">
-                   {/* {console.log('event',isCreateEvent)} */}
+                    {/* {console.log('event',isCreateEvent)} */}
                     <div className="pt-20 min-h-screen ">
                         {isCreateEvent ? <CreateEvent /> : <EventList />}
                     </div>
-                   
+
                 </div>
             </motion.div>
 

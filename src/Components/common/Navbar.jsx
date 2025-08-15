@@ -47,34 +47,7 @@ const InfoMenu = () => (
     </DropdownMenu>
 );
 
-// Notification Menu Component
-const NotificationMenu = () => (
-    <DropdownMenu modal={false}>
-        <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="size-8 relative">
-                <Bell className="size-4" />
-                <span className="absolute -top-1 -right-1 size-2 bg-red-500 rounded-full" />
-            </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-80" portalled={false}>
-            <div className="p-2">
-                <p className="font-medium mb-2">Notifications</p>
-                <div className="space-y-2">
-                    <div className="p-2 rounded-md bg-muted/50">
-                        <p className="text-sm">New event registration received</p>
-                        <p className="text-xs text-muted-foreground">5 minutes ago</p>
-                    </div>
-                    <div className="p-2 rounded-md bg-muted/50">
-                        <p className="text-sm">Event "Tech Conference 2024" is starting soon</p>
-                        <p className="text-xs text-muted-foreground">1 hour ago</p>
-                    </div>
-                </div>
-            </div>
-        </DropdownMenuContent>
-    </DropdownMenu>
-);
 
-// User Menu Component
 const UserMenu = ({ mode, logout }) => {
     const navigate = useNavigate();
 
@@ -216,11 +189,9 @@ const Navbar = ({ mode }) => {
                     <div className="flex items-center gap-2">
                         {/* Info menu */}
                         <InfoMenu />
-                        {/* Notification */}
-                        <NotificationMenu />
                     </div>
                     {/* User menu */}
-                    <UserMenu mode={mode} logout={logout} />
+                    <UserMenu mode={mode} logout={logout} /> 
                 </div>
             </div>
         </header>

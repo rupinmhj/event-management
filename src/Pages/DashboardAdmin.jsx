@@ -1,10 +1,10 @@
 import React, { useContext, useState } from 'react'
 import NavbarAdmin from '../Components/NavbarAdmin'
 import Footer from '@/Components/Footer'
-import EventList from '../Components/EventList'
+import EventList from '../Components/admin/EventList'
 import { motion } from 'framer-motion'
 import GeneralContext from '../context/GeneralContext'
-import CreateEvent from '@/Components/CreateEvent'
+import CreateEvent from '@/Components/admin/CreateEvent'
 const Dashboard = () => {
     const [authView, setAuthView] = useState('signup')
     const [showOtp, setShowOtp] = useState(0)
@@ -22,7 +22,7 @@ const Dashboard = () => {
                         <NavbarAdmin mode='login' />
                     </div>
                     <section className='min-h-screen flex items-center justify-center'>
-                            Dashboard
+                        Dashboard
                     </section>
                     <div >
                         <Footer />

@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import AuthContext from "@/context/AuthContext";
 import useAxiosAuth from "@/hooks/useAxiosAuth";
-import GeneralContext from "../context/GeneralContext";
+import GeneralContext from "@/context/GeneralContext";
 import { MdRemoveRedEye } from "react-icons/md";
 import {
     Plus,
@@ -245,16 +245,18 @@ export default function EventCardList() {
                                 <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden">
                                     {/* Status Badge */}
                                     <div className="absolute top-3 right-3 z-10">
-                                        <Badge
-                                            variant={event.is_active !== false ? "success" : "inactive"}
-                                        // className={`${event.is_active=== true?':green-600':'color:red-500'}`}
+                                        <button
+                                            className={`rounded font-medium px-2 py-1 text-sm ${event.is_active !== false
+                                                    ? "bg-green-100 text-green-800" // success
+                                                    : "bg-red-100 text-red-800"     // inactive
+                                                }`}
                                         >
                                             {event.is_active !== false ? "Active" : "Inactive"}
-                                        </Badge>
+                                        </button>
                                     </div>
 
                                     {/* Event Banner */}
-                                    <div className="relative h-36 bg-gradient-to-br from-blue/20 to-purple-500/20 overflow-hidden ">
+                                    <div className="relative h-36 bg-gradient-to-br from-blue/20 to-purple-500/20 overflow-hidden cursor-pointer" onClick={() => handleView(event.id)}>
                                         {event.banner ? (
                                             <img
                                                 src={event.banner}
@@ -283,7 +285,7 @@ export default function EventCardList() {
                                         </div>
                                     </div>
 
-                                    <CardHeader className="pb-3">
+                                    <CardHeader className="pb-3 cursor-pointer" onClick={() => handleView(event.id)}>
                                         <div className="flex items-start justify-between">
                                             <div className="flex-1">
                                                 <h3 className="font-bold text-lg text-gray-900 group-hover:text-blue transition-colors line-clamp-2">

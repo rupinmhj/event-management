@@ -47,7 +47,7 @@ import { FaCalendar, FaChevronLeft, FaChevronRight } from "react-icons/fa";
   };
 
   const handleDateSelect = (date) => {
-    const dateString = date.toISOString().split("T")[0]; // YYYY-MM-DD
+    const dateString = date.toLocaleDateString("en-CA"); // YYYY-MM-DD
     onChange(dateString);
     setCurrentMonth(date);
     setIsOpen(false);

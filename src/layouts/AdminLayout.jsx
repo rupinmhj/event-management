@@ -9,7 +9,7 @@ export default function AdminLayout() {
                 <Navbar mode='login' />
             </div>
             <div className="admin-body ">
-                <main className="content bg-gray-100">
+                <main className="content ">
                     <Outlet /> {/* Dynamic content */}
                 </main>
             </div>

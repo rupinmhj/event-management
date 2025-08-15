@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import GeneralContext from '@/context/GeneralContext';
 import { motion } from 'framer-motion'
-import DatePicker from '../utils/DatePicker'
+import DatePicker from '../../utils/DatePicker'
 import useAxiosAuth from '@/hooks/useAxiosAuth';
 const CreateEvent = ({ onCancel, onSubmit }) => {
     const [isLoading, setIsLoading] = useState(false);
@@ -37,7 +37,7 @@ const CreateEvent = ({ onCancel, onSubmit }) => {
             duration: '',
             location: '',
             banner: null,
-            icon:null,
+            icon: null,
             is_payment_required: 'False',
             requirements: [
                 {
@@ -73,7 +73,7 @@ const CreateEvent = ({ onCancel, onSubmit }) => {
         }
     };
     // Handle icon file upload
-    const watchedIcon=watch('icon');
+    const watchedIcon = watch('icon');
     const handleIconChange = (e) => {
         const file = e.target.files?.[0];
         if (file) {
@@ -127,8 +127,8 @@ const CreateEvent = ({ onCancel, onSubmit }) => {
             if (data.banner) {
                 submitData.append('banner', data.banner);
             }
-            if(data.banner){
-                submitData.append('icon',data.icon)
+            if (data.banner) {
+                submitData.append('icon', data.icon)
             }
 
             // Add requirements
@@ -231,7 +231,7 @@ const CreateEvent = ({ onCancel, onSubmit }) => {
                                                         value={field.value}       // string date from RHF state
                                                         onChange={field.onChange} // pass new date string back to RHF
                                                         minDate={new Date()}
-                                                        maxDate={new Date(2028,1,1)}
+                                                        maxDate={new Date(2028, 1, 1)}
                                                         placeholder={"Start Date"}
                                                     />
                                                 )}
@@ -285,7 +285,7 @@ const CreateEvent = ({ onCancel, onSubmit }) => {
                                 {/* Event Icon Upload */}
                                 <div className="space-y-4">
                                     <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                                        <SiMaterialdesignicons  className="text-gray-800" /> {/* replace with an appropriate icon */}
+                                        <SiMaterialdesignicons className="text-gray-800" /> {/* replace with an appropriate icon */}
                                         Event Icon
                                     </h3>
 

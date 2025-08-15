@@ -7,7 +7,7 @@ import { Events } from "../pages/admin/Events";
 import { RequirementSetup } from "../pages/admin/RequirementSetup";
 import { TicketsPricing } from "../pages/admin/TicketsPricing";
 import { RegisteredMembers } from "../pages/admin/RegisteredMembers";
-import { EventView } from "@/Components/EventView"
+import { EventView } from "@/Components/admin/EventView"
 // User pages
 import UserLayout from "../layouts/UserLayout";
 import { Dashboard } from "../pages/user/Dashboard";
@@ -18,7 +18,7 @@ import { Tickets } from '@/Pages/user/Tickets'
 
 //Auth page
 import { AuthPage } from '@/Pages/public/AuthPage'
-import EditEvent from "@/Components/EditEvent";
+import EditEvent from "@/Components/admin/EditEvent";
 import Setup from "@/Pages/Setup";
 
 const router = createBrowserRouter([

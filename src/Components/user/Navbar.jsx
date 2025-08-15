@@ -20,7 +20,6 @@ import {
 import { Bell, HelpCircle, User } from "lucide-react";
 import AuthContext from "@/context/AuthContext";
 import { NavLink, Link, useNavigate, useLocation } from "react-router-dom";
-
 // Logo Component
 const Logo = () => (
   <div className="flex items-center gap-2">
@@ -106,8 +105,8 @@ const UserMenu = ({ mode, logout }) => {
           </DropdownMenuItem>
         ) : (
           <DropdownMenuItem>
-            <NavLink to="/signin" className="w-full block">
-              Sign in
+            <NavLink to="/" onClick={logout} className="w-full block">
+              Log out
             </NavLink>
           </DropdownMenuItem>
         )}
@@ -127,6 +126,9 @@ const navigationLinks = [
 const Navbar = ({ mode }) => {
   const { logout } = useContext(AuthContext);
   const location = useLocation();
+  const isActiveLink = (linkPath) => {
+    return location.pathname === linkPath;
+  };
 
   return (
     <header className="border-b font-sans bg-white">
@@ -167,8 +169,10 @@ const Navbar = ({ mode }) => {
                       <NavigationMenuLink asChild>
                         <Link
                           to={link.to}
-                          className="text-muted-foreground hover:text-blue py-1.5 font-medium"
-                        >
+                          className={`block w-full py-1.5 font-medium transition-colors ${isActiveLink(link.to)
+                            ? "text-blue border-b-2 border-blue"
+                            : "text-muted-foreground hover:text-blue"
+                            }`}                        >
                           {link.label}
                         </Link>
                       </NavigationMenuLink>
@@ -191,8 +195,10 @@ const Navbar = ({ mode }) => {
                     <NavigationMenuLink asChild>
                       <NavLink
                         to={link.to}
-                        className="text-muted-foreground hover:text-blue py-1.5 font-medium"
-                      >
+                        className={`relative py-1.5 font-medium transition-all duration-200 ease-in-out ${isActiveLink(link.to)
+                          ? "text-blue after:w-full"
+                          : "text-muted-foreground hover after:w-0 hover:after:w-full"
+                          } `}                      >
                         {link.label}
                       </NavLink>
                     </NavigationMenuLink>

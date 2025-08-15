@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Navbar from "../../components/Navbar";
+import Navbar from "../../Components/common/Navbar";
 import Footer from "../../components/Footer";
 import OTPVerification from "../../components/OtpVerification";
 import {SignupForm} from "../../forms/SignupForm";

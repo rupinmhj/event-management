@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import GeneralContext from '@/context/GeneralContext';
 import { motion } from 'framer-motion'
-import DatePicker from '../utils/DatePicker'
+import DatePicker from '../../utils/DatePicker'
 import useAxiosAuth from '@/hooks/useAxiosAuth';
 import { useParams, useNavigate } from 'react-router-dom';
 
@@ -242,7 +242,7 @@ const EditEvent = ({ eventId, onCancel, onSubmit }) => {
             </div>
         );
     }
-    const cancel=()=>{
+    const cancel = () => {
         navigate('/admin/events');
     }
 
@@ -477,7 +477,7 @@ const EditEvent = ({ eventId, onCancel, onSubmit }) => {
                                     <Button
                                         type="button"
                                         variant="outline"
-                                        onClick={()=>{submitCreate();cancel()}}
+                                        onClick={() => { submitCreate(); cancel() }}
                                         disabled={isLoading}
                                         size="lg"
                                         className="hover:bg-destructive hover:text-destructive-foreground transition-all duration-300 hover:scale-[1.02]"
