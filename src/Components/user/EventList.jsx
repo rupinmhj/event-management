@@ -48,7 +48,7 @@ export default function ParticipantEventList() {
                 setIsLoading(true);
                 if (!authTokens && !authReady) return;
 
-                const res = await api.get("/api/event/event-list/");
+                const res = await api.get("/api/event/active-events/");
                 const data = res.data;
                 console.log('Event list', data);
                 

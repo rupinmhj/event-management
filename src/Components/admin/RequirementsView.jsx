@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import {
     Tabs,
     TabsContent,
@@ -39,6 +39,7 @@ import AuthContext from '@/context/AuthContext';
 export const RequirementsView = ({ requirements }) => {
     const [requirementsData, setRequirementsData] = useState(requirements || []);
     const api = useAxiosAuth();
+    const navigate = useNavigate();
     const handleStatusToggle = async (eventId, currentStatus) => {
         try {
             const newStatus = !currentStatus;
@@ -65,11 +66,24 @@ export const RequirementsView = ({ requirements }) => {
         <>
             <TabsContent value="requirements">
                 <Card>
-                    <CardHeader>
-                        <div className="flex items-center gap-2">
-                            <FileText className="w-5 h-5 text-primary" />
-                            <h2 className="text-[16px] font-semibold">Event Requirements</h2>
+                    <CardHeader >
+                        <div className='flex  justify-between '>
+                            <div className="flex items-center gap-2">
+                                <FileText className="w-5 h-5 text-primary" />
+                                <h2 className="text-[16px] font-semibold">Event Requirements</h2>
+                            </div>
+                            <div className="">
+                                <Button
+                                    onClick={() => navigate('/admin/requirement-setup')}
+                                    className="bg-blue hover:bg-blue/90 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                                >
+                                    <Plus className="w-4 h-4 mr-2" />
+                                    Add requirements
+                                </Button>
+                            </div>
                         </div>
+
+
                     </CardHeader>
 
 
@@ -123,7 +137,7 @@ export const RequirementsView = ({ requirements }) => {
                                                             : "data-[state=unchecked]:bg-gray-400"
                                                     }
                                                 />
-                                                <span className="text-xs text-muted-foreground">
+                                                <span className="text-xs text-muted-foreground w-[47.53px]">
                                                     {req.is_active !== false ? "Active" : "Inactive"}
                                                 </span>
                                             </div>
@@ -134,7 +148,7 @@ export const RequirementsView = ({ requirements }) => {
                                         <td className="px-3 py-2 whitespace-nowrap text-center">
                                             <div className="flex gap-2 justify-center">
                                                 <button
-                                                    onClick={() => console.log("Edit", req.id)}
+                                                    onClick={() => navigate(`/admin/requirement-update/${req.id}`)}
                                                     className="p-1 rounded hover:bg-blue/20 text-blue-600 "
                                                     title="Edit"
                                                 >

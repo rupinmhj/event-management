@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,7 +11,6 @@ import { Badge } from '@/components/ui/badge';
 import DatePicker from '@/utils/DatePicker';
 import { motion } from 'framer-motion'
 import { toast, ToastContainer } from 'react-toastify'
-import { useLocation, useNavigate } from 'react-router-dom';
 import {
   MdTextFields,
   MdEmail,
@@ -20,11 +20,11 @@ import {
   MdPhone,
   MdCalendarToday,
   MdCheckBox,
-  MdLink
+  MdLink,
+  MdEdit
 } from 'react-icons/md';
 import AuthContext from '@/context/AuthContext';
 import useAxiosAuth from '@/hooks/useAxiosAuth';
-import GeneralContext from '@/context/GeneralContext';
 
 const fieldTypeIcons = {
   text: MdTextFields,
@@ -37,19 +37,23 @@ const fieldTypeIcons = {
   checkbox: MdCheckBox
 };
 
-export const RequirementSetup = () => {
+export const RequirementUpdate = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const { authTokens, authReady } = useContext(AuthContext);
   const api = useAxiosAuth();
-  const navigate = useNavigate();
+
+  // Extract requirement ID from URL path
+  const { id } = useParams();
+  const requirementId = id;
+
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [loading, setLoading] = useState(false);
-  const { eventName } = useContext(GeneralContext);
-  const location = useLocation();
-  // const { id } = location.state || {};
-  // const event_id = id;
+  const [initialLoading, setInitialLoading] = useState(true);
   const [requirement, setRequirement] = useState({
     event: null,
+    event_name: "",
     type: 'TEXT',
     label: '',
     description: '',
@@ -57,6 +61,9 @@ export const RequirementSetup = () => {
     is_active: false,
     deadline: null
   });
+
+  // Store existing file info
+  const [existingFile, setExistingFile] = useState(null);
 
   // Validation errors state
   const [errors, setErrors] = useState({
@@ -75,21 +82,69 @@ export const RequirementSetup = () => {
     }));
   }, [selectedEvent]);
 
+  // Fetch events and requirement data
   useEffect(() => {
-    if (!authTokens || !authReady) return;
+    if (!authTokens || !authReady || !requirementId) return;
 
     const fetchData = async () => {
       try {
-        const res = await api.get('/api/event/active-events/');
-        setEvents(res.data);
-        console.log('Event list:', res.data);
+        setInitialLoading(true);
+
+        // Fetch active events
+        const eventsRes = await api.get('/api/event/active-events/');
+        setEvents(eventsRes.data);
+
+        // Fetch requirement details
+        const requirementRes = await api.get(`/api/event/requirement-update/${requirementId}/`);
+        const reqData = requirementRes.data;
+
+        console.log('Fetched requirement data:', reqData);
+
+        // Find the event for this requirement
+        const eventForReq = eventsRes.data.find(e => e.id === reqData.event);
+        setSelectedEvent(eventForReq || null);
+
+        // Parse deadline if it exists
+        let deadlineValue = null;
+        if (reqData.deadline) {
+          deadlineValue = new Date(reqData.deadline);
+          // Check if date is valid
+          if (isNaN(deadlineValue.getTime())) {
+            deadlineValue = null;
+          }
+        }
+
+        // Set requirement data
+        setRequirement({
+          event_name: reqData.event_name,
+          event: reqData.event,
+          type: reqData.type || 'TEXT',
+          label: reqData.label || '',
+          description: reqData.description || '',
+          file: null, // We'll handle existing file separately
+          is_active: reqData.is_active || false,
+          deadline: deadlineValue
+        });
+
+        // Store existing file info if present
+        if (reqData.file) {
+          setExistingFile({
+            url: reqData.file,
+            name: reqData.file.split('/').pop() // Extract filename from URL
+          });
+        }
+
       } catch (err) {
-        console.error(err);
+        console.error('Failed to fetch data:', err);
+        alert('Failed to load requirement data. Please try again.');
+        navigate('/requirements'); // Navigate back if fetch fails
+      } finally {
+        setInitialLoading(false);
       }
     };
 
     fetchData();
-  }, [authReady, authTokens, api]);
+  }, [authReady, authTokens, api, requirementId, navigate]);
 
   const getFieldTypeIcon = (type) => {
     const IconComponent = fieldTypeIcons[type];
@@ -148,8 +203,8 @@ export const RequirementSetup = () => {
       newErrors.deadline = "Deadline is required";
     }
 
-    // File validation for FILE type
-    if (requirement.type === 'FILE' && !requirement.file) {
+    // File validation for FILE type (only if no existing file and no new file)
+    if (requirement.type === 'FILE' && !requirement.file && !existingFile) {
       newErrors.file = "File is required for file upload type";
     }
 
@@ -159,7 +214,7 @@ export const RequirementSetup = () => {
     return Object.values(newErrors).every(error => error === '');
   };
 
-  const saveRequirement = async () => {
+  const updateRequirement = async () => {
     // Validate form
     if (!validateForm()) {
       return;
@@ -168,66 +223,88 @@ export const RequirementSetup = () => {
     try {
       setLoading(true);
       const formData = new FormData();
+      formData.append('event_name', requirement.event_name);
       formData.append('event', requirement.event);
       formData.append('type', requirement.type || '');
       formData.append('label', requirement.label || '');
       formData.append('description', requirement.description || '');
       formData.append('is_active', String(!!requirement.is_active));
+
       const deadline = formatDateForAPI(requirement.deadline);
       if (deadline) formData.append('deadline', deadline);
-      if (requirement.file) formData.append('file', requirement.file);
 
+      // Only append file if a new file is selected
+      if (requirement.file) {
+        formData.append('file', requirement.file);
+      }
+      console.log('Updated data to be sent')
       formData.forEach((value, key) => {
         console.log(key, value);
       });
 
-      const res = await api.post('/api/event/requirements/', formData);
+      const res = await api.patch(`/api/event/requirement-update/${requirementId}/`, formData);
       const data = res.data;
-      console.log('requirement post', data);
+      console.log('requirement update', data);
 
-      console.log('Posting payload (FormData):', {
+      console.log('Updating payload (FormData):', {
         event: requirement.event,
         type: requirement.type,
         label: requirement.label,
         description: requirement.description,
         is_active: requirement.is_active,
         deadline,
-        file: requirement.file ? requirement.file.name : null,
+        file: requirement.file ? requirement.file.name : 'no new file',
       });
 
-      // Reset form on success
-      setRequirement({
-        event: null,
-        type: 'TEXT',
-        label: '',
-        description: '',
-        file: null,
-        is_active: false,
-        deadline: null
-      });
-      setSelectedEvent(null);
-      setErrors({
-        event: '',
-        type: '',
-        label: '',
-        deadline: '',
-        file: ''
-      });
-
-      // Success handling here (toast, navigate, etc.)
-      toast.success("Requirements successfully saved")
+      // Success handling
+      toast.success('Requirement updated successfully!');
       setTimeout(() => {
-        navigate('/admin/events');
+        navigate(-1);
       }, 1000);
 
     } catch (err) {
-      console.error('Failed to save requirement:', err);
-      // Error handling (toast, etc.)
-      toast.error('Failed to save requirement. Please try again.');
+      console.error('Failed to update requirement:', err);
+
+      // Handle specific error messages from server
+      if (err.response && err.response.data) {
+        const errorData = err.response.data;
+        console.log('Server error:', errorData);
+
+        // If server returns field-specific errors, update the errors state
+        if (typeof errorData === 'object') {
+          const newErrors = { ...errors };
+          Object.keys(errorData).forEach(key => {
+            if (newErrors.hasOwnProperty(key)) {
+              newErrors[key] = Array.isArray(errorData[key])
+                ? errorData[key].join(', ')
+                : errorData[key];
+            }
+          });
+          setErrors(newErrors);
+        }
+      }
+
+      alert('Failed to update requirement. Please check your inputs and try again.');
     } finally {
       setLoading(false);
     }
   };
+
+  // Show loading spinner while fetching initial data
+  if (initialLoading) {
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="min-h-screen bg-gradient-to-br from-background via-primary-soft to-background p-20 flex items-center justify-center"
+      >
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading requirement data...</p>
+        </div>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div
@@ -242,15 +319,15 @@ export const RequirementSetup = () => {
 
           {/* Header */}
           <div className="text-center space-y-4">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-400 rounded-xl shadow-lg">
-              <MdDescription className="h-8 w-8 text-white" />
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-500 rounded-xl shadow-lg">
+              <MdEdit className="h-8 w-8 text-white" />
             </div>
             <div>
               <h1 className="text-[30px] font-bold text-gray-800">
-                Event Requirement Setup
+                Update Event Requirement
               </h1>
               <p className="text-muted-foreground text-md mt-2">
-                Configure the information participants need to provide for your event
+                Modify the information participants need to provide for your event
               </p>
             </div>
           </div>
@@ -263,37 +340,18 @@ export const RequirementSetup = () => {
                 Event Information
               </CardTitle>
               <CardDescription>
-                Select the event for which this requirement applies *
+                The event for this requirement
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="event-select">Event</Label>
-                <Select
-                  value={selectedEvent ? selectedEvent?.id.toString() : ""}
-                  onValueChange={(value) => {
-                    const ev = events.find(e => e.id === parseInt(value));
-                    setSelectedEvent(ev || null);
-                    clearError('event');
-                  }}
-                >
-                  <SelectTrigger
-                    id="event-select"
-                    className={`border-event-primary/20 ${errors.event ? 'border-red-500' : ''}`}
-                  >
-                    <SelectValue placeholder="Select an event..." />
-                  </SelectTrigger>
-                  <SelectContent position="popper" className='w-full'>
-                    {events.map((ev) => (
-                      <SelectItem key={ev.id} value={ev.id.toString()}>
-                        {ev.title} ({ev.event_type})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.event && (
-                  <p className='text-red-500 text-[12px] mt-1'>{errors.event}</p>
-                )}
+                <Label>Event</Label>
+                <Input
+                  value={requirement.event_name || selectedEvent?.title || ''}
+                  disabled={true}
+                  className="border-event-primary/20 bg-gray-50 cursor-not-allowed"
+                  placeholder="Event name will appear here..."
+                />
               </div>
             </CardContent>
           </Card>
@@ -302,10 +360,11 @@ export const RequirementSetup = () => {
           <Card className="shadow-lg border-0 bg-gradient-to-r from-card to-primary-soft/10">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
+                <MdTextFields className="h-5 w-5 text-event-secondary" />
                 Participant Requirement
               </CardTitle>
               <CardDescription>
-                Configure the single requirement participants must complete
+                Update the requirement participants must complete
               </CardDescription>
             </CardHeader>
 
@@ -409,6 +468,26 @@ export const RequirementSetup = () => {
                 <Label htmlFor="req-file">
                   Attach Photo {requirement.type === 'FILE' ? '(required)' : '(optional)'}
                 </Label>
+
+                {/* Show existing file info */}
+                {existingFile && (
+                  <div className="p-3 bg-gray-50 rounded-md border">
+                    <p className="text-sm text-gray-600 mb-2">Current file:</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-800">{existingFile.name}</span>
+                      <a
+                        href={existingFile.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-800 text-sm"
+                      >
+                        View
+                      </a>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">Upload a new file to replace the current one</p>
+                  </div>
+                )}
+
                 <Input
                   id="req-file"
                   type="file"
@@ -447,17 +526,28 @@ export const RequirementSetup = () => {
             </CardContent>
           </Card>
 
-          {/* Save Button */}
-          <div className="flex justify-center">
-            <button
-              onClick={saveRequirement}
+          {/* Action Buttons */}
+          <div className="flex justify-center gap-4 pt-6">
+            
+
+            <Button
+              onClick={updateRequirement}
               disabled={loading}
-              className={`rounded-lg shadow-lg px-8 py-3 text-md text-white cursor-pointer
-                ${loading ? 'bg-opacity-50 cursor-not-allowed' : 'bg-blue hover:bg-blue/80'}`}
+              className="flex-1 bg-blue transition-all duration-300 hover:scale-[1.02] text-primary-foreground hover:bg-blue/90"
+
             >
-              {loading ? 'Saving...' : 'Save Requirement'}
-            </button>
+              {loading ? 'Updating...' : 'Update Requirement'}
+            </Button>
+            <Button
+              onClick={() => navigate('/requirements')}
+              disabled={loading}
+              className="hover:bg-destructive hover:text-destructive-foreground transition-all duration-300 hover:scale-[1.02] bg-red-800"
+
+            >
+              Cancel
+            </Button>
           </div>
+
         </div>
       </div>
       <ToastContainer />

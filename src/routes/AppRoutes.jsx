@@ -20,6 +20,9 @@ import { Tickets } from '@/Pages/user/Tickets'
 import { AuthPage } from '@/Pages/public/AuthPage'
 import EditEvent from "@/Components/admin/EditEvent";
 import Setup from "@/Pages/Setup";
+import { RequirementUpdate } from "@/Components/admin/RequirementUpdate";
+import DynamicRequirementForm from "@/Components/user/DynamicRequirementForm";
+import { EventDetail } from "@/Components/user/EventDetail";
 
 const router = createBrowserRouter([
     // Public routes
@@ -38,6 +41,7 @@ const router = createBrowserRouter([
             { path: "events", element: <Events /> },
             { path: "event/:id", element: <EventView /> },
             { path: "requirement-setup", element: <RequirementSetup /> },
+            { path: "requirement-update/:id", element: <RequirementUpdate /> },
             { path: "tickets-pricing", element: <TicketsPricing /> },
             { path: "registered-members", element: <RegisteredMembers /> },
             { path: "event-edit/:id", element: <EditEvent /> }
@@ -55,6 +59,8 @@ const router = createBrowserRouter([
             { path: "about", element: <About /> },
             { path: "registration", element: <Registration /> },
             { path: "tickets", element: <Tickets /> },
+            { path: "event/:id", element: <EventDetail/>},
+            { path: "event-form/:id", element: <DynamicRequirementForm/>}
         ],
     },
 ]);

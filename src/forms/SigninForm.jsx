@@ -60,7 +60,7 @@ export const SigninForm = ({ switchToSignup, setShowOtp }) => {
             const { detail, otp_required, email: returnedEmail, access, refresh, user } = response.data;
             logout();
             if (access) {
-                login(access, refresh, user.id, user.email, user.role, user.user_full_name,user.phone_number );
+                login(access, refresh, user.id, user.email, user.role, user.user_full_name, user.phone_number);
             }
             else {
                 localStorage.setItem('email', returnedEmail);
@@ -73,8 +73,8 @@ export const SigninForm = ({ switchToSignup, setShowOtp }) => {
 
 
             if (access) {
-                user.role==="ADMIN"?navigate('/admin'):
-                navigate(user.has_profile ? '/user' : 'user/setup-profile');
+                user.role === "ADMIN" ? navigate('/admin') :
+                    navigate(user.has_profile ? '/user' : 'user/setup-profile');
                 toast.success(detail || 'Signed in successfully');
 
 
@@ -85,7 +85,11 @@ export const SigninForm = ({ switchToSignup, setShowOtp }) => {
 
 
         } catch (error) {
-            const msg = error.response?.data?.detail || error.response?.data?.message || 'Login failed, try again';
+            // const msg = error.response?.data?.detail || error.response?.data?.message || 'Login failed, try again';
+            // toast.error(msg);
+            // console.log(error.response);
+            const msg = error.response.data.non_field_errors[0];
+            console.log(msg);
             toast.error(msg);
         } finally {
             setLoading(false);

@@ -480,7 +480,7 @@ const EditEvent = ({ eventId, onCancel, onSubmit }) => {
                                         onClick={() => { submitCreate(); cancel() }}
                                         disabled={isLoading}
                                         size="lg"
-                                        className="hover:bg-destructive hover:text-destructive-foreground transition-all duration-300 hover:scale-[1.02]"
+                                        className="hover:bg-destructive hover:text-destructive-foreground transition-all duration-300 hover:scale-[1.02] bg-red-800"
                                     >
                                         <FaTimes className="w-4 h-4 mr-2" />
                                         Cancel
