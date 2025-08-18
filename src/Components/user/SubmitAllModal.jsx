@@ -50,14 +50,73 @@ const SubmitAllModal = ({ isOpen, onClose, events, onRefresh }) => {
         return diffInDays <= 3;
     };
 
+    // const handleSubmit = async (e) => {
+    //     e.preventDefault();
+
+    //     const submissionData = allRequirements
+    //         .filter(req => submissions[req.id] && !req.submitted)
+    //         .map(req => ({
+    //             eventId: req.eventId || selectedEventId,
+    //             requirementId: req.id,
+    //             value: submissions[req.id]
+    //         }));
+
+    //     if (submissionData.length === 0) {
+    //         alert('Please fill at least one requirement.');
+    //         return;
+    //     }
+
+    //     setIsSubmitting(true);
+
+    //     try {
+    //         // Submit each requirement individually
+    //         for (const submission of submissionData) {
+    //             const formData = new FormData();
+
+    //             if (submission.value instanceof File) {
+    //                 formData.append('file', submission.value);
+    //                 formData.append('requirement_id', submission.requirementId);
+    //                 formData.append('type', 'FILE');
+    //             } else {
+    //                 formData.append('value', submission.value);
+    //                 formData.append('requirement_id', submission.requirementId);
+    //                 const reqType = allRequirements.find(r => r.id === submission.requirementId)?.type || 'TEXT';
+    //                 formData.append('type', reqType);
+    //             }
+
+    //             console.log(`Submitting requirement ${submission.requirementId} for event ${submission.eventId}`);
+
+    //             await api.post(
+    //                 `/api/event/participation/${submission.eventId}/submit-responses/`,
+    //                 formData,
+
+    //             );
+    //         }
+
+    //         console.log(`✅ Successfully submitted ${submissionData.length} requirement(s)!`);
+
+    //         // Reset form and close modal
+    //         setSubmissions({});
+    //         setSelectedEventId(null);
+    //         if (onRefresh) onRefresh(); // Refresh parent component data
+    //         onClose();
+
+    //     } catch (error) {
+    //         console.error('Error submitting requirements:', error);
+    //         alert('Failed to submit. Please try again.');
+    //     } finally {
+    //         setIsSubmitting(false);
+    //     }
+    // };
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        // Filter only requirements that have a submission and not already submitted
         const submissionData = allRequirements
             .filter(req => submissions[req.id] && !req.submitted)
             .map(req => ({
-                eventId: req.eventId || selectedEventId,
-                requirementId: req.id,
+                requirement_id: req.id,
+                type: req.type,
                 value: submissions[req.id]
             }));
 
@@ -69,44 +128,36 @@ const SubmitAllModal = ({ isOpen, onClose, events, onRefresh }) => {
         setIsSubmitting(true);
 
         try {
-            // Submit each requirement individually
-            for (const submission of submissionData) {
-                const formData = new FormData();
+            const formData = new FormData();
 
-                if (submission.value instanceof File) {
-                    formData.append('file', submission.value);
-                    formData.append('requirement_id', submission.requirementId);
-                    formData.append('type', 'FILE');
+            // Append event ID
+            formData.append('event_id', selectedEventId);
+
+            // Append each requirement to responses[]
+            submissionData.forEach((sub, index) => {
+                formData.append(`responses[${index}][requirement_id]`, sub.requirement_id);
+                if (sub.type === 'FILE') {
+                    formData.append(`responses[${index}][file]`, sub.value);
                 } else {
-                    formData.append('value', submission.value);
-                    formData.append('requirement_id', submission.requirementId);
-                    const reqType = allRequirements.find(r => r.id === submission.requirementId)?.type || 'TEXT';
-                    formData.append('type', reqType);
+                    formData.append(`responses[${index}][value]`, sub.value);
                 }
+            });
 
-                console.log(`Submitting requirement ${submission.requirementId} for event ${submission.eventId}`);
+            console.log('Submitting all requirements:', submissionData);
 
-                await api.post(
-                    `/api/event/participation/${submission.eventId}/submit-responses/`,
-                    formData,
-                    {
-                        headers: {
-                            'Content-Type': 'multipart/form-data',
-                        },
-                    }
-                );
-            }
-
+            // Single API call
+           const res= await api.post('/api/event/participation/submit-response/', formData);
+           console.log(res.data);
             console.log(`✅ Successfully submitted ${submissionData.length} requirement(s)!`);
 
             // Reset form and close modal
             setSubmissions({});
             setSelectedEventId(null);
-            if (onRefresh) onRefresh(); // Refresh parent component data
+            if (onRefresh) onRefresh();
             onClose();
 
         } catch (error) {
-            console.error('❌ Error submitting requirements:', error);
+            console.error('Error submitting requirements:', error);
             alert('Failed to submit. Please try again.');
         } finally {
             setIsSubmitting(false);
@@ -237,8 +288,8 @@ const SubmitAllModal = ({ isOpen, onClose, events, onRefresh }) => {
 
                                         {requirement.deadline && (
                                             <div className={`flex items-center gap-2 mb-4 text-sm ${isDeadlineNear(requirement.deadline)
-                                                    ? 'text-red-600'
-                                                    : 'text-gray-500'
+                                                ? 'text-red-600'
+                                                : 'text-gray-500'
                                                 }`}>
                                                 <Clock className="w-4 h-4" />
                                                 <span>
