@@ -100,7 +100,7 @@ export default function ParticipantEventList() {
     const totalPages = Math.ceil(filteredEvents.length / eventsPerPage);
 
     const handleView = (id) => {
-        navigate(`/participant/event/${id}`)
+        navigate(`/user/event/${id}`)
     }
 
     const handleJoinEvent = (eventId) => {
@@ -326,7 +326,7 @@ export default function ParticipantEventList() {
                                                 View Details
                                             </Button>
 
-                                            {isUpcoming(event.start_date) ? (
+                                            {/* {isUpcoming(event.start_date) ? (
                                                 <Button
                                                     onClick={() => handleJoinEvent(event.id)}
                                                     size="sm"
@@ -345,7 +345,7 @@ export default function ParticipantEventList() {
                                                     <ExternalLink className="w-3 h-3 mr-1" />
                                                     View Past Event
                                                 </Button>
-                                            )}
+                                            )} */}
                                         </div>
                                     </CardFooter>
                                 </Card>

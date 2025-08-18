@@ -242,9 +242,7 @@ export const RequirementSetup = () => {
 
           {/* Header */}
           <div className="text-center space-y-4">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-400 rounded-xl shadow-lg">
-              <MdDescription className="h-8 w-8 text-white" />
-            </div>
+           
             <div>
               <h1 className="text-[30px] font-bold text-gray-800">
                 Event Requirement Setup
@@ -256,7 +254,7 @@ export const RequirementSetup = () => {
           </div>
 
           {/* Event Selection */}
-          <Card className="shadow-lg border-0 bg-gradient-to-r from-card to-primary-soft/20">
+          <Card className="shadow-lg border-0 bg-gradient-to-r from-card to-primary-soft/20 ">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <MdCalendarToday className="h-5 w-5 text-event-primary" />

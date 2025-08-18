@@ -145,22 +145,7 @@ export function EventDetail() {
             className="min-h-screen bg-background"
         >
             <div className="max-w-5xl mx-auto px-6 py-8">
-                {/* Back Button */}
-                <motion.div
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="mb-6"
-                >
-                    <Button
-                        onClick={handleBack}
-                        variant="ghost"
-                        className="text-muted-foreground hover:text-foreground"
-                    >
-                        <ArrowLeft className="w-4 h-4 mr-2" />
-                        Back to Events
-                    </Button>
-                </motion.div>
+
 
                 {/* Hero Section */}
                 <motion.div
@@ -184,33 +169,7 @@ export function EventDetail() {
                                 </div>
                             )}
 
-                            {/* Action Buttons Overlay */}
-                            <div className="absolute top-4 right-4 flex gap-2">
-                                <Button
-                                    size="sm"
-                                    variant="secondary"
-                                    className="bg-background/80 backdrop-blur-sm"
-                                    onClick={toggleBookmark}
-                                >
-                                    <Bookmark className={`w-4 h-4 ${isBookmarked ? 'fill-current' : ''}`} />
-                                </Button>
-                                <Button
-                                    size="sm"
-                                    variant="secondary"
-                                    className="bg-background/80 backdrop-blur-sm"
-                                    onClick={toggleLike}
-                                >
-                                    <Heart className={`w-4 h-4 ${isLiked ? 'fill-current text-red-500' : ''}`} />
-                                </Button>
-                                <Button
-                                    size="sm"
-                                    variant="secondary"
-                                    className="bg-background/80 backdrop-blur-sm"
-                                    onClick={handleShare}
-                                >
-                                    <Share2 className="w-4 h-4" />
-                                </Button>
-                            </div>
+
 
                             {/* Event Icon */}
                             {event.icon && (
@@ -230,7 +189,7 @@ export function EventDetail() {
                         <CardHeader className="pb-6">
                             <div className="flex items-start justify-between gap-4">
                                 <div className="flex-1">
-                                    <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-3">
+                                    <h1 className="text-[20px]  font-bold text-gray-800 mb-3">
                                         {event.title}
                                     </h1>
                                     <div className="flex items-center gap-3 mb-4">
@@ -239,23 +198,25 @@ export function EventDetail() {
                                         ) : (
                                             <Building className="w-5 h-5 text-blue-600" />
                                         )}
-                                        <span className="text-lg font-medium text-muted-foreground">
+                                        <span className="text-[16px] font-medium text-muted-foreground">
                                             {event.event_type === "ONLINE" ? "Online Event" : "Physical Event"}
                                         </span>
                                     </div>
                                     <div className="flex flex-wrap gap-2">
-                                        <Badge
-                                            variant={event.is_payment_required ? "destructive" : "secondary"}
-                                            className="text-sm px-3 py-1"
-                                        >
-                                            {event.is_payment_required ? "Paid Event" : "Free Event"}
-                                        </Badge>
-                                        <Badge
+                                         <button
+                                    className={`text-sm px-3 py-1 rounded font-medium ${event.is_payment_required
+                                        ? "bg-yellow-200 text-yellow-800"
+                                        : "bg-gray-100 text-gray-800"
+                                        }`}
+                                >
+                                    {event.is_payment_required ? "Paid Event" : "Free Event"}
+                                </button>
+                                        {/* <Badge
                                             variant={event.is_active ? "default" : "outline"}
                                             className="text-sm px-3 py-1"
                                         >
                                             {event.is_active ? "Active" : "Inactive"}
-                                        </Badge>
+                                        </Badge> */}
                                     </div>
                                 </div>
                             </div>
@@ -277,11 +238,11 @@ export function EventDetail() {
                             <CardHeader>
                                 <div className="flex items-center gap-2">
                                     <Info className="w-5 h-5 text-primary" />
-                                    <h2 className="text-xl font-semibold">About This Event</h2>
+                                    <h2 className="text-[16px] font-semibold">About This Event</h2>
                                 </div>
                             </CardHeader>
                             <CardContent>
-                                <p className="text-muted-foreground leading-relaxed text-base">
+                                <p className="text-muted-foreground leading-relaxed text-[13px]">
                                     {event.description || "No description provided for this event."}
                                 </p>
                             </CardContent>
@@ -290,53 +251,53 @@ export function EventDetail() {
                         {/* Event Details */}
                         <Card>
                             <CardHeader>
-                                <h2 className="text-xl font-semibold">Event Details</h2>
+                                <h2 className="text-[16px] font-semibold">Event Details</h2>
                             </CardHeader>
                             <CardContent>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="flex items-start gap-4">
-                                        <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                                            <Calendar className="w-6 h-6 text-primary" />
+                                        <div className="w-12 h-12  rounded-full flex items-center justify-center">
+                                            <Calendar className="w-5 h-5 text-primary" />
                                         </div>
                                         <div>
-                                            <p className="font-semibold text-foreground mb-1">Date</p>
-                                            <p className="text-muted-foreground">
+                                            <p className="font-semibold text-foreground text-[14px] mb-1">Date</p>
+                                            <p className="text-muted-foreground text-[14px]">
                                                 {formatDate(event.start_date)}
                                             </p>
                                         </div>
                                     </div>
 
                                     <div className="flex items-start gap-4">
-                                        <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                                            <Clock className="w-6 h-6 text-primary" />
+                                        <div className="w-12 h-12  rounded-full flex items-center justify-center">
+                                            <Clock className="w-5 h-5 text-primary" />
                                         </div>
                                         <div>
-                                            <p className="font-semibold text-foreground mb-1">Duration</p>
-                                            <p className="text-muted-foreground">
+                                            <p className="font-semibold text-foreground mb-1 text-[14px]">Duration</p>
+                                            <p className="text-muted-foreground text-[14px]">
                                                 {event.duration}
                                             </p>
                                         </div>
                                     </div>
 
                                     <div className="flex items-start gap-4">
-                                        <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                                            <MapPin className="w-6 h-6 text-primary" />
+                                        <div className="w-12 h-12  rounded-full flex items-center justify-center">
+                                            <MapPin className="w-5 h-5 text-primary" />
                                         </div>
                                         <div>
-                                            <p className="font-semibold text-foreground mb-1">Location</p>
-                                            <p className="text-muted-foreground">
+                                            <p className="font-semibold text-foreground mb-1 text-[14px]">Location</p>
+                                            <p className="text-muted-foreground text-[14px]">
                                                 {event.location}
                                             </p>
                                         </div>
                                     </div>
 
                                     <div className="flex items-start gap-4">
-                                        <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                                            <DollarSign className="w-6 h-6 text-primary" />
+                                        <div className="w-12 h-12  rounded-full flex items-center justify-center">
+                                            <DollarSign className="w-5 h-5 text-primary" />
                                         </div>
                                         <div>
-                                            <p className="font-semibold text-foreground mb-1">Cost</p>
-                                            <p className="text-muted-foreground">
+                                            <p className="font-semibold text-foreground mb-1 text-[14px]">Cost</p>
+                                            <p className="text-muted-foreground text-[14px]">
                                                 {event.is_payment_required ? "Paid Event" : "Free Event"}
                                             </p>
                                         </div>
@@ -354,25 +315,17 @@ export function EventDetail() {
                                 <h3 className="text-lg font-semibold text-center">Join This Event</h3>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                                <div className="text-center space-y-3">
-                                    <div className="text-2xl font-bold text-primary">
-                                        {event.is_payment_required ? "Paid" : "Free"}
-                                    </div>
-                                    <p className="text-sm text-muted-foreground">
-                                        Registration required
-                                    </p>
-                                </div>
+                              
 
                                 <Separator />
 
-                                <Button
+                                <button
                                     onClick={handleRegister}
-                                    className="w-full py-6 text-lg font-semibold"
-                                    size="lg"
+                                    className="w-full py-6 text-[18px] bg-blue text-white hover:bg-opacity-80 font-semibold  h-10 rounded-lg flex justify-center items-center"
                                     disabled={!event.is_active}
                                 >
                                     {event.is_active ? "Register Now" : "Registration Closed"}
-                                </Button>
+                                </button>
 
                                 <div className="space-y-2 text-sm text-muted-foreground">
                                     <div className="flex items-center justify-between">
@@ -381,9 +334,14 @@ export function EventDetail() {
                                     </div>
                                     <div className="flex items-center justify-between">
                                         <span>Status:</span>
-                                        <Badge variant={event.is_active ? "default" : "secondary"} className="text-xs">
-                                            {event.is_active ? "Active" : "Inactive"}
-                                        </Badge>
+                                         <button
+                                                        className={`px-2 py-1 rounded text-[14px] font-medium ${event.is_active
+                                                            ? "bg-green-100 text-green-800"
+                                                            : "bg-gray-100 text-gray-800"
+                                                            }`}
+                                                    >
+                                                        {event.is_active ? "Active" : "Inactive"}
+                                                    </button>
                                     </div>
                                 </div>
                             </CardContent>
