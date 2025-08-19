@@ -204,17 +204,20 @@ const DetailItemDocument = ({ icon, label, value, className = "" }) => {
         </p>
 
         {hasDocument ? (
-          <button
-            onClick={() => window.open(value, "_blank")}
+          <a
+            href={value}
+            target="_blank"
+            rel="noopener noreferrer"
             className="mt-1 text-primary hover:text-blue flex items-center gap-1 text-sm font-medium"
           >
             <FaEye className="inline-block" /> View Document
-          </button>
+          </a>
         ) : (
           <p className="text-sm font-medium text-muted-foreground mt-1">
             No document uploaded
           </p>
         )}
+
       </div>
     </div>
   );
@@ -239,7 +242,7 @@ const UserProfile = () => {
   const [isLoading, setIsLoading] = useState(false);
   const api = useAxiosAuth?.() || null;
   const { logout } = useContext(AuthContext)
-  const navigate=useNavigate();
+  const navigate = useNavigate();
   const auth = useContext(AuthContext) || {};
   const { authTokens, authReady, phone_number, fullName, email } = auth;
 
@@ -306,7 +309,7 @@ const UserProfile = () => {
       if (err === "token_not_valid") {
         toast.error("Token expired, Login again")
         logout();
-        
+
         navigate('/');
       }
 

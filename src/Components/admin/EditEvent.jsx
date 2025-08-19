@@ -16,7 +16,7 @@ import { motion } from 'framer-motion'
 import DatePicker from '../../utils/DatePicker'
 import useAxiosAuth from '@/hooks/useAxiosAuth';
 import { useParams, useNavigate } from 'react-router-dom';
-
+import {toast,ToastContainer} from 'react-toastify'
 const EditEvent = ({ eventId, onCancel, onSubmit }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingData, setIsLoadingData] = useState(true);
@@ -47,6 +47,7 @@ const EditEvent = ({ eventId, onCancel, onSubmit }) => {
             banner: null,
             icon: null,
             is_payment_required: 'False',
+            is_active:'false',
             requirements: [
                 {
                     label: '',
@@ -87,6 +88,7 @@ const EditEvent = ({ eventId, onCancel, onSubmit }) => {
                     start_date: data.start_date || '',
                     duration: data.duration || '',
                     location: data.location || '',
+                    is_active:data.is_active|| '',
                     banner: null, // We'll handle existing images separately
                     icon: null,
                     is_payment_required: data.is_payment_required ? 'True' : 'False',
@@ -189,6 +191,7 @@ const EditEvent = ({ eventId, onCancel, onSubmit }) => {
             submitData.append('start_date', data.start_date);
             submitData.append('duration', data.duration);
             submitData.append('location', data.location);
+            submitData.append('is_active', data.is_active);
             submitData.append('is_payment_required', data.is_payment_required);
 
             // Add banner if a new file is selected
@@ -224,7 +227,9 @@ const EditEvent = ({ eventId, onCancel, onSubmit }) => {
             } else {
                 submitCreate();
             }
-            navigate('/admin/events');
+            toast.success("Event updated successfully")
+            setTimeout(()=>navigate('/admin/events'),1000);
+            
         } catch (error) {
             console.error('Error updating event:', error);
         } finally {
@@ -370,7 +375,7 @@ const EditEvent = ({ eventId, onCancel, onSubmit }) => {
                                         {...register("description", { required: "Event description is required" })}
                                         placeholder="Describe your event..."
                                         className="resize-none"
-                                        rows={4}
+                                        rows={6}
                                     />
                                     {errors.description && (
                                         <p className="text-sm text-destructive">{errors.description.message}</p>
@@ -480,7 +485,7 @@ const EditEvent = ({ eventId, onCancel, onSubmit }) => {
                                         onClick={() => { submitCreate(); cancel() }}
                                         disabled={isLoading}
                                         size="lg"
-                                        className="hover:bg-destructive hover:text-destructive-foreground transition-all duration-300 hover:scale-[1.02] bg-red-800"
+                                        className="hover:bg-destructive text-white hover:text-destructive-foreground transition-all duration-300 hover:scale-[1.02] bg-red-800"
                                     >
                                         <FaTimes className="w-4 h-4 mr-2" />
                                         Cancel
@@ -491,6 +496,8 @@ const EditEvent = ({ eventId, onCancel, onSubmit }) => {
                     </Card>
                 </div>
             </div>
+            <ToastContainer />
+
         </motion.div>
     );
 };

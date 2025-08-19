@@ -309,44 +309,7 @@ export function EventDetail() {
 
                     {/* Sidebar */}
                     <div className="space-y-6">
-                        {/* Registration Card */}
-                        <Card className="sticky top-8">
-                            <CardHeader>
-                                <h3 className="text-lg font-semibold text-center">Join This Event</h3>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                              
-
-                                <Separator />
-
-                                <button
-                                    onClick={handleRegister}
-                                    className="w-full py-6 text-[18px] bg-blue text-white hover:bg-opacity-80 font-semibold  h-10 rounded-lg flex justify-center items-center"
-                                    disabled={!event.is_active}
-                                >
-                                    {event.is_active ? "Register Now" : "Registration Closed"}
-                                </button>
-
-                                <div className="space-y-2 text-sm text-muted-foreground">
-                                    <div className="flex items-center justify-between">
-                                        <span>Event Type:</span>
-                                        <span className="font-medium">{event.event_type}</span>
-                                    </div>
-                                    <div className="flex items-center justify-between">
-                                        <span>Status:</span>
-                                         <button
-                                                        className={`px-2 py-1 rounded text-[14px] font-medium ${event.is_active
-                                                            ? "bg-green-100 text-green-800"
-                                                            : "bg-gray-100 text-gray-800"
-                                                            }`}
-                                                    >
-                                                        {event.is_active ? "Active" : "Inactive"}
-                                                    </button>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-
+                        
                         {/* Event Highlights */}
                         <Card>
                             <CardHeader>

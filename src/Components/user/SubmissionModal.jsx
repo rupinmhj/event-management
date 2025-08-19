@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,67 +6,106 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
-const SubmissionModal = ({ isOpen, onClose, event, requirement, onSubmit }) => {
+const SubmissionModal = ({ 
+    isOpen, 
+    onClose, 
+    event, 
+    requirement, 
+    response, // Contains existing response/participation data
+    participationId, // ID for updating
+    isEditMode, 
+    onSubmit 
+}) => {
     const [value, setValue] = useState('');
     const [file, setFile] = useState(null);
+    const [existingFileName, setExistingFileName] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
 
-  const handleSubmit = async (e) => {
-  e.preventDefault();
+    // Prefill fields when modal opens with existing data
+    useEffect(() => {
+        if (isOpen && response) {
+            console.log('Prefilling with response data:', response);
+            
+            // Set text value if exists
+            if (response.value) {
+                setValue(response.value);
+            }
+            
+            // Set existing file name if exists
+            if (response.file) {
+                const fileName = response.file.split('/').pop();
+                setExistingFileName(fileName);
+            }
+        } else if (isOpen && !response) {
+            // Reset form for new submissions
+            setValue('');
+            setFile(null);
+            setExistingFileName('');
+        }
+    }, [isOpen, response]);
 
-  // Validation
-  if (requirement.type === 'FILE' && !file) {
-    setError('Please select a file to upload.');
-    return;
-  }
-  if (requirement.type !== 'FILE' && (!value || !value.trim())) {
-    setError('Please provide a value for this requirement.');
-    return;
-  }
-  if (requirement.type === 'URL' && value) {
-    const urlPattern = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w\.-]*)*\/?$/;
-    if (!urlPattern.test(value)) {
-      setError('Please enter a valid URL');
-      return;
-    }
-  }
+    const handleSubmit = async (e) => {
+        e.preventDefault();
 
-  setIsSubmitting(true);
-  setError('');
+        // Validation
+        if (requirement.type === 'FILE' && !file && !existingFileName) {
+            setError('Please select a file to upload.');
+            return;
+        }
+        if (requirement.type !== 'FILE' && (!value || !value.trim())) {
+            setError('Please provide a value for this requirement.');
+            return;
+        }
+        if (requirement.type === 'URL' && value) {
+            const urlPattern = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w\.-]*)*\/?$/;
+            if (!urlPattern.test(value)) {
+                setError('Please enter a valid URL');
+                return;
+            }
+        }
 
-  try {
-    // ✅ Use FormData since file upload is possible
-    const formData = new FormData();
-    formData.append("event_id", event.id);
+        setIsSubmitting(true);
+        setError('');
 
-    // Build the response object
-    formData.append("responses[0][requirement_id]", requirement.id);
+        try {
+            const formData = new FormData();
+            formData.append("event_id", event.id);
 
-    if (requirement.type === "FILE") {
-      formData.append("responses[0][file]", file);
-    } else {
-      formData.append("responses[0][value]", value);
-    }
+            // Add participation ID if editing
+            if (isEditMode && participationId) {
+                formData.append("participation_id", participationId);
+            }
 
-    await onSubmit(formData);
+            formData.append("responses[0][requirement_id]", requirement.id);
 
-    // Reset
-    setValue('');
-    setFile(null);
-    onClose();
-  } catch (error) {
-    setError('Failed to submit. Please try again.');
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+            if (requirement.type === "FILE") {
+                // Only append file if a new file is selected
+                if (file) {
+                    formData.append("responses[0][file]", file);
+                }
+                // If editing and no new file selected, the backend should keep the existing file
+            } else {
+                formData.append("responses[0][value]", value);
+            }
 
+            await onSubmit(formData);
+
+            // Reset form
+            setValue('');
+            setFile(null);
+            setExistingFileName('');
+            onClose();
+        } catch (error) {
+            setError('Failed to submit. Please try again.');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     const handleFileChange = (e) => {
         const selectedFile = e.target.files?.[0];
         if (selectedFile) {
-            // File size validation (10MB)
             if (selectedFile.size > 10 * 1024 * 1024) {
                 setError('File size must be less than 10MB');
                 return;
@@ -79,6 +118,7 @@ const SubmissionModal = ({ isOpen, onClose, event, requirement, onSubmit }) => {
     const handleClose = () => {
         setValue('');
         setFile(null);
+        setExistingFileName('');
         setError('');
         onClose();
     };
@@ -90,9 +130,9 @@ const SubmissionModal = ({ isOpen, onClose, event, requirement, onSubmit }) => {
             <DialogContent className="sm:max-w-md bg-white border border-gray-200">
                 <DialogHeader>
                     <DialogTitle className="text-xl font-semibold text-gray-900">
-                        Submit {requirement.label}
+                        {isEditMode ? 'Edit Submission' : 'Submit'} {requirement.label}
                     </DialogTitle>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-[16px] text-blue/90 font-semibold">
                         Event: {event.title}
                     </p>
                 </DialogHeader>
@@ -102,12 +142,24 @@ const SubmissionModal = ({ isOpen, onClose, event, requirement, onSubmit }) => {
                         <Label htmlFor="requirement-input" className="text-gray-900 font-medium">
                             {requirement.label}
                         </Label>
-                        <p className="text-sm text-gray-600 mb-3">
+                        <p className="text-[12px] text-gray-700 mb-3">
                             {requirement.description}
                         </p>
 
                         {requirement.type === 'FILE' ? (
                             <div className="space-y-2">
+                                {/* Show existing file if available */}
+                                {existingFileName && !file && (
+                                    <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                        <p className="text-sm text-blue-700">
+                                            📎 Current file: {existingFileName}
+                                        </p>
+                                        <p className="text-xs text-blue-600 mt-1">
+                                            Upload a new file to replace this one
+                                        </p>
+                                    </div>
+                                )}
+
                                 <div className="flex items-center justify-center w-full">
                                     <label
                                         htmlFor="file-upload"
@@ -116,7 +168,9 @@ const SubmissionModal = ({ isOpen, onClose, event, requirement, onSubmit }) => {
                                         <div className="flex flex-col items-center justify-center pt-5 pb-6">
                                             <Upload className="w-8 h-8 mb-4 text-gray-400" />
                                             <p className="mb-2 text-sm text-gray-500">
-                                                <span className="font-semibold">Click to upload</span> or drag and drop
+                                                <span className="font-semibold">
+                                                    {existingFileName ? 'Click to replace file' : 'Click to upload'}
+                                                </span> or drag and drop
                                             </p>
                                             <p className="text-xs text-gray-500">
                                                 PDF, DOC, DOCX, or images (MAX. 10MB)
@@ -131,11 +185,18 @@ const SubmissionModal = ({ isOpen, onClose, event, requirement, onSubmit }) => {
                                         />
                                     </label>
                                 </div>
+                                
+                                {/* Show newly selected file */}
                                 {file && (
                                     <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
                                         <p className="text-sm text-green-700">
-                                            ✓ Selected: {file.name}
+                                            ✓ New file selected: {file.name}
                                         </p>
+                                        {existingFileName && (
+                                            <p className="text-xs text-green-600 mt-1">
+                                                This will replace: {existingFileName}
+                                            </p>
+                                        )}
                                     </div>
                                 )}
                             </div>
@@ -167,8 +228,16 @@ const SubmissionModal = ({ isOpen, onClose, event, requirement, onSubmit }) => {
                                     year: 'numeric',
                                     month: 'long',
                                     day: 'numeric',
-                                    
                                 })}
+                            </p>
+                        </div>
+                    )}
+
+                    {/* Show edit mode indicator */}
+                    {isEditMode && (
+                        <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                            <p className="text-sm text-orange-700">
+                                ✏️ You are editing an existing submission
                             </p>
                         </div>
                     )}
@@ -186,23 +255,27 @@ const SubmissionModal = ({ isOpen, onClose, event, requirement, onSubmit }) => {
                             type="button"
                             variant="outline"
                             onClick={handleClose}
-                            className="flex-1 border-gray-300  hover:bg-red-600 text-white hover:text-white bg-red-500"
+                            className="flex-1 border-gray-300 hover:bg-red-600 text-white hover:text-white bg-red-500"
                             disabled={isSubmitting}
                         >
                             Cancel
                         </Button>
                         <Button
                             type="submit"
-                            className="flex-1 bg-blue hover:bg-blue/80 text-white"
+                            className={`flex-1 text-white ${
+                                isEditMode 
+                                    ? 'bg-orange-600 hover:bg-orange-700' 
+                                    : 'bg-blue hover:bg-blue/80'
+                            }`}
                             disabled={isSubmitting}
                         >
                             {isSubmitting ? (
                                 <>
                                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                                    Submitting...
+                                    {isEditMode ? 'Updating...' : 'Submitting...'}
                                 </>
                             ) : (
-                                'Submit'
+                                isEditMode ? 'Update' : 'Submit'
                             )}
                         </Button>
                     </div>

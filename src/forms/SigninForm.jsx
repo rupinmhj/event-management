@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState,useEffect } from 'react';
 import { motion } from "framer-motion";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa6";
 import { AiOutlineIdcard, AiOutlineLock } from "react-icons/ai";
@@ -95,6 +95,9 @@ export const SigninForm = ({ switchToSignup, setShowOtp }) => {
             setLoading(false);
         }
     };
+     useEffect(() => {
+            window.scrollTo({ top: 0, left: 0, behavior: "smooth" })
+        }, [])
 
     return (
         <motion.div

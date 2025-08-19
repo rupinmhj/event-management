@@ -59,8 +59,8 @@ const router = createBrowserRouter([
             { path: "about", element: <About /> },
             { path: "registration", element: <Registration /> },
             { path: "tickets", element: <Tickets /> },
-            { path: "event/:id", element: <EventDetail/>},
-            { path: "event-form/:id", element: <DynamicRequirementForm/>}
+            { path: "event/:id", element: <EventDetail /> },
+            { path: "event-form/:id", element: <DynamicRequirementForm /> }
         ],
     },
 ]);

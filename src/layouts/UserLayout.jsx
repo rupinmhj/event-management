@@ -8,7 +8,7 @@ export default function UserLayout() {
       <div className="fixed inset-x-0 top-0 bg-white z-50">
       <Navbar />
       </div>
-      <main className="flex-1 pt-14">
+      <main className="flex-1 pt-14 ">
         <Outlet /> {/* Renders the page content */}
       </main>
       <Footer />

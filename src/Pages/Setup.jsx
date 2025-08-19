@@ -8,15 +8,11 @@ const Setup = () => {
     return (
         <>
             <div className="h-full">
-                <div className="fixed top-0 right-0 left-0 z-10 ">
-                    <Navbar />
-                </div>
+                
                 <div className="flex items-center justify-around px-12 py-8 py-[64px]">
                     <SetupProfile />
                 </div>
-                <div >
-                    <Footer />
-                </div>
+                
             </div>
 
         </>

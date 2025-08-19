@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Upload, User, Camera, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import useAxiosAuth from "@/hooks/useAxiosAuth";
+import { useNavigate } from "react-router-dom";
 const DatePicker = ({ value, onChange, minDate, maxDate }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -192,7 +193,7 @@ const ProfileSetup = () => {
     const [educationLevel, setEducationLevel] = useState("");
     const [bio, setBio] = useState("");
     const { id } = useAxiosAuth();
-
+    const navigate = useNavigate();
     // Profile picture states
     const [profileImage, setProfileImage] = useState(null);
     const [previewUrl, setPreviewUrl] = useState("");
@@ -210,16 +211,6 @@ const ProfileSetup = () => {
     const imageRef = useRef(null);
     const containerRef = useRef(null);
     const [isProfileActive, setIsProfileActive] = useState(true);
-
-    // Click outside handler for profile picture
-    // useEffect(() => {
-
-
-    //     document.addEventListener('mousedown', handleClickOutside);
-    //     return () => {
-    //         document.removeEventListener('mousedown', handleClickOutside);
-    //     };
-    // }, []);
 
     // Default profile image URL
     const defaultProfileImage = "https://via.placeholder.com/96x96/e5e7eb/6b7280?text=Profile";
@@ -291,7 +282,7 @@ const ProfileSetup = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
 
         if (!validateForm()) {
             return;
@@ -300,7 +291,7 @@ const ProfileSetup = () => {
         setIsLoading(true);
 
         try {
-            
+
             // Create FormData for file uploads
             // console.log('id', id);
             const formData = new FormData();
@@ -331,18 +322,21 @@ const ProfileSetup = () => {
             console.log(res);
 
             toast.success("Profile Updated: Your profile has been successfully updated.");
-            navigate('/user/home');
+            setTimeout(() => {
+                navigate('/user');
+            }, 1000);
 
         } catch (error) {
-            console.error("Error submitting form:", error);
-            toast.error("Error updating profile. Please try again.");
+            console.error("Error submitting form:", error.response);
+            toast.error(error.response.data.detail);
+            if (error.status = 400) navigate('/user')
         } finally {
             setIsLoading(false);
         }
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4 ">
             <div className="lg:w-[1024px] mx-auto">
                 <div className="text-center mb-8">
                     <h1 className="text-3xl font-semibold text-blue-700 mb-2">Complete Your Profile</h1>

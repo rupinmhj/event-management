@@ -59,8 +59,7 @@ export default function EventCardList() {
                 console.log('Event list', data);
                 setEvents(data);
                 setFilteredEvents(data);
-                const res2 = await api.get('/api/event/get-event-detail/6/');
-                console.log('individual list:', res2.data)
+               
             } catch (error) {
                 console.error("Error fetching events:", error);
             } finally {
@@ -157,7 +156,7 @@ export default function EventCardList() {
         );
     }
 
-
+   
     return (
         <motion.div
             initial={{ opacity: 0 }}
@@ -247,8 +246,8 @@ export default function EventCardList() {
                                     <div className="absolute top-3 right-3 z-10">
                                         <button
                                             className={`rounded font-medium px-2 py-1 text-sm ${event.is_active !== false
-                                                    ? "bg-green-100 text-green-800" // success
-                                                    : "bg-red-100 text-red-800"     // inactive
+                                                ? "bg-green-100 text-green-800" // success
+                                                : "bg-red-100 text-red-800"     // inactive
                                                 }`}
                                         >
                                             {event.is_active !== false ? "Active" : "Inactive"}
@@ -353,7 +352,7 @@ export default function EventCardList() {
                                     <CardFooter className="pt-4 border-t bg-gray-50/50">
                                         <div className="flex items-center justify-between w-full">
                                             {/* Status Toggle */}
-                                            <div className="flex items-center gap-2">
+                                            <div className="flex items-center gap-2 ">
                                                 <Switch
                                                     checked={event.is_active !== false}
                                                     onCheckedChange={(checked) => handleStatusToggle(event.id, event.is_active)}

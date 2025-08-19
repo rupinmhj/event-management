@@ -51,9 +51,10 @@ export default function ParticipantEventList() {
                 const res = await api.get("/api/event/active-events/");
                 const data = res.data;
                 console.log('Event list', data);
-                
+
+
                 // Filter only active events for participants
-                const activeEvents = data.filter(event => event.is_active );
+                const activeEvents = data.filter(event => event.is_active);
                 setEvents(activeEvents);
                 setFilteredEvents(activeEvents);
             } catch (error) {
@@ -144,7 +145,7 @@ export default function ParticipantEventList() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="space-y-6 pt-4 pb-8 px-12"
+            className="space-y-6 pt-8 pb-8 px-12"
         >
             {/* Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -218,7 +219,7 @@ export default function ParticipantEventList() {
                                 <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden">
                                     {/* Event Status Badge */}
                                     <div className="absolute top-3 right-3 z-10">
-                                        <Badge 
+                                        <Badge
                                             variant={isUpcoming(event.start_date) ? "default" : "secondary"}
                                             className={isUpcoming(event.start_date) ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}
                                         >
@@ -380,7 +381,7 @@ export default function ParticipantEventList() {
                     <div className="text-sm text-muted-foreground">
                         Showing {indexOfFirstEvent + 1} to {Math.min(indexOfLastEvent, filteredEvents.length)} of {filteredEvents.length} events
                     </div>
-                    
+
                     <div className="flex items-center gap-2">
                         <Button
                             variant="outline"
@@ -391,11 +392,11 @@ export default function ParticipantEventList() {
                             <ChevronLeft className="w-4 h-4" />
                             Previous
                         </Button>
-                        
+
                         <span className="text-sm">
                             Page {currentPage} of {totalPages}
                         </span>
-                        
+
                         <Button
                             variant="outline"
                             size="sm"
