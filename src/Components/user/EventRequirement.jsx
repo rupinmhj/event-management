@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Clock, FileText, Link, Upload, Edit, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,6 +6,9 @@ import { Badge } from '@/components/ui/badge';
 import useAxiosAuth from '@/hooks/useAxiosAuth';
 import SubmissionModal from './SubmissionModal';
 import SubmitAllModal from './SubmitAllModal';
+import AuthContext from '@/context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 const RequirementCard = () => {
     const [events, setEvents] = useState([]);
@@ -20,7 +23,9 @@ const RequirementCard = () => {
     const [selectedParticipationId, setSelectedParticipationId] = useState(null); // For updating
     const [isEditMode, setIsEditMode] = useState(false);
     const [submitAllModalOpen, setSubmitAllModalOpen] = useState(false);
+    const { hasProfile } = useContext(AuthContext);
     const api = useAxiosAuth();
+    const navigate = useNavigate();
 
     useEffect(() => {
         fetchEventsAndParticipations();
@@ -100,7 +105,7 @@ const RequirementCard = () => {
         const deadlineDate = new Date(deadline);
         const now = new Date();
         const diffInDays = Math.ceil((deadlineDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-        return diffInDays <= 3;
+        return diffInDays <= 3 && diffInDays > 0; // Only near if deadline hasn't passed yet
     };
 
     const isDeadlinePassed = (deadline) => {
@@ -139,6 +144,13 @@ const RequirementCard = () => {
     };
 
     const handleSubmitClick = (event, requirement) => {
+        if (!hasProfile) {
+            toast.info('Please complete your profile before submitting requirements.');
+            setTimeout(() => {
+                navigate('/user/setup-profile');
+            }, 1000)
+            return;
+        }
         const existingResponse = getResponseForRequirement(event.id, requirement.id);
         const ownParticipation = getOwnParticipationForRequirement(event.id, requirement.id);
         const participationId = getParticipationId(event.id);
@@ -179,7 +191,6 @@ const RequirementCard = () => {
         }
     };
 
-
     const handleSubmitAll = async () => {
         setSubmitAllModalOpen(true);
     };
@@ -193,7 +204,7 @@ const RequirementCard = () => {
     }
 
     return (
-        <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="max-w-6xl mx-auto px-4 py-8">
             <div className="flex justify-end items-center mb-8">
                 <Button
                     onClick={handleSubmitAll}
@@ -203,10 +214,11 @@ const RequirementCard = () => {
                 </Button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="flex flex-col gap-6">
                 {events.map((event) =>
                     event.requirements?.map((requirement) => {
                         const isOverdue = isDeadlinePassed(requirement.deadline);
+                        const isNearDeadline = isDeadlineNear(requirement.deadline);
                         const isSubmittingThis = submitting[`${event.id}-${requirement.id}`];
                         const response = getResponseForRequirement(event.id, requirement.id);
                         const ownParticipation = getOwnParticipationForRequirement(event.id, requirement.id);
@@ -216,41 +228,28 @@ const RequirementCard = () => {
                         return (
                             <Card
                                 key={`${event.id}-${requirement.id}`}
-                                className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300"
+                                className={`${isNearDeadline ? 'bg-red-50' : 'bg-blue/5'} border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300`}
                             >
                                 <CardHeader className="pb-3">
                                     <div className="flex items-start justify-between gap-4">
                                         <div className="flex-1">
-                                            <CardTitle className="text-lg font-semibold text-gray-900 mb-1">
+                                            <CardTitle className="text-lg font-semibold text-blue mb-1 hover:text-blue/80 cursor-pointer">
                                                 {event.title}
                                             </CardTitle>
                                             <div className="flex items-center gap-2 mb-2">
-                                                <Badge
-                                                    variant="secondary"
-                                                    className={`${getTypeColor(requirement.type)} flex items-center gap-1`}
-                                                >
-                                                    {getTypeIcon(requirement.type)}
-                                                    {requirement.type}
-                                                </Badge>
                                                 {isSubmitted && (
                                                     <Badge className="text-xs bg-green-100 text-green-700 border-green-200">
                                                         Submitted
                                                     </Badge>
                                                 )}
+
                                             </div>
                                         </div>
-                                        <img
-                                            src={event.icon}
-                                            alt={event.title}
-                                            className="w-12 h-12 rounded-lg object-cover"
-                                            onError={(e) => {
-                                                e.currentTarget.src = 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=100&h=100&fit=crop';
-                                            }}
-                                        />
+                                        <p onClick={() => navigate(`/user/event/${event.id}`)} className='text-[14px] cursor-pointer hover:text-blue'>View Details</p>
                                     </div>
                                 </CardHeader>
 
-                                <CardContent className="pt-0">
+                                <CardContent className="pt-0 flex flex-col h-full">
                                     <h4 className="font-medium text-gray-900 mb-2">
                                         {requirement.label}
                                     </h4>
@@ -259,53 +258,93 @@ const RequirementCard = () => {
                                     </p>
 
                                     {requirement.deadline && (
-                                        <div className={`flex items-center gap-2 mb-4 text-sm ${isDeadlineNear(requirement.deadline)
+                                        <div className={`flex items-center justify-between  gap-2 mb-4 text-sm ${isNearDeadline
                                             ? 'text-red-600'
                                             : 'text-gray-500'
                                             }`}>
-                                            <Clock className="w-4 h-4" />
-                                            <span>
-                                                Deadline: {new Date(requirement.deadline).toLocaleDateString('en-US', {
-                                                    year: 'numeric',
-                                                    month: 'short',
-                                                    day: 'numeric',
-                                                    
-                                                })}
-                                            </span>
+                                            <div className="flex gap-2 items-center">
+                                                <Clock className="w-4 h-4" />
+                                                <span>
+                                                    Deadline: {new Date(requirement.deadline).toLocaleDateString('en-US', {
+                                                        year: 'numeric',
+                                                        month: 'short',
+                                                        day: 'numeric',
+                                                    })}
+                                                </span>
+                                            </div>
+
+                                            <div className="mt-auto w-[100px] pt-4">
+                                                <Button
+                                                    onClick={() => handleSubmitClick(event, requirement)}
+                                                    disabled={isSubmittingThis || (isOverdue && !isSubmitted)}
+                                                    className={`w-full font-medium transition-colors duration-200  ${isSubmitted && canEdit
+                                                        ? 'bg-blue hover:bg-blue/90'
+                                                        : isSubmitted
+                                                            ? 'bg-green-600 hover:bg-green-700'
+                                                            : ownParticipation
+                                                                ? 'bg-yellow-600 hover:bg-yellow-700'
+                                                                : 'bg-blue hover:bg-blue/90'
+                                                        } text-white`}
+                                                >
+                                                    {isSubmittingThis ? (
+                                                        <>
+                                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                                            {isSubmitted ? 'Updating...' : 'Submitting...'}
+                                                        </>
+                                                    ) : isSubmitted ? (
+                                                        canEdit ? (
+                                                            <>
+                                                                <Edit className="w-4 h-4" />
+                                                                <span className="ml-2">Edit </span>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                ✓ Submitted
+                                                            </>
+                                                        )
+                                                    ) : ownParticipation ? (
+                                                        <>
+                                                            <Edit className="w-4 h-4" />
+                                                            <span className="ml-2">Continue Draft</span>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            {getTypeIcon(requirement.type)}
+                                                            <span className="ml-2">Apply </span>
+                                                        </>
+                                                    )}
+                                                </Button>
+                                            </div>
+
                                         </div>
                                     )}
 
                                     {/* Show submission details if submitted */}
-                                    {isSubmitted && response && (
-                                        <div className="bg-green-50 border border-green-200 rounded-md p-3 mb-4">
-                                            <p className="text-green-800 text-sm font-medium mb-1">
-                                                ✓ Submitted
-                                            </p>
-                                            {/* Show submitted content preview */}
-                                            {response.value && (
-                                                <p className="text-green-600 text-xs mb-1">
-                                                    <strong>Text:</strong> {response.value.length > 50
-                                                        ? `${response.value.substring(0, 50)}...`
-                                                        : response.value}
-                                                </p>
-                                            )}
-                                            {response.file && (
-                                                <a
-                                                    href={response.file}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="flex items-center text-green-600 text-xs mb-1 hover:underline"
-                                                >
-                                                    <Eye className="w-4 h-4 mr-1" /> View File
-                                                </a>
-                                            )}
-                                            {canEdit && (
-                                                <p className="text-green-600 text-xs">
-                                                    You can edit this submission before the deadline
-                                                </p>
-                                            )}
-                                        </div>
-                                    )}
+                                    {/* 
+{ isSubmitted && response && (
+    <div className="bg-green-50 border border-green-200 rounded-md p-3 mb-4">
+        {response.value && (
+            <p className="text-green-600 text-xs mb-1">
+                <strong>Text:</strong> {response.value.length > 50
+                    ? `${response.value.substring(0, 50)}...`
+                    : response.value}
+            </p>
+        )}
+        {response.file && (
+            <a
+                href={response.file}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center text-green-600 text-xs mb-1 hover:underline"
+            >
+                <Eye className="w-4 h-4 mr-1" /> View File
+            </a>
+        )}
+    </div>
+)} 
+*/}
+
+
 
                                     {/* Show own participation data if available but not submitted */}
                                     {!isSubmitted && ownParticipation && (
@@ -349,46 +388,7 @@ const RequirementCard = () => {
                                         </div>
                                     )}
 
-                                    <Button
-                                        onClick={() => handleSubmitClick(event, requirement)}
-                                        disabled={isSubmittingThis || (isOverdue && !isSubmitted)}
-                                        className={`w-full font-medium transition-colors duration-200 ${isSubmitted && canEdit
-                                            ? 'bg-orange-600 hover:bg-orange-700'
-                                            : isSubmitted
-                                                ? 'bg-green-600 hover:bg-green-700'
-                                                : ownParticipation
-                                                    ? 'bg-yellow-600 hover:bg-yellow-700'
-                                                    : 'bg-blue hover:bg-blue-700'
-                                            } text-white`}
-                                    >
-                                        {isSubmittingThis ? (
-                                            <>
-                                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                                                {isSubmitted ? 'Updating...' : 'Submitting...'}
-                                            </>
-                                        ) : isSubmitted ? (
-                                            canEdit ? (
-                                                <>
-                                                    <Edit className="w-4 h-4" />
-                                                    <span className="ml-2">Edit Submission</span>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    ✓ Submitted
-                                                </>
-                                            )
-                                        ) : ownParticipation ? (
-                                            <>
-                                                <Edit className="w-4 h-4" />
-                                                <span className="ml-2">Continue Draft</span>
-                                            </>
-                                        ) : (
-                                            <>
-                                                {getTypeIcon(requirement.type)}
-                                                <span className="ml-2">Apply </span>
-                                            </>
-                                        )}
-                                    </Button>
+
                                 </CardContent>
                             </Card>
                         );
@@ -422,3 +422,4 @@ const RequirementCard = () => {
 };
 
 export default RequirementCard;
+

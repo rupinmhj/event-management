@@ -19,164 +19,7 @@ import AuthContext from '@/context/AuthContext';
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom';
 /* DatePicker Component (JSX) */
-const DatePicker = ({ value, onChange, minDate, maxDate }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [isYearPickerOpen, setIsYearPickerOpen] = useState(false);
-  const selectedDate = value ? new Date(value) : null;
-
-  const formatDate = (date) =>
-    date.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
-
-  const getDaysInMonth = (date) => {
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const daysInMonth = lastDay.getDate();
-    const startingDayOfWeek = firstDay.getDay();
-
-    const days = [];
-    for (let i = 0; i < startingDayOfWeek; i++) days.push(null);
-    for (let day = 1; day <= daysInMonth; day++) days.push(new Date(year, month, day));
-    return days;
-  };
-
-  const navigateMonth = (direction) => {
-    setCurrentMonth((prev) => {
-      const newMonth = new Date(prev);
-      newMonth.setMonth(prev.getMonth() + direction);
-      return newMonth;
-    });
-  };
-
-  const handleDateSelect = (date) => {
-    const dateString = date.toISOString().split("T")[0];
-    onChange(dateString);
-    setIsOpen(false);
-  };
-
-  const isDateDisabled = (date) => {
-    if (minDate && date < minDate) return true;
-    if (maxDate && date > maxDate) return true;
-    return false;
-  };
-
-  const getYears = () => {
-    const years = [];
-    const minYear = minDate ? minDate.getFullYear() : 1900;
-    const maxYear = maxDate ? maxDate.getFullYear() : new Date().getFullYear();
-    for (let y = minYear; y <= maxYear; y++) years.push(y);
-    return years;
-  };
-
-  const days = getDaysInMonth(currentMonth);
-  const monthYear = currentMonth.toLocaleDateString("en-US", { month: "long", year: "numeric" });
-
-  return (
-    <div className="relative font-sans">
-      <div
-        className="flex items-center justify-between w-full px-3 py-2 text-sm border border-input rounded-md cursor-pointer bg-background hover:bg-accent"
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        <span className={selectedDate ? "text-foreground" : "text-muted-foreground"}>
-          {selectedDate ? formatDate(selectedDate) : "Select date of birth"}
-        </span>
-        <FaCalendar className="w-4 h-4 text-muted-foreground" />
-      </div>
-
-      {isOpen && (
-        <div className="absolute top-full left-0 z-50 w-80 mt-1 bg-background border border-border rounded-lg shadow-lg p-4">
-          <div className="flex items-center justify-between mb-4">
-            <button
-              type="button"
-              onClick={() => {
-                setIsYearPickerOpen(false);
-                navigateMonth(-1);
-              }}
-              className="p-1 hover:bg-accent rounded"
-            >
-              <FaChevronLeft className="w-4 h-4" />
-            </button>
-
-            <h3
-              className="text-sm font-medium cursor-pointer select-none"
-              onClick={() => setIsYearPickerOpen(!isYearPickerOpen)}
-            >
-              {monthYear}
-            </h3>
-
-            <button
-              type="button"
-              onClick={() => {
-                setIsYearPickerOpen(false);
-                navigateMonth(1);
-              }}
-              className="p-1 hover:bg-accent rounded"
-            >
-              <FaChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-
-          {isYearPickerOpen ? (
-            <div className="max-h-48 overflow-y-auto grid grid-cols-4 gap-2" style={{ maxHeight: "12rem" }}>
-              {getYears().map((year) => (
-                <button
-                  key={year}
-                  type="button"
-                  className={`p-2 rounded text-center hover:bg-accent ${currentMonth.getFullYear() === year ? "bg-primary text-primary-foreground font-bold" : ""
-                    }`}
-                  onClick={() => {
-                    const newDate = new Date(currentMonth);
-                    newDate.setFullYear(year);
-
-                    if (minDate && newDate < minDate) newDate.setFullYear(minDate.getFullYear());
-                    if (maxDate && newDate > maxDate) newDate.setFullYear(maxDate.getFullYear());
-
-                    setCurrentMonth(newDate);
-                    setIsYearPickerOpen(false);
-                  }}
-                >
-                  {year}
-                </button>
-              ))}
-            </div>
-          ) : (
-            <>
-              <div className="grid grid-cols-7 gap-1 mb-2">
-                {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day) => (
-                  <div key={day} className="p-2 text-xs font-medium text-muted-foreground text-center">
-                    {day}
-                  </div>
-                ))}
-              </div>
-
-              <div className="grid grid-cols-7 gap-1">
-                {days.map((date, index) => (
-                  <div key={index} className="aspect-square">
-                    {date && (
-                      <button
-                        type="button"
-                        onClick={() => !isDateDisabled(date) && handleDateSelect(date)}
-                        disabled={isDateDisabled(date)}
-                        className={`w-full h-full text-xs rounded hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed ${selectedDate && date.toDateString() === selectedDate.toDateString()
-                          ? "bg-primary text-primary-foreground"
-                          : "hover:bg-accent"
-                          }`}
-                      >
-                        {date.getDate()}
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-      )}
-    </div>
-  );
-};
+import DatePicker from '@/utils/DatePicker';
 
 /* Reusable Detail Item Component */
 const DetailItem = ({ icon, label, value, className = "" }) => (
@@ -237,7 +80,7 @@ const setByPath = (obj, path, value) => {
   return cloned;
 };
 
-const UserProfile = () => {
+const UserProfile = ({hasProfile}) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const api = useAxiosAuth?.() || null;
@@ -384,9 +227,9 @@ const UserProfile = () => {
     if (!formData.address?.trim()) newErrors.address = "Address is required";
     if (!formData.date_of_birth) newErrors.date_of_birth = "Date of birth is required";
     if (!formData.sex) newErrors.sex = "Gender is required";
-    if (!formData.organization?.trim()) newErrors.organization = "Organization is required";
-    if (!formData.designation?.trim()) newErrors.designation = "Designation is required";
-    if (!formData.employee_id?.trim()) newErrors.employee_id = "Employee ID is required";
+    // if (!formData.organization?.trim()) newErrors.organization = "Organization is required";
+    // if (!formData.designation?.trim()) newErrors.designation = "Designation is required";
+    // if (!formData.employee_id?.trim()) newErrors.employee_id = "Employee ID is required";
     if (!formData.education_level) newErrors.education_level = "Education level is required";
 
     setErrors(newErrors);
@@ -448,38 +291,40 @@ const UserProfile = () => {
 
   if (isEditing) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background to-muted/30 px-4 sm:px-6 lg:px-8 py-12 ">
-        <div className="max-w-4xl mx-auto">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
+        <div className="lg:w-[1024px] mx-auto">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-semibold text-primary mb-2">Edit Your Profile</h1>
-            <p className="text-muted-foreound">Update your profile information below.</p>
+            <h1 className="text-3xl font-semibold text-blue-700 mb-2">Edit Your Profile</h1>
+            <p className="text-blue-600 opacity-70">Update your profile information below.</p>
           </div>
 
-          <Card className="shadow-xl border bg-card">
+          <Card className="shadow-xl border-0 bg-white">
             <CardHeader className="text-center pb-2">
               <div className="flex justify-center mb-4">
                 <div className="relative">
-                  <Avatar className="w-24 h-24 border-4 border-green-600 shadow-lg">
+                  <Avatar
+                    className="w-24 h-24 border-4 transition-all duration-300 cursor-pointer border-green-400 shadow-lg scale-105 relative"
+                  >
                     <AvatarImage
                       src={previewUrl || formData?.profile_picture}
                       alt="Profile"
                       className="object-cover"
                     />
-                    <AvatarFallback className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground text-xs font-semibold">
+                    <AvatarFallback className="bg-gradient-to-r from-blue-500 to-indigo-600 text-gray-600 text-[10px] font-semibold flex items-center justify-center text-center px-2">
                       Add Image
                     </AvatarFallback>
                   </Avatar>
 
                   <label
                     htmlFor="profilePicture"
-                    className="absolute -bottom-2 -right-2 bg-green-600 hover:bg-primary/90 text-primary-foreground p-2 rounded-full cursor-pointer transition-all duration-300 hover:scale-105 shadow-lg"
+                    className="absolute -bottom-2 -right-2 text-white p-2 rounded-full cursor-pointer transition-all duration-300 hover:scale-105 shadow-lg bg-green-600 hover:bg-green-700"
                   >
                     <FaCamera className="w-4 h-4" />
                     <input
                       id="profilePicture"
                       type="file"
                       accept="image/*"
-                      className="hidden"
+                      className="hidden cursor-pointer"
                       onChange={handleProfilePictureChange}
                       ref={imageRef}
                     />
@@ -488,25 +333,27 @@ const UserProfile = () => {
               </div>
 
               {errors?.profileImage && (
-                <p className="text-sm text-destructive mb-2">{errors.profileImage}</p>
+                <p className="text-sm text-red-600 mb-2">{errors.profileImage}</p>
               )}
-
               <CardTitle className="text-xl">Profile Information</CardTitle>
               <CardDescription>Update your profile details below</CardDescription>
             </CardHeader>
 
             <CardContent className="space-y-6 pt-8">
               <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Row 1: Full Name & Email */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="fullName">Full Name</Label>
+                    <Label htmlFor="fullName">Full Name *</Label>
                     <Input
                       id="fullName"
                       value={formData.user_detail.full_name_en}
                       onChange={(e) => handleInputChange("user_detail.full_name_en", e.target.value)}
                       className="bg-muted"
                     />
-                    {errors?.full_name_en && <p className="text-sm text-destructive">{errors.full_name_en}</p>}
+                    {errors?.full_name_en && (
+                      <p className="text-sm text-red-600">{errors.full_name_en}</p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -520,6 +367,7 @@ const UserProfile = () => {
                   </div>
                 </div>
 
+                {/* Row 2: Phone & Gender */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="phone">Phone Number *</Label>
@@ -529,33 +377,9 @@ const UserProfile = () => {
                       value={formData.user_detail.phone_number}
                       onChange={(e) => handleInputChange('user_detail.phone_number', e.target.value)}
                     />
-                    {errors?.phone_number && <p className="text-sm text-destructive">{errors.phone_number}</p>}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="address">Address *</Label>
-                    <Textarea
-                      id="address"
-                      placeholder="Enter your full address"
-                      className="resize-none"
-                      rows={3}
-                      value={formData.address}
-                      onChange={(e) => handleInputChange('address', e.target.value)}
-                    />
-                    {errors?.address && <p className="text-sm text-destructive">{errors.address}</p>}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="dateOfBirth">Date of Birth *</Label>
-                    <DatePicker
-                      value={formData.date_of_birth}
-                      onChange={(value) => handleInputChange('date_of_birth', value)}
-                      minDate={new Date(1950, 0, 1)}
-                      maxDate={new Date()}
-                    />
-                    {errors?.date_of_birth && <p className="text-sm text-destructive">{errors.date_of_birth}</p>}
+                    {errors?.phone_number && (
+                      <p className="text-sm text-red-600">{errors.phone_number}</p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -570,44 +394,25 @@ const UserProfile = () => {
                         <SelectItem value="OTHER">Other</SelectItem>
                       </SelectContent>
                     </Select>
-                    {errors?.sex && <p className="text-sm text-destructive">{errors.sex}</p>}
+                    {errors?.sex && (
+                      <p className="text-sm text-red-600">{errors.sex}</p>
+                    )}
                   </div>
                 </div>
 
+                {/* Row 3: Date of Birth & Education Level */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="organization">Organization *</Label>
-                    <Input
-                      id="organization"
-                      placeholder="Your organization name"
-                      value={formData.organization}
-                      onChange={(e) => handleInputChange('organization', e.target.value)}
+                    <Label htmlFor="dateOfBirth">Date of Birth *</Label>
+                    <DatePicker
+                      value={formData.date_of_birth}
+                      onChange={(value) => handleInputChange('date_of_birth', value)}
+                      minDate={new Date(1950, 0, 1)}
+                      maxDate={new Date()}
                     />
-                    {errors?.organization && <p className="text-sm text-destructive">{errors.organization}</p>}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="designation">Designation *</Label>
-                    <Input
-                      id="designation"
-                      placeholder="Your job title"
-                      value={formData.designation}
-                      onChange={(e) => handleInputChange('designation', e.target.value)}
-                    />
-                    {errors?.designation && <p className="text-sm text-destructive">{errors.designation}</p>}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="employeeId">Employee ID *</Label>
-                    <Input
-                      id="employeeId"
-                      placeholder="Your employee ID"
-                      value={formData.employee_id}
-                      onChange={(e) => handleInputChange('employee_id', e.target.value)}
-                    />
-                    {errors?.employee_id && <p className="text-sm text-destructive">{errors.employee_id}</p>}
+                    {errors?.date_of_birth && (
+                      <p className="text-sm text-red-600">{errors.date_of_birth}</p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -621,34 +426,126 @@ const UserProfile = () => {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="HIGH_SCHOOL">High School</SelectItem>
-                        {/* <SelectItem value="DIPLOMA">Diploma</SelectItem> */}
                         <SelectItem value="BACHELORS">Bachelor's Degree</SelectItem>
                         <SelectItem value="MASTERS">Master's Degree</SelectItem>
                         <SelectItem value="PHD">PhD</SelectItem>
-                        {/* <SelectItem value="OTHER">Other</SelectItem> */}
                       </SelectContent>
                     </Select>
-                    {errors?.education_level && <p className="text-sm text-destructive">{errors.education_level}</p>}
+                    {errors?.education_level && (
+                      <p className="text-sm text-red-600">{errors.education_level}</p>
+                    )}
                   </div>
                 </div>
 
+                {/* Row 4: Address */}
+                <div className="space-y-2">
+                  <Label htmlFor="address">Address *</Label>
+                  <Textarea
+                    id="address"
+                    placeholder="Enter your full address"
+                    className="resize-none"
+                    rows={3}
+                    value={formData.address}
+                    onChange={(e) => handleInputChange('address', e.target.value)}
+                  />
+                  {errors?.address && (
+                    <p className="text-sm text-red-600">{errors.address}</p>
+                  )}
+                </div>
+
+                {/* Row 5: Organization */}
+                <div className="space-y-2">
+                  <Label htmlFor="organization">Organization </Label>
+                  <Input
+                    id="organization"
+                    placeholder="Your organization name"
+                    value={formData.organization}
+                    onChange={(e) => handleInputChange('organization', e.target.value)}
+                  />
+                  {errors?.organization && (
+                    <p className="text-sm text-red-600">{errors.organization}</p>
+                  )}
+                </div>
+
+                {/* Row 6: Employee ID & Designation */}
+                {formData.organization && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="employeeId">Employee ID </Label>
+                      <Input
+                        id="employeeId"
+                        placeholder="Your employee ID"
+                        value={formData.employee_id}
+                        onChange={(e) => handleInputChange('employee_id', e.target.value)}
+                      />
+                      {errors?.employee_id && (
+                        <p className="text-sm text-red-600">{errors.employee_id}</p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="designation">Designation </Label>
+                      <Input
+                        id="designation"
+                        placeholder="Your job title"
+                        value={formData.designation}
+                        onChange={(e) => handleInputChange('designation', e.target.value)}
+                      />
+                      {errors?.designation && (
+                        <p className="text-sm text-red-600">{errors.designation}</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+
+                {/* Row 7: Bio */}
+                <div className="space-y-2">
+                  <Label htmlFor="bio">Bio</Label>
+                  <Textarea
+                    id="bio"
+                    placeholder="Tell us a bit about yourself..."
+                    className="resize-none"
+                    rows={4}
+                    value={formData.bio}
+                    onChange={(e) => handleInputChange('bio', e.target.value)}
+                  />
+                  {errors?.bio && (
+                    <p className="text-sm text-red-600">{errors.bio}</p>
+                  )}
+                </div>
+
+                {/* Row 8 (Last): Support Document */}
                 <div className="space-y-2">
                   <Label htmlFor="supportDocument">Support Document</Label>
                   <div className="flex items-center justify-center w-full">
                     <label
                       htmlFor="supportDocument"
-                      className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-lg cursor-pointer bg-muted/30 hover:bg-muted/50 transition-colors"
+                      className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors"
                     >
                       <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                        <FaUpload className="w-8 h-8 mb-3 text-muted-foreground" />
+                        <FaUpload className="w-8 h-8 mb-3 text-gray-400" />
                         {supportDocumentName ? (
-                          <p className="text-sm text-foreground font-medium">{supportDocumentName}</p>
+                          <div className="flex flex-col items-center">
+                            <p className="text-sm text-gray-700 font-medium">{supportDocumentName}</p>
+                            {formData.support_document && (
+                              <a
+                                href={formData.support_document}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="mt-2 flex items-center gap-1 text-blue-600 hover:text-blue text-sm"
+                              >
+                                <FaEye className="w-4 h-4" />
+                                View Document
+                              </a>
+                            )}
+                          </div>
                         ) : (
                           <>
-                            <p className="mb-2 text-sm text-muted-foreground">
+                            <p className="mb-2 text-sm text-gray-500">
                               <span className="font-semibold">Click to upload</span> your support document
                             </p>
-                            <p className="text-xs text-muted-foreground">PDF, DOC, DOCX (MAX. 10MB)</p>
+                            <p className="text-xs text-gray-500">PDF, DOC, DOCX (MAX. 10MB)</p>
                           </>
                         )}
                       </div>
@@ -661,26 +558,17 @@ const UserProfile = () => {
                       />
                     </label>
                   </div>
-                  {errors?.supportDocument && <p className="text-sm text-destructive">{errors.supportDocument}</p>}
+                  {errors?.supportDocument && (
+                    <p className="text-sm text-red-600">{errors.supportDocument}</p>
+                  )}
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="bio">Bio</Label>
-                  <Textarea
-                    id="bio"
-                    placeholder="Tell us a bit about yourself..."
-                    className="resize-none"
-                    rows={4}
-                    value={formData.bio}
-                    onChange={(e) => handleInputChange('bio', e.target.value)}
-                  />
-                </div>
-
+                {/* Submit Buttons */}
                 <div className="flex gap-4 pt-4">
                   <Button
                     type="submit"
                     disabled={isLoading}
-                    className="flex-1 bg-blue text-primary-foreground hover:bg-blue/90 transform hover:scale-105 duration-300 transition"
+                    className="flex-1 bg-blue text-white hover:bg-blue/90 transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
                     size="lg"
                   >
                     <FaSave className="w-4 h-4 mr-2" />
@@ -693,7 +581,7 @@ const UserProfile = () => {
                     onClick={handleCancelEdit}
                     disabled={isLoading}
                     size="lg"
-                    className="transform hover:scale-105 hover:bg-destructive hover:text-destructive-foreground transition duration-300"
+                    className="hover:bg-destructive text-white hover:text-destructive-foreground transition-all duration-300 hover:scale-[1.02] bg-red-800"
                   >
                     <FaTimes className="w-4 h-4 mr-2" />
                     Cancel
@@ -703,6 +591,7 @@ const UserProfile = () => {
             </CardContent>
           </Card>
         </div>
+        <ToastContainer />
       </div>
     );
   }
@@ -714,7 +603,7 @@ const UserProfile = () => {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3, delay: 0.15 }}
     >
-      <div className="min-h-screen  px-4 sm:px-6 lg:px-8 py-12 ">
+      <div className={`min-h-screen  px-4 sm:px-6 lg:px-8 py-12 ${!hasProfile?'hidden':''}`  }>
         <div className="max-w-4xl mx-auto space-y-6">
           <div className="relative overflow-hidden rounded-xl border text-gray-800 shadow-lg hover:shadow-xl transition-all duration-300">
             <div className="absolute inset-0 " />
@@ -751,14 +640,14 @@ const UserProfile = () => {
           <div className="rounded-xl border bg-card shadow-lg overflow-hidden">
             <div className="p-8">
               <div className="flex flex-col lg:flex-row gap-8">
-                <div className="flex flex-col items-center lg:items-start space-y-4">
-                  <div className="relative group rounded-full border-4 border-green-600">
+                <div className="flex flex-col items-center lg:items-start space-y-4 ">
+                  <div className="relative group rounded-full border-4 border-green-600 ">
                     <img
                       src={formData.profile_picture || null}
                       alt={formData.user_detail.full_name_en || "Profile"}
                       className="w-32 h-32 rounded-full border-4 border-primary/20 object-cover group-hover:scale-105 transition-transform duration-300"
                     />
-                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-black/20 to-transparent opacity-0  transition-opacity duration-300" />
                   </div>
                   <div className="text-center lg:text-left">
                     <h2 className="text-xl font-semibold text-card-foreground">

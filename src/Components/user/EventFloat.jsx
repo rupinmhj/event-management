@@ -45,7 +45,8 @@ export const EventFloat = () => {
   };
 
   return (
-    <div className="w-full mt-2">
+    <div className="relative w-full h-full overflow-hidden flex justify-center mt-1">
+       <div className="max-w-6xl  mt-2">
       <Swiper
         modules={[Autoplay, Pagination]}
         autoplay={{
@@ -99,6 +100,8 @@ export const EventFloat = () => {
         ))}
       </Swiper>
     </div>
+    </div>
+   
   );
 };
 

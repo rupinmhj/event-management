@@ -318,7 +318,7 @@ export const RequirementUpdate = () => {
         <div className="max-w-4xl mx-auto space-y-8">
 
           {/* Header */}
-          <div className="text-center space-y-4">
+          {/* <div className="text-center space-y-4">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-500 rounded-xl shadow-lg">
               <MdEdit className="h-8 w-8 text-white" />
             </div>
@@ -330,10 +330,10 @@ export const RequirementUpdate = () => {
                 Modify the information participants need to provide for your event
               </p>
             </div>
-          </div>
+          </div> */}
 
           {/* Event Selection */}
-          <Card className="shadow-lg border-0 bg-gradient-to-r from-card to-primary-soft/20">
+          {/* <Card className="shadow-lg border-0 bg-gradient-to-r from-card to-primary-soft/20">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <MdCalendarToday className="h-5 w-5 text-event-primary" />
@@ -354,7 +354,7 @@ export const RequirementUpdate = () => {
                 />
               </div>
             </CardContent>
-          </Card>
+          </Card> */}
 
           {/* Single Requirement */}
           <Card className="shadow-lg border-0 bg-gradient-to-r from-card to-primary-soft/10">
@@ -539,7 +539,7 @@ export const RequirementUpdate = () => {
               {loading ? 'Updating...' : 'Update Requirement'}
             </Button>
             <Button
-              onClick={() => navigate('/requirements')}
+              onClick={() => navigate(-1)}
               disabled={loading}
               className="hover:bg-destructive hover:text-destructive-foreground transition-all duration-300 hover:scale-[1.02] bg-red-800"
 

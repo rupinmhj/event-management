@@ -13,6 +13,7 @@ export const AuthProvider = ({ children }) => {
     const [id, setId] = useState(null);
     const [phone_number, setPhone_number] = useState(null);
     const [fullName, setFullName] = useState(null);
+    const [hasProfile, setHasProfile] = useState(false);
 
 
     useEffect(() => {
@@ -23,7 +24,7 @@ export const AuthProvider = ({ children }) => {
         const storedId = localStorage.getItem('id');
         const storedFullname = localStorage.getItem('user_full_name');
         const storedPhoneno = localStorage.getItem('phone_number');
-
+        const storedHasProfile = localStorage.getItem('has_profile') === 'true';
         const init = () => {
             if (encryptedAccess) {
                 try {
@@ -52,6 +53,10 @@ export const AuthProvider = ({ children }) => {
             if (storedFullname) {
                 setFullName(storedFullname);
             }
+            if (storedHasProfile) {
+                setHasProfile(storedHasProfile);
+            }
+
 
             setAuthReady(true);
             setIsLoading(false);
@@ -60,7 +65,7 @@ export const AuthProvider = ({ children }) => {
         init();
     }, []);
 
-    const login = (access, refresh, id, email, role, user_full_name, phone_number) => {
+    const login = (access, refresh, id, email, role, user_full_name, phone_number, hasProfile) => {
         if (access) {
             const encryptedAccess = CryptoJS.AES.encrypt(access, SECRET_KEY).toString();
             Cookies.set('access_token', encryptedAccess, { expires: 1 });
@@ -71,6 +76,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('role', role);
         localStorage.setItem('user_full_name', user_full_name);
         localStorage.setItem('phone_number', phone_number);
+        localStorage.setItem('has_profile', hasProfile);
 
     };
 
@@ -101,7 +107,8 @@ export const AuthProvider = ({ children }) => {
                 setPhone_number,
                 fullName,
                 setFullName,
-
+                hasProfile,
+                setHasProfile,
             }}
         >
             {children}

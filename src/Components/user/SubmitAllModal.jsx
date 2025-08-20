@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ChevronDown, Upload, Check, Clock, FileText, Link } from 'lucide-react';
+import { ChevronDown, Upload, Check, Clock, FileText, Link, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -13,6 +13,9 @@ const SubmitAllModal = ({ isOpen, onClose, events, onRefresh }) => {
     const [selectedEventId, setSelectedEventId] = useState(null);
     const [submissions, setSubmissions] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [participationDetails, setParticipationDetails] = useState({});
+    const [ownParticipations, setOwnParticipations] = useState({});
+    const [loading, setLoading] = useState(false);
     const api = useAxiosAuth();
 
     // Preselect first event when modal opens
@@ -22,8 +25,112 @@ const SubmitAllModal = ({ isOpen, onClose, events, onRefresh }) => {
         }
     }, [isOpen, events, selectedEventId]);
 
+    // Fetch participation data when modal opens or event changes
+    useEffect(() => {
+        if (isOpen && selectedEventId) {
+            fetchParticipationData(selectedEventId);
+        }
+    }, [isOpen, selectedEventId]);
+
+    const fetchParticipationData = async (eventId) => {
+        setLoading(true);
+        try {
+            // Fetch own participation list to get participant ID
+            const ownParticipationRes = await api.get(`/api/event/own-participation-list/?event=${eventId}`);
+            const ownParticipationData = ownParticipationRes.data;
+
+            setOwnParticipations(prev => ({
+                ...prev,
+                [eventId]: ownParticipationData
+            }));
+
+            // If we have own participation data, get detailed participation
+            let participationData = null;
+            if (ownParticipationData && ownParticipationData.length > 0) {
+                const participantId = ownParticipationData[0].id;
+
+                try {
+                    const participationRes = await api.get(`/api/event/participation-detail/${participantId}/`);
+                    participationData = participationRes.data;
+                } catch (error) {
+                    console.log(`No participation detail found for participant ${participantId}`);
+                }
+            }
+
+            setParticipationDetails(prev => ({
+                ...prev,
+                [eventId]: participationData
+            }));
+
+            // Prefill submissions with existing data
+            prefillSubmissions(eventId, participationData, ownParticipationData);
+
+        } catch (error) {
+            console.error('Error fetching participation data:', error);
+            setOwnParticipations(prev => ({
+                ...prev,
+                [eventId]: []
+            }));
+            setParticipationDetails(prev => ({
+                ...prev,
+                [eventId]: null
+            }));
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const prefillSubmissions = (eventId, participationData, ownParticipationData) => {
+        const selectedEvent = events.find(e => e.id === eventId);
+        if (!selectedEvent) return;
+
+        const newSubmissions = {};
+
+        selectedEvent.requirements?.forEach(requirement => {
+            // First try to get data from participation detail (submitted responses)
+            const response = getResponseForRequirement(participationData, requirement.id);
+
+            // If no submitted response, try to get from own participation (drafts)
+            const ownParticipation = getOwnParticipationForRequirement(ownParticipationData, requirement.id);
+
+            const existingData = response || ownParticipation;
+
+            if (existingData) {
+                if (requirement.type === 'FILE') {
+                    // For files, we can't prefill the actual file object, but we can show the filename
+                    // The file input will need special handling to show existing file info
+                    if (existingData.file) {
+                        // Store filename for display purposes
+                        newSubmissions[`${requirement.id}_filename`] = existingData.file.split('/').pop();
+                    }
+                } else {
+                    // For text/URL, prefill the value
+                    if (existingData.value) {
+                        newSubmissions[requirement.id] = existingData.value;
+                    }
+                }
+            }
+        });
+
+        setSubmissions(newSubmissions);
+    };
+
+    // Helper functions (same as in RequirementCard)
+    const getResponseForRequirement = (participationData, requirementId) => {
+        if (!participationData || !participationData.responses) return null;
+        return participationData.responses.find(response =>
+            response.requirement === requirementId
+        );
+    };
+
+    const getOwnParticipationForRequirement = (ownParticipationData, requirementId) => {
+        if (!ownParticipationData || !Array.isArray(ownParticipationData)) return null;
+        return ownParticipationData.find(participation =>
+            participation.requirement === requirementId
+        );
+    };
+
     const selectedEvent = events.find(e => e.id === selectedEventId) || null;
-    // Only requirements of the selected event
     const allRequirements = selectedEvent?.requirements || [];
 
     const getTypeIcon = (type) => {
@@ -53,7 +160,7 @@ const SubmitAllModal = ({ isOpen, onClose, events, onRefresh }) => {
         }
 
         const submissionData = allRequirements
-            .filter(req => submissions[req.id] && !req.submitted)
+            .filter(req => submissions[req.id]) // Include all requirements with data, regardless of submission status
             .map(req => ({
                 requirement_id: req.id,
                 type: req.type,
@@ -71,6 +178,13 @@ const SubmitAllModal = ({ isOpen, onClose, events, onRefresh }) => {
             const formData = new FormData();
             formData.append('event_id', selectedEventId);
 
+            // Add participation_id for editing existing submissions
+            const ownParticipationData = ownParticipations[selectedEventId];
+            if (ownParticipationData && ownParticipationData.length > 0) {
+                const participationId = ownParticipationData[0].id;
+                formData.append('participation_id', participationId);
+            }
+
             submissionData.forEach((sub, index) => {
                 formData.append(`responses[${index}][requirement_id]`, sub.requirement_id);
                 if (sub.type === 'FILE') {
@@ -83,8 +197,6 @@ const SubmitAllModal = ({ isOpen, onClose, events, onRefresh }) => {
             await api.post('/api/event/participation/submit-response/', formData);
 
             setSubmissions({});
-            // keep the selected event, or reset if you prefer:
-            // setSelectedEventId(null);
             onRefresh?.();
             onClose();
         } catch (error) {
@@ -101,18 +213,32 @@ const SubmitAllModal = ({ isOpen, onClose, events, onRefresh }) => {
 
     const handleFileChange = (requirementId, e) => {
         const file = e.target.files?.[0];
-        if (file) handleValueChange(requirementId, file);
+        if (file) {
+            handleValueChange(requirementId, file);
+            // Clear the filename display when new file is selected
+            setSubmissions(prev => ({ ...prev, [`${requirementId}_filename`]: undefined }));
+        }
+    };
+
+    const isRequirementSubmitted = (requirementId) => {
+        const participationData = participationDetails[selectedEventId];
+        const response = getResponseForRequirement(participationData, requirementId);
+        return response && response.is_submitted;
+    };
+
+    const hasExistingFile = (requirementId) => {
+        return submissions[`${requirementId}_filename`];
     };
 
     const getCompletedCount = () =>
-        allRequirements.filter(req => submissions[req.id] && !req.submitted).length;
+        allRequirements.filter(req => submissions[req.id]).length; // Count all requirements with current form data
 
     const getAvailableRequirements = () =>
-        allRequirements.filter(req => !req.submitted);
+        allRequirements; // Show all requirements, including submitted ones for editing
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto ">
+            <DialogContent className="max-w-[80dvw]  max-h-[90vh]  overflow-y-auto ">
                 <div className="sticky top-0 bg-white border-b pb-4 ">
                     <DialogTitle className="text-2xl font-bold text-gray-900">
                         Submit All Requirements
@@ -123,7 +249,7 @@ const SubmitAllModal = ({ isOpen, onClose, events, onRefresh }) => {
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* Event selection (no "All") */}
+                    {/* Event selection */}
                     {events.length > 0 && (
                         <Card className="bg-white border border-gray-200">
                             <CardHeader className="pb-3">
@@ -149,8 +275,18 @@ const SubmitAllModal = ({ isOpen, onClose, events, onRefresh }) => {
                         </Card>
                     )}
 
+                    {/* Loading state */}
+                    {loading && (
+                        <Card className="bg-blue-50 border border-blue-200">
+                            <CardContent className="p-4 text-blue-800 flex items-center justify-center">
+                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500 mr-2"></div>
+                                Loading participation data...
+                            </CardContent>
+                        </Card>
+                    )}
+
                     {/* Guard if no event is selected */}
-                    {!selectedEvent && (
+                    {!selectedEvent && !loading && (
                         <Card className="bg-yellow-50 border border-yellow-200">
                             <CardContent className="p-4 text-yellow-800">
                                 Please select an event to view and submit its requirements.
@@ -159,18 +295,19 @@ const SubmitAllModal = ({ isOpen, onClose, events, onRefresh }) => {
                     )}
 
                     {/* Requirements for the selected event */}
-                    {selectedEvent && (
+                    {selectedEvent && !loading && (
                         <div className="space-y-4">
                             {getAvailableRequirements().map((requirement) => {
                                 const eventTitle = selectedEvent.title;
                                 const eventIcon = selectedEvent.icon;
                                 const isCompleted = !!submissions[requirement.id];
                                 const isOverdue = requirement.deadline && new Date(requirement.deadline) < new Date();
+                                const hasExistingData = hasExistingFile(requirement.id) || submissions[requirement.id];
 
                                 return (
                                     <Card
                                         key={requirement.id}
-                                        className={`bg-white border border-gray-200 shadow-sm transition-all duration-300 ${isCompleted ? 'border-green-300 shadow-md' : ''} ${isOverdue ? 'border-red-200 bg-red-50' : ''}`}
+                                        className={`bg-white border border-gray-200 shadow-sm transition-all duration-300 ${isCompleted ? 'border-green-300 shadow-md' : ''} ${isOverdue ? 'border-red-200 bg-red-50' : ''} ${hasExistingData && !isCompleted ? 'border-blue-300 bg-blue-50' : ''}`}
                                     >
                                         <CardHeader className="pb-3">
                                             <div className="flex items-start justify-between gap-4">
@@ -179,10 +316,14 @@ const SubmitAllModal = ({ isOpen, onClose, events, onRefresh }) => {
                                                         {eventTitle}
                                                     </CardTitle>
                                                     <div className="flex items-center gap-2 mb-2">
-
                                                         {requirement.is_required && (
                                                             <Badge className="text-xs bg-red-100 text-red-700 border-red-200">
                                                                 Required
+                                                            </Badge>
+                                                        )}
+                                                        {hasExistingData && !isCompleted && (
+                                                            <Badge className="text-xs bg-blue-100 text-blue-700 border-blue-200">
+                                                                Has Draft
                                                             </Badge>
                                                         )}
                                                         {isCompleted && (
@@ -247,9 +388,48 @@ const SubmitAllModal = ({ isOpen, onClose, events, onRefresh }) => {
                                                 </div>
                                             )}
 
+                                            {/* Show existing data info */}
+                                            {hasExistingData && !isCompleted && (
+                                                <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mb-4">
+                                                    {/* <p className="text-blue-700 text-sm font-medium mb-1">
+                                                        📝 You have existing data for this requirement
+                                                    </p>
+                                                    {hasExistingFile(requirement.id) && (
+                                                        <p className="text-blue-600 text-xs">
+                                                            Current file: {submissions[`${requirement.id}_filename`]}
+                                                        </p>
+                                                    )} */}
+                                                    {submissions[requirement.id] && requirement.type !== 'FILE' && (
+                                                        <p className="text-blue-600 text-xs">
+                                                            Current text: {submissions[requirement.id].length > 50
+                                                                ? `${submissions[requirement.id].substring(0, 50)}...`
+                                                                : submissions[requirement.id]}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            )}
+
                                             {/* Inputs */}
                                             {requirement.type === 'FILE' ? (
                                                 <div className="space-y-2">
+                                                    {/* Show existing file info */}
+                                                    {hasExistingFile(requirement.id) && !submissions[requirement.id] && (
+                                                        <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                                            <a
+                                                                href={submissions[`${requirement.id}_fileurl`]}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="flex items-center text-blue-700 text-sm hover:underline"
+                                                            >
+                                                                <Eye className="w-4 h-4 mr-2" />
+                                                                View current file
+                                                            </a>
+                                                            <p className="text-xs text-blue-600 mt-1">
+                                                                Upload a new file to replace this one
+                                                            </p>
+                                                        </div>
+                                                    )}
+
                                                     <div className="flex items-center justify-center w-full">
                                                         <label
                                                             htmlFor={`file-${requirement.id}`}
@@ -258,7 +438,9 @@ const SubmitAllModal = ({ isOpen, onClose, events, onRefresh }) => {
                                                             <div className="flex flex-col items-center justify-center pt-2 pb-3">
                                                                 <Upload className="w-6 h-6 mb-2 text-gray-400" />
                                                                 <p className="text-xs text-gray-500">
-                                                                    <span className="font-semibold">Click to upload</span>
+                                                                    <span className="font-semibold">
+                                                                        {hasExistingFile(requirement.id) ? 'Click to replace file' : 'Click to upload'}
+                                                                    </span>
                                                                 </p>
                                                             </div>
                                                             <input
@@ -270,10 +452,19 @@ const SubmitAllModal = ({ isOpen, onClose, events, onRefresh }) => {
                                                             />
                                                         </label>
                                                     </div>
+
+                                                    {/* Show newly selected file */}
                                                     {submissions[requirement.id] instanceof File && (
-                                                        <p className="text-sm text-green-600">
-                                                            Selected: {submissions[requirement.id].name}
-                                                        </p>
+                                                        <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                                                            <p className="text-sm text-green-700">
+                                                                ✓ New file selected: {submissions[requirement.id].name}
+                                                            </p>
+                                                            {hasExistingFile(requirement.id) && (
+                                                                <p className="text-xs text-green-600 mt-1">
+                                                                    This will replace: {submissions[`${requirement.id}_filename`]}
+                                                                </p>
+                                                            )}
+                                                        </div>
                                                     )}
                                                 </div>
                                             ) : requirement.type === 'URL' ? (
@@ -300,7 +491,7 @@ const SubmitAllModal = ({ isOpen, onClose, events, onRefresh }) => {
                         </div>
                     )}
 
-                    {selectedEvent && getAvailableRequirements().length === 0 && (
+                    {selectedEvent && !loading && getAvailableRequirements().length === 0 && (
                         <Card className="bg-green-50 border border-green-200">
                             <CardContent className="p-6 text-center">
                                 <Check className="w-12 h-12 text-green-600 mx-auto mb-4" />
@@ -319,7 +510,7 @@ const SubmitAllModal = ({ isOpen, onClose, events, onRefresh }) => {
                             type="button"
                             variant="secondary"
                             onClick={onClose}
-                            className="flex-1 border-gray-300 hover:bg-red-600 text-white hover:text-white bg-red-500"
+                            className="flex-1 border-gray-300 hover:bg-red-600 text-white hover:text-white bg-red-500 w-[100px]"
                             disabled={isSubmitting}
                         >
                             Cancel
@@ -327,7 +518,7 @@ const SubmitAllModal = ({ isOpen, onClose, events, onRefresh }) => {
                         <Button
                             type="submit"
                             className="flex-1 bg-blue hover:bg-blue/90 text-white font-medium transition-colors duration-200"
-                            disabled={isSubmitting || !selectedEventId}
+                            disabled={isSubmitting || !selectedEventId || loading}
                         >
                             {isSubmitting ? (
                                 <>
@@ -335,7 +526,7 @@ const SubmitAllModal = ({ isOpen, onClose, events, onRefresh }) => {
                                     Submitting...
                                 </>
                             ) : (
-                                `Submit All (${getCompletedCount()})`
+                                `Submit `
                             )}
                         </Button>
                     </div>

@@ -129,9 +129,6 @@ const Navbar = ({ mode }) => {
   const location = useLocation();
   const isActiveLink = (linkPath) => location.pathname === linkPath;
 
-  // Disable nav items if on setup-profile
-  const disableNav = location.pathname === "/user/setup-profile";
-
   return (
     <header className="border-b font-sans bg-white ">
       <div className="px-12 flex h-16 items-center justify-between gap-4">
@@ -169,12 +166,11 @@ const Navbar = ({ mode }) => {
                     <NavigationMenuItem key={index} className="w-full">
                       <NavigationMenuLink asChild>
                         <Link
-                          to={disableNav ? "#" : link.to}
-                          onClick={(e) => disableNav && e.preventDefault()}
+                          to={link.to}
                           className={`block w-full py-1.5 font-medium transition-colors ${isActiveLink(link.to)
                             ? "text-blue border-b-2 border-blue"
                             : "text-muted-foreground hover:text-blue"
-                            } ${disableNav ? "pointer-events-none opacity-50" : ""}`}
+                            }`}
                         >
                           {link.label}
                         </Link>
@@ -189,9 +185,8 @@ const Navbar = ({ mode }) => {
           {/* Logo & Desktop Navigation */}
           <div className="flex items-center gap-6">
             <NavLink
-              to={disableNav ? "#" : "/user"}          // "#" if disabled
+              to="/user"
               className="text-blue hover:text-blue/90"
-              onClick={disableNav ? (e) => e.preventDefault() : undefined} // prevent navigation if disabled
             >
               <Logo />
             </NavLink>
@@ -202,12 +197,11 @@ const Navbar = ({ mode }) => {
                   <NavigationMenuItem key={index}>
                     <NavigationMenuLink asChild>
                       <NavLink
-                        to={disableNav ? "#" : link.to}
-                        onClick={(e) => disableNav && e.preventDefault()}
+                        to={link.to}
                         className={`relative py-1.5 font-medium transition-all duration-200 ease-in-out ${isActiveLink(link.to)
                           ? "text-blue after:w-full"
                           : "text-muted-foreground hover after:w-0 hover:after:w-full"
-                          } ${disableNav ? "pointer-events-none opacity-50" : ""}`}
+                          }`}
                       >
                         {link.label}
                       </NavLink>

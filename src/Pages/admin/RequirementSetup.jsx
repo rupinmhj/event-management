@@ -20,7 +20,8 @@ import {
   MdPhone,
   MdCalendarToday,
   MdCheckBox,
-  MdLink
+  MdLink,
+  MdNotes 
 } from 'react-icons/md';
 import AuthContext from '@/context/AuthContext';
 import useAxiosAuth from '@/hooks/useAxiosAuth';
@@ -241,7 +242,7 @@ export const RequirementSetup = () => {
         <div className="max-w-4xl mx-auto space-y-8">
 
           {/* Header */}
-          <div className="text-center space-y-4">
+          {/* <div className="text-center space-y-4">
            
             <div>
               <h1 className="text-[30px] font-bold text-gray-800">
@@ -251,7 +252,7 @@ export const RequirementSetup = () => {
                 Configure the information participants need to provide for your event
               </p>
             </div>
-          </div>
+          </div> */}
 
           {/* Event Selection */}
           <Card className="shadow-lg border-0 bg-gradient-to-r from-card to-primary-soft/20 ">
@@ -336,6 +337,11 @@ export const RequirementSetup = () => {
                       <SelectItem value="TEXT">
                         <div className="flex items-center gap-2">
                           <MdTextFields className="h-4 w-4" /> Text Field
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="TEXTAREA">
+                        <div className="flex items-center gap-2">
+                          <MdNotes  className="h-4 w-4" /> Text Area
                         </div>
                       </SelectItem>
                       <SelectItem value="FILE">
@@ -445,16 +451,26 @@ export const RequirementSetup = () => {
             </CardContent>
           </Card>
 
-          {/* Save Button */}
-          <div className="flex justify-center">
-            <button
+
+          <div className="flex justify-center gap-4 pt-6">
+
+
+            <Button
               onClick={saveRequirement}
               disabled={loading}
-              className={`rounded-lg shadow-lg px-8 py-3 text-md text-white cursor-pointer
-                ${loading ? 'bg-opacity-50 cursor-not-allowed' : 'bg-blue hover:bg-blue/80'}`}
+              className="flex-1 bg-blue transition-all duration-300 hover:scale-[1.02] text-primary-foreground hover:bg-blue/90"
+
             >
               {loading ? 'Saving...' : 'Save Requirement'}
-            </button>
+            </Button>
+            <Button
+              onClick={() => navigate(-1)}
+              disabled={loading}
+              className="hover:bg-destructive hover:text-destructive-foreground transition-all duration-300 hover:scale-[1.02] bg-red-800"
+
+            >
+              Cancel
+            </Button>
           </div>
         </div>
       </div>

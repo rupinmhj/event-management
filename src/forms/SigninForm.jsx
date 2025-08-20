@@ -1,4 +1,4 @@
-import React, { useContext, useState,useEffect } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { motion } from "framer-motion";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa6";
 import { AiOutlineIdcard, AiOutlineLock } from "react-icons/ai";
@@ -14,7 +14,7 @@ export const SigninForm = ({ switchToSignup, setShowOtp }) => {
     const [passwordError, setPasswordError] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
-    const { login, logout, authTokens } = useContext(AuthContext)
+    const { login, logout, authTokens,setHasProfile } = useContext(AuthContext)
     const navigate = useNavigate();
     const validate = () => {
         let valid = true;
@@ -60,7 +60,7 @@ export const SigninForm = ({ switchToSignup, setShowOtp }) => {
             const { detail, otp_required, email: returnedEmail, access, refresh, user } = response.data;
             logout();
             if (access) {
-                login(access, refresh, user.id, user.email, user.role, user.user_full_name, user.phone_number);
+                login(access, refresh, user.id, user.email, user.role, user.user_full_name, user.phone_number,user.has_profile);
             }
             else {
                 localStorage.setItem('email', returnedEmail);
@@ -69,6 +69,9 @@ export const SigninForm = ({ switchToSignup, setShowOtp }) => {
 
             if (otp_required) {
                 setShowOtp(true);
+            }
+            if(user.has_profile) {
+                setHasProfile(true);
             }
 
 
@@ -95,9 +98,9 @@ export const SigninForm = ({ switchToSignup, setShowOtp }) => {
             setLoading(false);
         }
     };
-     useEffect(() => {
-            window.scrollTo({ top: 0, left: 0, behavior: "smooth" })
-        }, [])
+    useEffect(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: "smooth" })
+    }, [])
 
     return (
         <motion.div

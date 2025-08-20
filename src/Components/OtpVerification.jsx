@@ -2,7 +2,9 @@ import React, { useState, useEffect, useRef, useContext } from 'react';
 import { Button } from './ui/button';
 import AuthContext from '@/context/AuthContext';
 import useAxiosAuth from '@/hooks/useAxiosAuth';
-import { motion } from 'framer-motion'
+import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 const OTPVerification = ({ setShowOtp }) => {
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
     const [timeLeft, setTimeLeft] = useState(60);
@@ -13,7 +15,7 @@ const OTPVerification = ({ setShowOtp }) => {
     const { login } = useContext(AuthContext);
     const email = localStorage.getItem("email");
     const api = useAxiosAuth();
-
+    const navigate = useNavigate();
     useEffect(() => {
         if (timeLeft > 0) {
             const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
@@ -53,37 +55,40 @@ const OTPVerification = ({ setShowOtp }) => {
     const isOtpComplete = otp.every(digit => digit !== '');
 
     const handleVerify = async () => {
-        if (!isOtpComplete) {
-            setError('Please enter the complete OTP');
-            return;
+    if (!isOtpComplete) {
+        setError('Please enter the complete OTP');
+        return;
+    }
+
+    setIsVerifying(true);
+    setError('');
+
+    try {
+        if (!email) return;
+        const otpCode = otp.join('');
+        const response = await api.post('/api/account/verify-otp/', {
+            email,
+            otp: otpCode,
+        });
+        const { access, refresh, user, detail } = response.data;
+
+        if (response.status === 200 && access) {
+            login(access, refresh, user.id, user.email, user.role, user.user_full_name, user.phone_number);
+            setShowOtp(false);
+            user.role === "ADMIN"
+                ? navigate('/admin')
+                : navigate(user.has_profile ? '/user' : '/user/setup-profile');
+            toast.success(detail || 'Signed in successfully');
+        } else {
+            setError('Verification failed. Please try again.');
         }
-
-        setIsVerifying(true);
-        setError('');
-
-        try {
-            if (!email) return;
-            const otpCode = otp.join('');
-            console.log('email', email)
-            const response = await api.post('/api/account/verify-otp/', {
-                email,
-                otp: otpCode,
-            });
-
-            if (response.status === 200) {
-                login(response.data.tokens);
-                setShowOtp(false);
-            } else {
-                setError('Verification failed. Please try again.');
-            }
-        } catch (err) {
-            const msg = err?.response?.data?.detail;
-            console.log('msg', msg)
-            setError(msg);
-        } finally {
-            setIsVerifying(false);
-        }
-    };
+    } catch (err) {
+        const msg = err?.response?.data?.detail || 'Verification failed. Please try again.';
+        setError(msg);
+    } finally {
+        setIsVerifying(false);
+    }
+};
 
     const handleResendOTP = async () => {
         setIsResending(true);

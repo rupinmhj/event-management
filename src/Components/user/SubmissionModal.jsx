@@ -5,16 +5,16 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-
-const SubmissionModal = ({ 
-    isOpen, 
-    onClose, 
-    event, 
-    requirement, 
+import { Eye } from 'lucide-react';
+const SubmissionModal = ({
+    isOpen,
+    onClose,
+    event,
+    requirement,
     response, // Contains existing response/participation data
     participationId, // ID for updating
-    isEditMode, 
-    onSubmit 
+    isEditMode,
+    onSubmit
 }) => {
     const [value, setValue] = useState('');
     const [file, setFile] = useState(null);
@@ -26,12 +26,12 @@ const SubmissionModal = ({
     useEffect(() => {
         if (isOpen && response) {
             console.log('Prefilling with response data:', response);
-            
+
             // Set text value if exists
             if (response.value) {
                 setValue(response.value);
             }
-            
+
             // Set existing file name if exists
             if (response.file) {
                 const fileName = response.file.split('/').pop();
@@ -127,11 +127,11 @@ const SubmissionModal = ({
 
     return (
         <Dialog open={isOpen} onOpenChange={handleClose}>
-            <DialogContent className="sm:max-w-md bg-white border border-gray-200">
+            <DialogContent className="max-w-[80dvw] h-[80dvh] max-sm:w-[100dvw] bg-white border border-gray-200 ">
                 <DialogHeader>
-                    <DialogTitle className="text-xl font-semibold text-gray-900">
+                    {/* <DialogTitle className="text-xl font-semibold text-gray-900">
                         {isEditMode ? 'Edit Submission' : 'Submit'} {requirement.label}
-                    </DialogTitle>
+                    </DialogTitle> */}
                     <p className="text-[16px] text-blue/90 font-semibold">
                         Event: {event.title}
                     </p>
@@ -149,11 +149,17 @@ const SubmissionModal = ({
                         {requirement.type === 'FILE' ? (
                             <div className="space-y-2">
                                 {/* Show existing file if available */}
-                                {existingFileName && !file && (
+                                {existingFileName && response?.file && !file && (
                                     <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                                        <p className="text-sm text-blue-700">
-                                            📎 Current file: {existingFileName}
-                                        </p>
+                                        <a
+                                            href={response.file}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center text-blue text-sm hover:text-blue/80 "
+                                        >
+                                            <Eye className="w-4 h-4 mr-2" />
+                                            View current file
+                                        </a>
                                         <p className="text-xs text-blue-600 mt-1">
                                             Upload a new file to replace this one
                                         </p>
@@ -185,7 +191,7 @@ const SubmissionModal = ({
                                         />
                                     </label>
                                 </div>
-                                
+
                                 {/* Show newly selected file */}
                                 {file && (
                                     <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
@@ -262,11 +268,10 @@ const SubmissionModal = ({
                         </Button>
                         <Button
                             type="submit"
-                            className={`flex-1 text-white ${
-                                isEditMode 
-                                    ? 'bg-orange-600 hover:bg-orange-700' 
+                            className={`flex-1 text-white ${isEditMode
+                                    ? 'bg-orange-600 hover:bg-orange-700'
                                     : 'bg-blue hover:bg-blue/80'
-                            }`}
+                                }`}
                             disabled={isSubmitting}
                         >
                             {isSubmitting ? (

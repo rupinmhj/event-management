@@ -10,177 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Upload, User, Camera, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import useAxiosAuth from "@/hooks/useAxiosAuth";
 import { useNavigate } from "react-router-dom";
-const DatePicker = ({ value, onChange, minDate, maxDate }) => {
-    const [isOpen, setIsOpen] = useState(false);
-    const [currentMonth, setCurrentMonth] = useState(new Date());
-    const [isYearPickerOpen, setIsYearPickerOpen] = useState(false);
-
-    const selectedDate = value ? new Date(value) : null;
-
-    const formatDate = (date) => {
-        return date.toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-        });
-    };
-
-    const getDaysInMonth = (date) => {
-        const year = date.getFullYear();
-        const month = date.getMonth();
-        const firstDay = new Date(year, month, 1);
-        const lastDay = new Date(year, month + 1, 0);
-        const daysInMonth = lastDay.getDate();
-        const startingDayOfWeek = firstDay.getDay();
-
-        const days = [];
-
-        for (let i = 0; i < startingDayOfWeek; i++) days.push(null);
-        for (let day = 1; day <= daysInMonth; day++) days.push(new Date(year, month, day));
-
-        return days;
-    };
-
-    const navigateMonth = (direction) => {
-        setCurrentMonth((prev) => {
-            const newMonth = new Date(prev);
-            newMonth.setMonth(prev.getMonth() + direction);
-            return newMonth;
-        });
-    };
-
-    const handleDateSelect = (date) => {
-        const dateString = date.toISOString().split("T")[0];
-        onChange(dateString);
-        setIsOpen(false);
-    };
-
-    const isDateDisabled = (date) => {
-        if (minDate && date < minDate) return true;
-        if (maxDate && date > maxDate) return true;
-        return false;
-    };
-
-    const getYears = () => {
-        const years = [];
-        const minYear = minDate ? minDate.getFullYear() : 1900;
-        const maxYear = maxDate ? maxDate.getFullYear() : new Date().getFullYear();
-        for (let y = minYear; y <= maxYear; y++) years.push(y);
-        return years;
-    };
-
-    const days = getDaysInMonth(currentMonth);
-    const monthYear = currentMonth.toLocaleDateString("en-US", {
-        month: "long",
-        year: "numeric",
-    });
-
-    return (
-        <div className="relative font-sans">
-            <div
-                className="flex items-center justify-between w-full px-3 py-2 text-sm border border-input rounded-md cursor-pointer bg-background hover:bg-accent"
-                onClick={() => setIsOpen(!isOpen)}
-            >
-                <span className={selectedDate ? "text-foreground" : "text-muted-foreground"}>
-                    {selectedDate ? formatDate(selectedDate) : "Select date of birth"}
-                </span>
-                <Calendar className="w-4 h-4 text-muted-foreground" />
-            </div>
-
-            {isOpen && (
-                <div className="absolute top-full left-0 z-50 w-80 mt-1 bg-background border border-border rounded-lg shadow-lg p-4">
-                    <div className="flex items-center justify-between mb-4">
-                        <button
-                            type="button"
-                            onClick={() => setIsYearPickerOpen(false) || navigateMonth(-1)}
-                            className="p-1 hover:bg-accent rounded"
-                        >
-                            <ChevronLeft className="w-4 h-4" />
-                        </button>
-
-                        <h3
-                            className="text-sm font-medium cursor-pointer select-none"
-                            onClick={() => setIsYearPickerOpen(!isYearPickerOpen)}
-                        >
-                            {monthYear}
-                        </h3>
-
-                        <button
-                            type="button"
-                            onClick={() => setIsYearPickerOpen(false) || navigateMonth(1)}
-                            className="p-1 hover:bg-accent rounded"
-                        >
-                            <ChevronRight className="w-4 h-4" />
-                        </button>
-                    </div>
-
-                    {isYearPickerOpen ? (
-                        <div
-                            className="max-h-48 overflow-y-auto grid grid-cols-4 gap-2"
-                            style={{ maxHeight: "12rem" }}
-                        >
-                            {getYears().map((year) => (
-                                <button
-                                    key={year}
-                                    type="button"
-                                    className={`p-2 rounded text-center hover:bg-accent ${currentMonth.getFullYear() === year
-                                        ? "bg-primary text-primary-foreground font-bold"
-                                        : ""
-                                        }`}
-                                    onClick={() => {
-                                        const newDate = new Date(currentMonth);
-                                        newDate.setFullYear(year);
-
-                                        if (minDate && newDate < minDate) newDate.setFullYear(minDate.getFullYear());
-                                        if (maxDate && newDate > maxDate) newDate.setFullYear(maxDate.getFullYear());
-
-                                        setCurrentMonth(newDate);
-                                        setIsYearPickerOpen(false);
-                                    }}
-                                >
-                                    {year}
-                                </button>
-                            ))}
-                        </div>
-                    ) : (
-                        <>
-                            <div className="grid grid-cols-7 gap-1 mb-2">
-                                {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day) => (
-                                    <div
-                                        key={day}
-                                        className="p-2 text-xs font-medium text-muted-foreground text-center"
-                                    >
-                                        {day}
-                                    </div>
-                                ))}
-                            </div>
-
-                            <div className="grid grid-cols-7 gap-1">
-                                {days.map((date, index) => (
-                                    <div key={index} className="aspect-square">
-                                        {date && (
-                                            <button
-                                                type="button"
-                                                onClick={() => !isDateDisabled(date) && handleDateSelect(date)}
-                                                disabled={isDateDisabled(date)}
-                                                className={`w-full h-full text-xs rounded hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed ${selectedDate && date.toDateString() === selectedDate.toDateString()
-                                                    ? "bg-primary text-primary-foreground"
-                                                    : "hover:bg-accent"
-                                                    }`}
-                                            >
-                                                {date.getDate()}
-                                            </button>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        </>
-                    )}
-                </div>
-            )}
-        </div>
-    );
-};
+import DatePicker from "@/utils/DatePicker";
 
 const ProfileSetup = () => {
     const api = useAxiosAuth();
@@ -269,9 +99,9 @@ const ProfileSetup = () => {
         if (!address.trim()) newErrors.address = "Address is required";
         if (!dateOfBirth) newErrors.dateOfBirth = "Date of birth is required";
         if (!sex) newErrors.sex = "Gender is required";
-        if (!organization.trim()) newErrors.organization = "Organization is required";
-        if (!designation.trim()) newErrors.designation = "Designation is required";
-        if (!employeeId.trim()) newErrors.employeeId = "Employee ID is required";
+        // if (!organization.trim()) newErrors.organization = "Organization is required";
+        // if (!designation.trim()) newErrors.designation = "Designation is required";
+        // if (!employeeId.trim()) newErrors.employeeId = "Employee ID is required";
         if (!educationLevel) newErrors.educationLevel = "Education level is required";
         // if (!bio.trim()) newErrors.bio = "Bio is required";
         // if (!supportDocument) newErrors.supportDocument = "Support document is required";
@@ -304,12 +134,12 @@ const ProfileSetup = () => {
             formData.append('organization', organization);
             formData.append('designation', designation);
             formData.append('employee_id', employeeId);
-            formData.append('education_level ', educationLevel);
+            formData.append('education_level', educationLevel);
             formData.append('bio', bio);
 
             // Append files if they exist
             if (profileImage) {
-                formData.append('profile_picture ', profileImage);
+                formData.append('profile_picture', profileImage);
             }
             if (supportDocument) {
                 formData.append('support_document', supportDocument);
@@ -327,7 +157,7 @@ const ProfileSetup = () => {
             }, 1000);
 
         } catch (error) {
-            console.error("Error submitting form:", error.response);
+            console.error("Error submitting form:", error);
             toast.error(error.response.data.detail);
             if (error.status = 400) navigate('/user')
         } finally {
@@ -336,8 +166,8 @@ const ProfileSetup = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4 ">
-            <div className="lg:w-[1024px] mx-auto">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 pt-0 px-4  w-full ">
+            <div className="max-w-5xl mx-auto">
                 <div className="text-center mb-8">
                     <h1 className="text-3xl font-semibold text-blue-700 mb-2">Complete Your Profile</h1>
                     <p className="text-blue-600 opacity-70">Help us get to know you better by completing your profile information.</p>
@@ -386,120 +216,142 @@ const ProfileSetup = () => {
 
                     <CardContent className="space-y-6 pt-8">
                         <form onSubmit={handleSubmit} className="space-y-6">
+                            {/* Row 1: Gender & Date of Birth */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="address">Address *</Label>
-                                    <Textarea
-                                        id="address"
-                                        placeholder="Enter your full address"
-                                        className="resize-none"
-                                        rows={3}
-                                        value={address}
-                                        onChange={(e) => setAddress(e.target.value)}
-                                    />
-                                    {errors.address && (
-                                        <p className="text-sm text-red-600">{errors.address}</p>
-                                    )}
-                                </div>
-
-                                <div className="space-y-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="dateOfBirth">Date of Birth *</Label>
-                                        <DatePicker
-                                            value={dateOfBirth}
-                                            onChange={setDateOfBirth}
-                                            minDate={new Date(1950, 0, 1)}
-                                            maxDate={new Date()}
-                                        />
-                                        {errors.dateOfBirth && (
-                                            <p className="text-sm text-red-600">{errors.dateOfBirth}</p>
-                                        )}
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label htmlFor="sex">Gender *</Label>
-                                        <Select onValueChange={setSex}>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Select gender" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="MALE">Male</SelectItem>
-                                                <SelectItem value="FEMALE">Female</SelectItem>
-                                                <SelectItem value="OTHER">Other</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                        {errors.sex && (
-                                            <p className="text-sm text-red-600">{errors.sex}</p>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="organization">Organization *</Label>
-                                    <Input
-                                        id="organization"
-                                        placeholder="Your organization name"
-                                        value={organization}
-                                        onChange={(e) => setOrganization(e.target.value)}
-                                    />
-                                    {errors.organization && (
-                                        <p className="text-sm text-red-600">{errors.organization}</p>
+                                    <Label htmlFor="sex">Gender *</Label>
+                                    <Select onValueChange={setSex} value={sex}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select gender" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="MALE">Male</SelectItem>
+                                            <SelectItem value="FEMALE">Female</SelectItem>
+                                            <SelectItem value="OTHER">Other</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    {errors.sex && (
+                                        <p className="text-sm text-red-600">{errors.sex}</p>
                                     )}
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="designation">Designation *</Label>
-                                    <Input
-                                        id="designation"
-                                        placeholder="Your job title"
-                                        value={designation}
-                                        onChange={(e) => setDesignation(e.target.value)}
+                                    <Label htmlFor="dateOfBirth">Date of Birth *</Label>
+                                    <DatePicker
+                                        value={dateOfBirth}
+                                        onChange={setDateOfBirth}
+                                        minDate={new Date(1950, 0, 1)}
+                                        maxDate={new Date()}
                                     />
-                                    {errors.designation && (
-                                        <p className="text-sm text-red-600">{errors.designation}</p>
+                                    {errors.dateOfBirth && (
+                                        <p className="text-sm text-red-600">{errors.dateOfBirth}</p>
                                     )}
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="employeeId">Employee ID *</Label>
-                                    <Input
-                                        id="employeeId"
-                                        placeholder="Your employee ID"
-                                        value={employeeId}
-                                        onChange={(e) => setEmployeeId(e.target.value)}
-                                    />
-                                    {errors.employeeId && (
-                                        <p className="text-sm text-red-600">{errors.employeeId}</p>
-                                    )}
-                                </div>
+                            {/* Row 2: Address */}
+                            <div className="space-y-2">
+                                <Label htmlFor="address">Address *</Label>
+                                <Textarea
+                                    id="address"
+                                    placeholder="Enter your full address"
+                                    className="resize-none"
+                                    rows={3}
+                                    value={address}
+                                    onChange={(e) => setAddress(e.target.value)}
+                                />
+                                {errors.address && (
+                                    <p className="text-sm text-red-600">{errors.address}</p>
+                                )}
+                            </div>
 
+                            {/* Row 3 & 4: Education Level + Organization */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {/* Education Level */}
                                 <div className="space-y-2">
                                     <Label htmlFor="educationLevel">Education Level *</Label>
-                                    <Select onValueChange={setEducationLevel}>
+                                    <Select onValueChange={setEducationLevel} value={educationLevel}>
                                         <SelectTrigger>
                                             <SelectValue placeholder="Select education level" />
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="HIGH_SCHOOL">High School</SelectItem>
-                                            {/* <SelectItem value="DIPLOMA">Diploma</SelectItem> */}
                                             <SelectItem value="BACHELORS">Bachelor's Degree</SelectItem>
                                             <SelectItem value="MASTERS">Master's Degree</SelectItem>
                                             <SelectItem value="PHD">PhD</SelectItem>
-                                            {/* <SelectItem value="OTHER">Other</SelectItem> */}
                                         </SelectContent>
                                     </Select>
                                     {errors.educationLevel && (
                                         <p className="text-sm text-red-600">{errors.educationLevel}</p>
                                     )}
                                 </div>
+
+                                {/* Organization */}
+                                <div className="space-y-2">
+                                                        <Label htmlFor="organization">Organization *</Label>
+                                                        <Input
+                                                            id="organization"
+                                                            placeholder="Your organization name"
+                                                            value={organization}
+                                                            onChange={(e) => handleInputChange('organization', e.target.value)}
+                                                        />
+                                                        {errors?.organization && (
+                                                            <p className="text-sm text-red-600">{errors.organization}</p>
+                                                        )}
+                                                    </div>
                             </div>
 
+
+                            {/* Conditionally show Employee ID & Designation */}
+                            {organization?.trim() && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="employeeId">Employee ID *</Label>
+                                        <Input
+                                            id="employeeId"
+                                            placeholder="Your employee ID"
+                                            value={employeeId}
+                                            onChange={(e) => setEmployeeId(e.target.value)}
+                                        />
+                                        {errors.employeeId && (
+                                            <p className="text-sm text-red-600">{errors.employeeId}</p>
+                                        )}
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label htmlFor="designation">Designation *</Label>
+                                        <Input
+                                            id="designation"
+                                            placeholder="Your job title"
+                                            value={designation}
+                                            onChange={(e) => setDesignation(e.target.value)}
+                                        />
+                                        {errors.designation && (
+                                            <p className="text-sm text-red-600">{errors.designation}</p>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Row 5: Bio */}
                             <div className="space-y-2">
-                                <Label htmlFor="supportDocument">Support Document </Label>
+                                <Label htmlFor="bio">Bio</Label>
+                                <Textarea
+                                    id="bio"
+                                    placeholder="Tell us a bit about yourself..."
+                                    className="resize-none"
+                                    rows={4}
+                                    value={bio}
+                                    onChange={(e) => setBio(e.target.value)}
+                                />
+                                {errors.bio && (
+                                    <p className="text-sm text-red-600">{errors.bio}</p>
+                                )}
+                            </div>
+
+                            {/* Row 6 (Last): Support Document */}
+                            <div className="space-y-2">
+                                <Label htmlFor="supportDocument">Upload Verification Document</Label>
                                 <div className="flex items-center justify-center w-full">
                                     <label
                                         htmlFor="supportDocument"
@@ -532,21 +384,7 @@ const ProfileSetup = () => {
                                 )}
                             </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="bio">Bio </Label>
-                                <Textarea
-                                    id="bio"
-                                    placeholder="Tell us a bit about yourself..."
-                                    className="resize-none"
-                                    rows={4}
-                                    value={bio}
-                                    onChange={(e) => setBio(e.target.value)}
-                                />
-                                {errors.bio && (
-                                    <p className="text-sm text-red-600">{errors.bio}</p>
-                                )}
-                            </div>
-
+                            {/* Submit */}
                             <Button
                                 type="submit"
                                 disabled={isLoading}

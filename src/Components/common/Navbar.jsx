@@ -166,7 +166,7 @@ const Navbar = ({ mode }) => {
                             <Logo />
                         </Link>
                         {/* Navigation menu */}
-                        <NavigationMenu className="max-md:hidden">
+                        {/* <NavigationMenu className="max-md:hidden">
                             <NavigationMenuList className="gap-10 pl-10">
                                 {navigationLinks.map((link, index) => (
                                     <NavigationMenuItem key={index}>
@@ -181,7 +181,7 @@ const Navbar = ({ mode }) => {
                                     </NavigationMenuItem>
                                 ))}
                             </NavigationMenuList>
-                        </NavigationMenu>
+                        </NavigationMenu> */}
                     </div>
                 </div>
                 {/* Right side */}
