@@ -238,17 +238,17 @@ const SubmitAllModal = ({ isOpen, onClose, events, onRefresh }) => {
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-[80dvw]  max-h-[90vh]  overflow-y-auto ">
+            <DialogContent className="max-w-[80dvw]  max-h-[90vh]  overflow-y-auto py-0 ">
                 <div className="sticky top-0 bg-white border-b pb-4 ">
-                    <DialogTitle className="text-2xl font-bold text-gray-900">
-                        Submit All Requirements
+                    <DialogTitle className="text-2xl font-bold text-gray-900 pt-4">
+                        Submit  Requirements
                     </DialogTitle>
                     <p className="text-sm text-gray-600">
                         Fill out pending requirements for the selected event. Progress: {getCompletedCount()}/{getAvailableRequirements().length} selected
                     </p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-6 ">
                     {/* Event selection */}
                     {events.length > 0 && (
                         <Card className="bg-white border border-gray-200">
@@ -492,7 +492,7 @@ const SubmitAllModal = ({ isOpen, onClose, events, onRefresh }) => {
                     )}
 
                     {selectedEvent && !loading && getAvailableRequirements().length === 0 && (
-                        <Card className="bg-green-50 border border-green-200">
+                        <Card className="bg-green-50 border border-green-200 ">
                             <CardContent className="p-6 text-center">
                                 <Check className="w-12 h-12 text-green-600 mx-auto mb-4" />
                                 <h3 className="text-lg font-semibold text-green-800 mb-2">
@@ -505,8 +505,9 @@ const SubmitAllModal = ({ isOpen, onClose, events, onRefresh }) => {
                         </Card>
                     )}
 
-                    <div className="flex gap-3 pt-6 border-t border-gray-200 sticky bottom-0 bg-white">
-                        <Button
+                    <div className="flex  sticky bottom-0 bg-white mt-6">
+                        <div className="flex w-full gap-3 pt-6 border-t border-gray-200 px-4 py-6">
+                             <Button
                             type="button"
                             variant="secondary"
                             onClick={onClose}
@@ -529,6 +530,8 @@ const SubmitAllModal = ({ isOpen, onClose, events, onRefresh }) => {
                                 `Submit `
                             )}
                         </Button>
+                        </div>
+                       
                     </div>
                 </form>
             </DialogContent>

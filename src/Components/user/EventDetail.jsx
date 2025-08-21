@@ -4,6 +4,13 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import {
+    Tabs,
+    TabsContent,
+    TabsList,
+    TabsTrigger,
+} from "@/components/ui/tabs";
 import {
     ArrowLeft,
     Calendar,
@@ -17,11 +24,15 @@ import {
     Info,
     Share2,
     Heart,
-    Bookmark
+    Bookmark,
+    FileText,
+    CreditCard
 } from "lucide-react";
 import { motion } from 'framer-motion';
 import AuthContext from "@/context/AuthContext";
 import useAxiosAuth from "@/hooks/useAxiosAuth";
+import { RequirementsView } from "./RequirementsView";
+import { TicketPriceView } from "./TicketPriceView";
 
 export function EventDetail() {
     const { id } = useParams();
@@ -145,8 +156,6 @@ export function EventDetail() {
             className="min-h-screen bg-background"
         >
             <div className="max-w-5xl mx-auto px-6 py-8">
-
-
                 {/* Hero Section */}
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
@@ -169,7 +178,33 @@ export function EventDetail() {
                                 </div>
                             )}
 
-
+                            {/* Action Buttons Overlay */}
+                            {/* <div className="absolute top-4 right-4 flex gap-2">
+                                <Button
+                                    size="sm"
+                                    variant="secondary"
+                                    onClick={toggleLike}
+                                    className="bg-background/90 backdrop-blur-sm"
+                                >
+                                    <Heart className={`w-4 h-4 ${isLiked ? 'fill-red-500 text-red-500' : ''}`} />
+                                </Button>
+                                <Button
+                                    size="sm"
+                                    variant="secondary"
+                                    onClick={toggleBookmark}
+                                    className="bg-background/90 backdrop-blur-sm"
+                                >
+                                    <Bookmark className={`w-4 h-4 ${isBookmarked ? 'fill-blue-500 text-blue-500' : ''}`} />
+                                </Button>
+                                <Button
+                                    size="sm"
+                                    variant="secondary"
+                                    onClick={handleShare}
+                                    className="bg-background/90 backdrop-blur-sm"
+                                >
+                                    <Share2 className="w-4 h-4" />
+                                </Button>
+                            </div> */}
 
                             {/* Event Icon */}
                             {event.icon && (
@@ -186,10 +221,10 @@ export function EventDetail() {
                         </div>
 
                         {/* Event Header */}
-                        <CardHeader className="pb-6">
+                        <CardHeader className="pb-4">
                             <div className="flex items-start justify-between gap-4">
                                 <div className="flex-1">
-                                    <h1 className="text-[20px]  font-bold text-gray-800 mb-3">
+                                    <h1 className="text-[20px] font-bold text-gray-800 mb-3">
                                         {event.title}
                                     </h1>
                                     <div className="flex items-center gap-3 mb-4">
@@ -203,20 +238,15 @@ export function EventDetail() {
                                         </span>
                                     </div>
                                     <div className="flex flex-wrap gap-2">
-                                         <button
-                                    className={`text-sm px-3 py-1 rounded font-medium ${event.is_payment_required
-                                        ? "bg-yellow-200 text-yellow-800"
-                                        : "bg-gray-100 text-gray-800"
-                                        }`}
-                                >
-                                    {event.is_payment_required ? "Paid Event" : "Free Event"}
-                                </button>
-                                        {/* <Badge
-                                            variant={event.is_active ? "default" : "outline"}
-                                            className="text-sm px-3 py-1"
+                                        <button
+                                            className={`text-sm px-3 py-1 rounded font-medium ${
+                                                event.is_payment_required
+                                                    ? "bg-yellow-200 text-yellow-800"
+                                                    : "bg-gray-100 text-gray-800"
+                                            }`}
                                         >
-                                            {event.is_active ? "Active" : "Inactive"}
-                                        </Badge> */}
+                                            {event.is_payment_required ? "Paid Event" : "Free Event"}
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -224,127 +254,216 @@ export function EventDetail() {
                     </Card>
                 </motion.div>
 
-                {/* Main Content */}
+                {/* Tabs Section */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.2 }}
-                    className="grid grid-cols-1 lg:grid-cols-3 gap-8"
                 >
-                    {/* Main Content */}
-                    <div className="lg:col-span-2 space-y-6">
-                        {/* Description */}
-                        <Card>
-                            <CardHeader>
-                                <div className="flex items-center gap-2">
-                                    <Info className="w-5 h-5 text-primary" />
-                                    <h2 className="text-[16px] font-semibold">About This Event</h2>
-                                </div>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-muted-foreground leading-relaxed text-[13px]">
-                                    {event.description || "No description provided for this event."}
-                                </p>
-                            </CardContent>
-                        </Card>
+                    <Tabs defaultValue="overview">
+                        <ScrollArea>
+                            <TabsList className="bg-background mb-6 h-auto -space-x-px p-0 shadow-xs rtl:space-x-reverse">
+                                <TabsTrigger
+                                    value="overview"
+                                    className="text-gray-600 data-[state=active]:bg-muted data-[state=active]:after:bg-primary relative overflow-hidden rounded-none border py-2 after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 first:rounded-s last:rounded-e"
+                                >
+                                    <Info
+                                        className="-ms-0.5 me-1.5 opacity-90"
+                                        size={16}
+                                        aria-hidden="true"
+                                    />
+                                    Overview
+                                </TabsTrigger>
+                                <TabsTrigger
+                                    value="requirements"
+                                    className="text-gray-600 data-[state=active]:bg-muted data-[state=active]:after:bg-primary relative overflow-hidden rounded-none border py-2 after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 first:rounded-s last:rounded-e"
+                                >
+                                    <FileText
+                                        className="-ms-0.5 me-1.5 opacity-60"
+                                        size={16}
+                                        aria-hidden="true"
+                                    />
+                                    Requirements
+                                </TabsTrigger>
+                                <TabsTrigger
+                                    value="ticket-price"
+                                    className="text-gray-600 data-[state=active]:bg-muted data-[state=active]:after:bg-primary relative overflow-hidden rounded-none border py-2 after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 first:rounded-s last:rounded-e"
+                                >
+                                    <CreditCard
+                                        className="-ms-0.5 me-1.5 opacity-60"
+                                        size={16}
+                                        aria-hidden="true"
+                                    />
+                                    Ticket Price
+                                </TabsTrigger>
+                            </TabsList>
+                            <ScrollBar orientation="horizontal" />
+                        </ScrollArea>
 
-                        {/* Event Details */}
-                        <Card>
-                            <CardHeader>
-                                <h2 className="text-[16px] font-semibold">Event Details</h2>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="flex items-start gap-4">
-                                        <div className="w-12 h-12  rounded-full flex items-center justify-center">
-                                            <Calendar className="w-5 h-5 text-primary" />
-                                        </div>
-                                        <div>
-                                            <p className="font-semibold text-foreground text-[14px] mb-1">Date</p>
-                                            <p className="text-muted-foreground text-[14px]">
-                                                {formatDate(event.start_date)}
+                        {/* Overview Tab Content */}
+                        <TabsContent value="overview">
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                                {/* Main Content */}
+                                <div className="lg:col-span-2 space-y-6">
+                                    {/* Description */}
+                                    <Card>
+                                        <CardHeader>
+                                            <div className="flex items-center gap-2">
+                                                <Info className="w-5 h-5 text-primary" />
+                                                <h2 className="text-[16px] font-semibold">About This Event</h2>
+                                            </div>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <p className="text-muted-foreground leading-relaxed text-[13px]">
+                                                {event.description || "No description provided for this event."}
                                             </p>
-                                        </div>
-                                    </div>
+                                        </CardContent>
+                                    </Card>
 
-                                    <div className="flex items-start gap-4">
-                                        <div className="w-12 h-12  rounded-full flex items-center justify-center">
-                                            <Clock className="w-5 h-5 text-primary" />
-                                        </div>
-                                        <div>
-                                            <p className="font-semibold text-foreground mb-1 text-[14px]">Duration</p>
-                                            <p className="text-muted-foreground text-[14px]">
-                                                {event.duration}
-                                            </p>
-                                        </div>
-                                    </div>
+                                    {/* Event Details */}
+                                    <Card>
+                                        <CardHeader>
+                                            <h2 className="text-[16px] font-semibold">Event Information</h2>
+                                        </CardHeader>
+                                        <CardContent className="space-y-4">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div className="space-y-3">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center">
+                                                            <Calendar className="w-5 h-5 text-primary" />
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-medium text-[14px]">Date</p>
+                                                            <p className="text-[14px] text-muted-foreground">
+                                                                {formatDate(event.start_date)}
+                                                            </p>
+                                                        </div>
+                                                    </div>
 
-                                    <div className="flex items-start gap-4">
-                                        <div className="w-12 h-12  rounded-full flex items-center justify-center">
-                                            <MapPin className="w-5 h-5 text-primary" />
-                                        </div>
-                                        <div>
-                                            <p className="font-semibold text-foreground mb-1 text-[14px]">Location</p>
-                                            <p className="text-muted-foreground text-[14px]">
-                                                {event.location}
-                                            </p>
-                                        </div>
-                                    </div>
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center">
+                                                            <Clock className="w-5 h-5 text-primary" />
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-medium text-[14px]">Duration</p>
+                                                            <p className="text-[14px] text-muted-foreground">
+                                                                {event.duration}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
 
-                                    <div className="flex items-start gap-4">
-                                        <div className="w-12 h-12  rounded-full flex items-center justify-center">
-                                            <DollarSign className="w-5 h-5 text-primary" />
-                                        </div>
-                                        <div>
-                                            <p className="font-semibold text-foreground mb-1 text-[14px]">Cost</p>
-                                            <p className="text-muted-foreground text-[14px]">
-                                                {event.is_payment_required ? "Paid Event" : "Free Event"}
-                                            </p>
-                                        </div>
-                                    </div>
+                                                <div className="space-y-3">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center">
+                                                            <MapPin className="w-5 h-5 text-primary" />
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-medium text-[14px]">Location</p>
+                                                            <p className="text-[14px] text-muted-foreground">
+                                                                {event.location}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center">
+                                                            <DollarSign className="w-5 h-5 text-primary" />
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-medium text-[14px]">Cost</p>
+                                                            <p className="text-[14px] text-muted-foreground">
+                                                                {event.is_payment_required ? "Paid Event" : "Free Event"}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
                                 </div>
-                            </CardContent>
-                        </Card>
-                    </div>
 
-                    {/* Sidebar */}
-                    <div className="space-y-6">
-                        
-                        {/* Event Highlights */}
-                        <Card>
-                            <CardHeader>
-                                <h3 className="font-semibold">Event Highlights</h3>
-                            </CardHeader>
-                            <CardContent className="space-y-3">
-                                <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-                                    {event.event_type === "ONLINE" ? (
-                                        <Globe className="w-5 h-5 text-green-600" />
-                                    ) : (
-                                        <Building className="w-5 h-5 text-blue-600" />
-                                    )}
-                                    <span className="text-sm font-medium">
-                                        {event.event_type === "ONLINE" ? "Join from anywhere" : "Physical attendance required"}
-                                    </span>
+                                {/* Sidebar */}
+                                <div className="space-y-6">
+                                    {/* Registration Action */}
+                                    {/* <Card>
+                                        <CardHeader>
+                                            <h3 className="font-semibold">Registration</h3>
+                                        </CardHeader>
+                                        <CardContent className="space-y-3">
+                                            <Button
+                                                onClick={handleRegister}
+                                                className="w-full bg-blue-600 hover:bg-blue-700"
+                                            >
+                                                Register Now
+                                            </Button>
+                                            <div className="flex gap-2">
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    onClick={toggleBookmark}
+                                                    className="flex-1"
+                                                >
+                                                    <Bookmark className={`w-4 h-4 mr-2 ${isBookmarked ? 'fill-current' : ''}`} />
+                                                    Bookmark
+                                                </Button>
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    onClick={handleShare}
+                                                    className="flex-1"
+                                                >
+                                                    <Share2 className="w-4 h-4 mr-2" />
+                                                    Share
+                                                </Button>
+                                            </div>
+                                        </CardContent>
+                                    </Card> */}
+
+                                    {/* Event Highlights */}
+                                    <Card>
+                                        <CardHeader>
+                                            <h3 className="font-semibold">Event Highlights</h3>
+                                        </CardHeader>
+                                        <CardContent className="space-y-3">
+                                            <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                                                {event.event_type === "ONLINE" ? (
+                                                    <Globe className="w-5 h-5 text-green-600" />
+                                                ) : (
+                                                    <Building className="w-5 h-5 text-blue-600" />
+                                                )}
+                                                <span className="text-sm font-medium">
+                                                    {event.event_type === "ONLINE" ? "Join from anywhere" : "Physical attendance required"}
+                                                </span>
+                                            </div>
+
+                                            {!event.is_payment_required && (
+                                                <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-950 rounded-lg">
+                                                    <DollarSign className="w-5 h-5 text-green-600" />
+                                                    <span className="text-sm font-medium text-green-800 dark:text-green-200">
+                                                        Free participation
+                                                    </span>
+                                                </div>
+                                            )}
+
+                                            <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
+                                                <Users className="w-5 h-5 text-blue-600" />
+                                                <span className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                                                    Open registration
+                                                </span>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
                                 </div>
+                            </div>
+                        </TabsContent>
 
-                                {!event.is_payment_required && (
-                                    <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-950 rounded-lg">
-                                        <DollarSign className="w-5 h-5 text-green-600" />
-                                        <span className="text-sm font-medium text-green-800 dark:text-green-200">
-                                            Free participation
-                                        </span>
-                                    </div>
-                                )}
+                        {/* Requirements Tab Content */}
+                        <RequirementsView requirements={event.requirements} />
 
-                                <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
-                                    <Users className="w-5 h-5 text-blue-600" />
-                                    <span className="text-sm font-medium text-blue-800 dark:text-blue-200">
-                                        Open registration
-                                    </span>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
+                        {/* Ticket Price Tab Content */}
+                        <TicketPriceView event={event} />
+                    </Tabs>
                 </motion.div>
             </div>
         </motion.div>

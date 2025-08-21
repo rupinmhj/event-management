@@ -105,7 +105,7 @@ const RequirementCard = () => {
         const deadlineDate = new Date(deadline);
         const now = new Date();
         const diffInDays = Math.ceil((deadlineDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-        return diffInDays <= 3 && diffInDays > 0; // Only near if deadline hasn't passed yet
+        return diffInDays <= 3; // Only near if deadline hasn't passed yet
     };
 
     const isDeadlinePassed = (deadline) => {
@@ -230,15 +230,15 @@ const RequirementCard = () => {
                                 key={`${event.id}-${requirement.id}`}
                                 className={`${isNearDeadline ? 'bg-red-50' : 'bg-blue/5'} border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300`}
                             >
-                                <CardHeader className="pb-3">
-                                    <div className="flex items-start justify-between gap-4">
+                                <CardHeader className="pb-2">
+                                    <div className="flex items-start justify-between gap-2">
                                         <div className="flex-1">
-                                            <CardTitle className="text-lg font-semibold text-blue mb-1 hover:text-blue/80 cursor-pointer">
+                                            <CardTitle onClick={() => navigate(`/user/event/${event.id}`)} className="text-lg font-semibold text-blue mb-1 hover:text-blue/80 cursor-pointer">
                                                 {event.title}
                                             </CardTitle>
-                                            <div className="flex items-center gap-2 mb-2">
+                                            <div className="flex items-center gap-2 mb-2 disabled">
                                                 {isSubmitted && (
-                                                    <Badge className="text-xs bg-green-100 text-green-700 border-green-200">
+                                                    <Badge className="text-xs bg-green-100 text-green-700 border-green-200 ">
                                                         Submitted
                                                     </Badge>
                                                 )}
@@ -249,16 +249,16 @@ const RequirementCard = () => {
                                     </div>
                                 </CardHeader>
 
-                                <CardContent className="pt-0 flex flex-col h-full">
+                                <CardContent className="pt-0 flex flex-col h-full ">
                                     <h4 className="font-medium text-gray-900 mb-2">
                                         {requirement.label}
                                     </h4>
-                                    <p className="text-sm text-gray-600 mb-4">
+                                    <p className="text-sm text-gray-600 mb-2">
                                         {requirement.description}
                                     </p>
 
                                     {requirement.deadline && (
-                                        <div className={`flex items-center justify-between  gap-2 mb-4 text-sm ${isNearDeadline
+                                        <div className={`flex items-center justify-between  gap-2  text-sm ${isNearDeadline
                                             ? 'text-red-600'
                                             : 'text-gray-500'
                                             }`}>
@@ -273,17 +273,18 @@ const RequirementCard = () => {
                                                 </span>
                                             </div>
 
-                                            <div className="mt-auto w-[100px] pt-4">
+                                            <div className="mt-auto w-[100px] pt-4 ">
                                                 <Button
                                                     onClick={() => handleSubmitClick(event, requirement)}
-                                                    disabled={isSubmittingThis || (isOverdue && !isSubmitted)}
-                                                    className={`w-full font-medium transition-colors duration-200  ${isSubmitted && canEdit
-                                                        ? 'bg-blue hover:bg-blue/90'
-                                                        : isSubmitted
-                                                            ? 'bg-green-600 hover:bg-green-700'
-                                                            : ownParticipation
-                                                                ? 'bg-yellow-600 hover:bg-yellow-700'
-                                                                : 'bg-blue hover:bg-blue/90'
+                                                    disabled={isSubmittingThis || isSubmitted || (isOverdue && !isSubmitted)}
+                                                    className={`w-full font-medium transition-colors duration-200
+        ${isSubmitted && canEdit
+                                                            ? 'bg-blue hover:bg-blue/90'
+                                                            : isSubmitted
+                                                                ? 'bg-green-600 cursor-not-allowed'
+                                                                : ownParticipation
+                                                                    ? 'bg-yellow-600 hover:bg-yellow-700'
+                                                                    : 'bg-blue hover:bg-blue/90'
                                                         } text-white`}
                                                 >
                                                     {isSubmittingThis ? (
@@ -295,12 +296,10 @@ const RequirementCard = () => {
                                                         canEdit ? (
                                                             <>
                                                                 <Edit className="w-4 h-4" />
-                                                                <span className="ml-2">Edit </span>
+                                                                <span className="ml-2">Edit</span>
                                                             </>
                                                         ) : (
-                                                            <>
-                                                                ✓ Submitted
-                                                            </>
+                                                            <>✓ Submitted</>
                                                         )
                                                     ) : ownParticipation ? (
                                                         <>
@@ -310,45 +309,19 @@ const RequirementCard = () => {
                                                     ) : (
                                                         <>
                                                             {getTypeIcon(requirement.type)}
-                                                            <span className="ml-2">Apply </span>
+                                                            <span className="ml-2">Apply</span>
                                                         </>
                                                     )}
                                                 </Button>
+
                                             </div>
 
                                         </div>
                                     )}
 
-                                    {/* Show submission details if submitted */}
-                                    {/* 
-{ isSubmitted && response && (
-    <div className="bg-green-50 border border-green-200 rounded-md p-3 mb-4">
-        {response.value && (
-            <p className="text-green-600 text-xs mb-1">
-                <strong>Text:</strong> {response.value.length > 50
-                    ? `${response.value.substring(0, 50)}...`
-                    : response.value}
-            </p>
-        )}
-        {response.file && (
-            <a
-                href={response.file}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center text-green-600 text-xs mb-1 hover:underline"
-            >
-                <Eye className="w-4 h-4 mr-1" /> View File
-            </a>
-        )}
-    </div>
-)} 
-*/}
-
-
-
                                     {/* Show own participation data if available but not submitted */}
                                     {!isSubmitted && ownParticipation && (
-                                        <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 mb-4">
+                                        <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 mb-4 ">
                                             <a
                                                 href={ownParticipation.file}
                                                 target="_blank"
@@ -381,7 +354,7 @@ const RequirementCard = () => {
                                     )}
 
                                     {isOverdue && !isSubmitted && (
-                                        <div className="bg-red-50 border border-red-200 rounded-md p-3 mb-4">
+                                        <div className=" rounded-md p-3 ">
                                             <p className="text-red-600 text-sm font-medium">
                                                 ⚠️ This requirement deadline has passed
                                             </p>

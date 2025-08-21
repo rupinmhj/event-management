@@ -23,12 +23,26 @@ import Setup from "@/Pages/Setup";
 import { RequirementUpdate } from "@/Components/admin/RequirementUpdate";
 import DynamicRequirementForm from "@/Components/user/DynamicRequirementForm";
 import { EventDetail } from "@/Components/user/EventDetail";
-
+import { ChangePasswordForm } from "@/Components/common/ChangePassword";
+import {ForgetPasswordForm} from "@/forms/ForgetPasswordForm";
+import {OtpValidation} from "@/forms/OtpValidation";
+import Password from "@/layouts/Password";
+import {ResetPasswordForm} from "@/forms/ResetPasswordForm";
 const router = createBrowserRouter([
     // Public routes
     {
         path: "/",
         element: <AuthPage />,
+
+    },
+    {
+        path: "/forget-password",
+        element: <Password />,
+        children: [
+            { index: true, element: <ForgetPasswordForm /> },
+            { path: "validation",element: <OtpValidation/>},
+            { path: "reset-password", element: <ResetPasswordForm  /> },
+        ],
     },
 
 
@@ -44,7 +58,8 @@ const router = createBrowserRouter([
             { path: "requirement-update/:id", element: <RequirementUpdate /> },
             { path: "tickets-pricing", element: <TicketsPricing /> },
             { path: "registered-members", element: <RegisteredMembers /> },
-            { path: "event-edit/:id", element: <EditEvent /> }
+            { path: "event-edit/:id", element: <EditEvent /> },
+            { path: "change-password", element: <ChangePasswordForm user={'admin'}/>}
         ],
     },
 
@@ -60,7 +75,9 @@ const router = createBrowserRouter([
             { path: "registration", element: <Registration /> },
             { path: "tickets", element: <Tickets /> },
             { path: "event/:id", element: <EventDetail /> },
-            { path: "event-form/:id", element: <DynamicRequirementForm /> }
+            { path: "event-form/:id", element: <DynamicRequirementForm /> },
+            { path: "change-password", element: <ChangePasswordForm user={'user'}/>}
+
         ],
     },
 ]);

@@ -45,7 +45,7 @@ export const EventFloat = () => {
   };
 
   return (
-    <div className="relative w-full h-full overflow-hidden flex justify-center mt-1">
+    <div className="relative w-full h-full overflow-hidden flex justify-center mt-6">
        <div className="max-w-6xl  mt-2">
       <Swiper
         modules={[Autoplay, Pagination]}
@@ -62,8 +62,8 @@ export const EventFloat = () => {
       >
         {events.map((event, idx) => (
           <SwiperSlide key={idx}>
-            <div className="w-full bg-gradient-to-r from-blue/70 to-blue/90 p-4 text-white">
-              <CardContent className="p-2">
+            <div className="w-full bg-gradient-to-r from-blue/70 to-blue/90 p-4 text-white md:h-[200px]">
+              <CardContent className="p-2 relative  h-full ">
                 <div className="flex items-start justify-between mb-3 ">
                   <div>
                     <img src={event.icon} className="h-10" alt="" />
@@ -82,7 +82,7 @@ export const EventFloat = () => {
                   </Badge>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 ">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3  fixed bottom-2  left-0 right-0 px-4">
                   <div className="flex items-center gap-2 text-sm text-gray-200">
                     <MdCalendarToday className="h-4 w-4 mb-[2px]" />
                     <span>Start: {formatDate(event.start_date)}</span>

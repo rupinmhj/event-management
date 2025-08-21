@@ -29,17 +29,7 @@ export const SigninForm = ({ switchToSignup, setShowOtp }) => {
             valid = false;
         }
 
-        // if (!password) {
-        //     setPasswordError("Password is required.");
-        //     valid = false;
-        // } else if (
-        //     !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(password)
-        // ) {
-        //     setPasswordError(
-        //         "Password must be at least 8 characters and include uppercase, lowercase, number, and special character."
-        //     );
-        //     valid = false;
-        // }
+      
 
         return valid;
     };
@@ -143,7 +133,9 @@ export const SigninForm = ({ switchToSignup, setShowOtp }) => {
                                     {passwordError && <p className="text-red-500 text-[13px] pl-3">{passwordError}</p>}
                                 </div>
                             </div>
-
+                            <div onClick={()=>navigate('/forget-password')} className=" text-[13px] text-[#71757D] hover:text-[#2869FE] cursor-pointer pl-2 pt-2">
+                                Forget Password?
+                            </div>
                             <button
                                 type="submit"
                                 disabled={loading}

@@ -79,7 +79,7 @@ const UserMenu = ({ mode, logout }) => {
     const navigate = useNavigate();
 
     return (
-        <DropdownMenu modal={false}>
+        <DropdownMenu modal={false} >
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="size-8">
                     <User className="size-4" />
@@ -96,8 +96,13 @@ const UserMenu = ({ mode, logout }) => {
                         Settings
                     </Link>
                 </DropdownMenuItem>
+                <DropdownMenuItem>
+                    <Link to="/admin/change-password" className="w-full block">
+                        Change Password
+                    </Link>
+                </DropdownMenuItem>
                 {mode === "login" ? (
-                    <DropdownMenuItem
+                    <DropdownMenuItem className=" cursor-pointer"
                         onClick={() => {
                             logout();
                             navigate("/");

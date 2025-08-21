@@ -90,6 +90,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem('user_full_name');
         localStorage.removeItem('id');
         localStorage.removeItem('phone_number');
+        localStorage.removeItem('has_profile');
 
     };
 

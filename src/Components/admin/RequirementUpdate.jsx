@@ -21,7 +21,8 @@ import {
   MdCalendarToday,
   MdCheckBox,
   MdLink,
-  MdEdit
+  MdEdit,
+  MdNotes
 } from 'react-icons/md';
 import AuthContext from '@/context/AuthContext';
 import useAxiosAuth from '@/hooks/useAxiosAuth';
@@ -399,6 +400,11 @@ export const RequirementUpdate = () => {
                           <MdTextFields className="h-4 w-4" /> Text Field
                         </div>
                       </SelectItem>
+                      <SelectItem value="TEXTAREA">
+                        <div className="flex items-center gap-2">
+                          <MdNotes className="h-4 w-4" /> Text Area
+                        </div>
+                      </SelectItem>
                       <SelectItem value="FILE">
                         <div className="flex items-center gap-2">
                           <MdAttachFile className="h-4 w-4" /> File Upload
@@ -528,7 +534,7 @@ export const RequirementUpdate = () => {
 
           {/* Action Buttons */}
           <div className="flex justify-center gap-4 pt-6">
-            
+
 
             <Button
               onClick={updateRequirement}

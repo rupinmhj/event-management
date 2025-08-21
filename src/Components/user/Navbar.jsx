@@ -95,6 +95,11 @@ const UserMenu = ({ mode, logout }) => {
             Settings
           </NavLink>
         </DropdownMenuItem>
+        <DropdownMenuItem>
+          <Link to="/user/change-password" className="w-full block">
+            Change Password
+          </Link>
+        </DropdownMenuItem>
         {mode === "login" ? (
           <DropdownMenuItem
             onClick={() => {

@@ -604,7 +604,7 @@ const UserProfile = ({hasProfile}) => {
       transition={{ duration: 0.3, delay: 0.15 }}
     >
       <div className={`min-h-screen  px-4 sm:px-6 lg:px-8 py-12 ${!hasProfile?'hidden':''}`  }>
-        <div className="max-w-4xl mx-auto space-y-6">
+        <div className="max-w-6xl mx-auto space-y-6">
           <div className="relative overflow-hidden rounded-xl border text-gray-800 shadow-lg hover:shadow-xl transition-all duration-300">
             <div className="absolute inset-0 " />
             <div className="relative p-6">

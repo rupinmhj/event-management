@@ -256,7 +256,7 @@ const SubmissionModal = ({
                         </div>
                     )}
 
-                    <div className="flex gap-3 pt-4">
+                    <div className="flex gap-3 pt-4  fixed bottom-0 left-0 right-0 px-4 py-6 bg-white">
                         <Button
                             type="button"
                             variant="outline"
