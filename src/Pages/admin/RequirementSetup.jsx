@@ -21,7 +21,7 @@ import {
   MdCalendarToday,
   MdCheckBox,
   MdLink,
-  MdNotes 
+  MdNotes
 } from 'react-icons/md';
 import AuthContext from '@/context/AuthContext';
 import useAxiosAuth from '@/hooks/useAxiosAuth';
@@ -173,6 +173,7 @@ export const RequirementSetup = () => {
       formData.append('type', requirement.type || '');
       formData.append('label', requirement.label || '');
       formData.append('description', requirement.description || '');
+      formData.append('is_verification_required', String(!!requirement.is_verification_required));  
       formData.append('is_active', String(!!requirement.is_active));
       const deadline = formatDateForAPI(requirement.deadline);
       if (deadline) formData.append('deadline', deadline);
@@ -239,7 +240,7 @@ export const RequirementSetup = () => {
       className="space-y-6 pt-4 pb-8 px-12"
     >
       <div className="min-h-screen bg-gradient-to-br from-background via-primary-soft to-background p-20">
-        <div className="max-w-4xl mx-auto space-y-8">
+        <div className="max-w-6xl mx-auto space-y-8">
 
           {/* Header */}
           {/* <div className="text-center space-y-4">
@@ -310,9 +311,9 @@ export const RequirementSetup = () => {
 
             <CardContent className="space-y-4">
               {/* Field Type + Label */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
                 {/* Field Type */}
-                <div className="space-y-2">
+                <div className="space-y-2 max-w-sm">
                   <Label>Requirement Type</Label>
                   <Select
                     value={requirement.type}
@@ -341,7 +342,7 @@ export const RequirementSetup = () => {
                       </SelectItem>
                       <SelectItem value="TEXTAREA">
                         <div className="flex items-center gap-2">
-                          <MdNotes  className="h-4 w-4" /> Text Area
+                          <MdNotes className="h-4 w-4" /> Text Area
                         </div>
                       </SelectItem>
                       <SelectItem value="FILE">
@@ -362,7 +363,7 @@ export const RequirementSetup = () => {
                 </div>
 
                 {/* Field Label */}
-                <div className="space-y-2">
+                <div className="space-y-2 max-w-sm">
                   <Label>Field Label</Label>
                   <Input
                     placeholder="Enter field label..."
@@ -392,7 +393,8 @@ export const RequirementSetup = () => {
               </div>
 
               {/* Deadline */}
-              <div className="space-y-2">
+              
+              <div className="space-y-2 max-w-sm">
                 <Label>Deadline</Label>
                 <DatePicker
                   value={requirement.deadline}
@@ -428,6 +430,26 @@ export const RequirementSetup = () => {
                   <p className='text-red-500 text-[12px] mt-1'>{errors.file}</p>
                 )}
               </div>
+              {/* Admin Verification Required */}
+              <div className="space-y-2">
+                <label htmlFor="is_verification_required" className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="is_verification_required"
+                    checked={requirement.is_verification_required || false} 
+                    onChange={e => setRequirement({
+                      ...requirement,
+                      is_verification_required: e.target.checked
+                    })}
+                    className="accent-blue-600 h-[40px]" 
+                  />
+                  <span className="text-sm font-medium">Admin verification required</span>
+                </label>
+                <p className="text-xs text-gray-500">
+                  If checked, this requirement must be verified by an admin after submission.
+                </p>
+              </div>
+
 
               {/* Active Status */}
               <div className="space-y-2">

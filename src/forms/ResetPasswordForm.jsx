@@ -3,10 +3,10 @@ import { motion } from "framer-motion";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa6";
 import { AiOutlineLock } from "react-icons/ai";
 import { toast, ToastContainer } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import apiPublic from '../../api';
 
-export const ResetPasswordForm = ({ onComplete, onBack,mode }) => {
+export const ResetPasswordForm = ({ onComplete, onBack, mode }) => {
     const [newPassword, setNewPassword] = useState("");
     const [confirmNewPassword, setConfirmNewPassword] = useState("");
     const [newPasswordError, setNewPasswordError] = useState("");
@@ -15,7 +15,9 @@ export const ResetPasswordForm = ({ onComplete, onBack,mode }) => {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
-    const userEmail= localStorage.getItem("email") || "";
+    const userEmail = localStorage.getItem("email") || "";
+    const location = useLocation();
+    const resetToken = location.state;
     const validate = () => {
         let valid = true;
         setNewPasswordError("");
@@ -50,21 +52,22 @@ export const ResetPasswordForm = ({ onComplete, onBack,mode }) => {
         setLoading(true);
 
         try {
+            
             const response = await apiPublic.post('/api/account/reset-password/', {
-                email: userEmail,
+                reset_token: resetToken,
                 new_password: newPassword,
                 confirm_new_password: confirmNewPassword,
             });
 
             console.log(response.data);
             const { detail } = response.data;
-            
+
             toast.success(detail || 'Password reset successfully! Redirecting to login...');
-            
+
             // Clear form
             setNewPassword('');
             setConfirmNewPassword('');
-            
+
             // Redirect to login after success
             setTimeout(() => {
                 if (onComplete) {
@@ -76,10 +79,10 @@ export const ResetPasswordForm = ({ onComplete, onBack,mode }) => {
 
         } catch (error) {
             console.log(error.response);
-            
+
             if (error.response?.data) {
                 const errorData = error.response.data;
-                
+
                 if (errorData.new_password) {
                     setNewPasswordError(errorData.new_password[0]);
                 } else if (errorData.confirm_new_password) {
@@ -135,8 +138,8 @@ export const ResetPasswordForm = ({ onComplete, onBack,mode }) => {
                                         placeholder="New Password"
                                         className="w-full dark:bg-bgDark border border-gray-300 focus:border-blue-800 outline-none text-[12px] shadow-sm rounded-xl mt-3 pl-12 py-3 pr-12 dark:text-white dark:border-gray-600 dark:focus:border-gray-200"
                                     />
-                                    <span 
-                                        onClick={() => setShowNewPassword(!showNewPassword)} 
+                                    <span
+                                        onClick={() => setShowNewPassword(!showNewPassword)}
                                         className="absolute right-4 top-6 cursor-pointer text-gray-500"
                                     >
                                         {showNewPassword ? <FaRegEye /> : <FaRegEyeSlash />}
@@ -156,8 +159,8 @@ export const ResetPasswordForm = ({ onComplete, onBack,mode }) => {
                                         placeholder="Confirm New Password"
                                         className="w-full dark:bg-bgDark border border-gray-300 focus:border-blue-800 outline-none text-[12px] shadow-sm rounded-xl mt-3 pl-12 py-3 pr-12 dark:text-white dark:border-gray-600 dark:focus:border-gray-200"
                                     />
-                                    <span 
-                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)} 
+                                    <span
+                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                                         className="absolute right-4 top-6 cursor-pointer text-gray-500"
                                     >
                                         {showConfirmPassword ? <FaRegEye /> : <FaRegEyeSlash />}

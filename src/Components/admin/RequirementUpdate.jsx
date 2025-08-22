@@ -124,6 +124,7 @@ export const RequirementUpdate = () => {
           description: reqData.description || '',
           file: null, // We'll handle existing file separately
           is_active: reqData.is_active || false,
+          is_verification_required:reqData.is_verification_required || false,
           deadline: deadlineValue
         });
 
@@ -229,6 +230,7 @@ export const RequirementUpdate = () => {
       formData.append('type', requirement.type || '');
       formData.append('label', requirement.label || '');
       formData.append('description', requirement.description || '');
+      formData.append('is_verification_required', String(!!requirement.is_verification_required));
       formData.append('is_active', String(!!requirement.is_active));
 
       const deadline = formatDateForAPI(requirement.deadline);
@@ -243,7 +245,7 @@ export const RequirementUpdate = () => {
         console.log(key, value);
       });
 
-      const res = await api.patch(`/api/event/requirement-update/${requirementId}/`, formData);
+      const res = await api.put(`/api/event/requirement-update/${requirementId}/`, formData);
       const data = res.data;
       console.log('requirement update', data);
 
@@ -315,53 +317,15 @@ export const RequirementUpdate = () => {
       transition={{ duration: 0.3 }}
       className="space-y-6 pt-4 pb-8 px-12"
     >
-      <div className="min-h-screen bg-gradient-to-br from-background via-primary-soft to-background p-20">
-        <div className="max-w-4xl mx-auto space-y-8">
+      <div className="min-h-screen bg-gradient-to-br from-background via-primary-soft to-background pt-14">
+        <div className="max-w-6xl mx-auto space-y-8">
 
-          {/* Header */}
-          {/* <div className="text-center space-y-4">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-500 rounded-xl shadow-lg">
-              <MdEdit className="h-8 w-8 text-white" />
-            </div>
-            <div>
-              <h1 className="text-[30px] font-bold text-gray-800">
-                Update Event Requirement
-              </h1>
-              <p className="text-muted-foreground text-md mt-2">
-                Modify the information participants need to provide for your event
-              </p>
-            </div>
-          </div> */}
-
-          {/* Event Selection */}
-          {/* <Card className="shadow-lg border-0 bg-gradient-to-r from-card to-primary-soft/20">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MdCalendarToday className="h-5 w-5 text-event-primary" />
-                Event Information
-              </CardTitle>
-              <CardDescription>
-                The event for this requirement
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label>Event</Label>
-                <Input
-                  value={requirement.event_name || selectedEvent?.title || ''}
-                  disabled={true}
-                  className="border-event-primary/20 bg-gray-50 cursor-not-allowed"
-                  placeholder="Event name will appear here..."
-                />
-              </div>
-            </CardContent>
-          </Card> */}
+        
 
           {/* Single Requirement */}
           <Card className="shadow-lg border-0 bg-gradient-to-r from-card to-primary-soft/10">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <MdTextFields className="h-5 w-5 text-event-secondary" />
                 Participant Requirement
               </CardTitle>
               <CardDescription>
@@ -510,6 +474,25 @@ export const RequirementUpdate = () => {
                 )}
               </div>
 
+              <div className="space-y-1">
+                <label htmlFor="is_verification_required" className="flex items-center gap-2 leading-[14px]">
+                  <input
+                    type="checkbox"
+                    id="is_verification_required"
+                    checked={requirement.is_verification_required || false}
+                    onChange={e => setRequirement({
+                      ...requirement,
+                      is_verification_required: e.target.checked
+                    })}
+                    className="accent-blue-600 h-[40px]"
+                  />
+                  <span className="text-sm font-medium leading:[14px]">Admin verification required</span>
+                </label>
+                <p className="text-xs text-gray-500">
+                  If checked, this requirement must be verified by an admin after submission.
+                </p>
+              </div>
+
               {/* Active Status */}
               <div className="space-y-2">
                 <Label>Active Status</Label>
@@ -533,13 +516,13 @@ export const RequirementUpdate = () => {
           </Card>
 
           {/* Action Buttons */}
-          <div className="flex justify-center gap-4 pt-6">
+          <div className="flex justify-center gap-4 pt-6 w-full max-w-2xl mx-auto">
 
 
             <Button
               onClick={updateRequirement}
               disabled={loading}
-              className="flex-1 bg-blue transition-all duration-300 hover:scale-[1.02] text-primary-foreground hover:bg-blue/90"
+              className="w-full bg-blue transition-all duration-300 hover:scale-[1.02] text-primary-foreground hover:bg-blue/90"
 
             >
               {loading ? 'Updating...' : 'Update Requirement'}
@@ -547,7 +530,7 @@ export const RequirementUpdate = () => {
             <Button
               onClick={() => navigate(-1)}
               disabled={loading}
-              className="hover:bg-destructive hover:text-destructive-foreground transition-all duration-300 hover:scale-[1.02] bg-red-800"
+              className="w-full  hover:bg-destructive hover:text-destructive-foreground transition-all duration-300 hover:scale-[1.02] bg-red-800"
 
             >
               Cancel

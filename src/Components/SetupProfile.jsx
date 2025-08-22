@@ -288,7 +288,7 @@ const ProfileSetup = () => {
 
                                 {/* Organization */}
                                 <div className="space-y-2">
-                                                        <Label htmlFor="organization">Organization *</Label>
+                                                        <Label htmlFor="organization">Organization </Label>
                                                         <Input
                                                             id="organization"
                                                             placeholder="Your organization name"

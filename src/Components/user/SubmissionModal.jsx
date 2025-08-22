@@ -6,6 +6,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Eye } from 'lucide-react';
+import JoditEditor from 'jodit-react';
+import 'jodit/es2021/jodit.min.css';
 const SubmissionModal = ({
     isOpen,
     onClose,
@@ -215,7 +217,37 @@ const SubmissionModal = ({
                                 onChange={(e) => setValue(e.target.value)}
                                 className="bg-white border-gray-300 focus:border-blue-500"
                             />
-                        ) : (
+                        ) : requirement.type==='TEXTAREA'?(
+                            <div className="relative">
+ <JoditEditor
+                                    value={value || ''}
+                                    config={{
+                                        readonly: false,
+                                        height: 250,
+                                        removeButtons: [
+                                            'source', 'image', 'file', 'video', 'speechRecognize',
+                                            'print', 'about', 'fullsize', 'selectall',
+                                            'symbol', 'copyformat', 'preview', 'find', 'emoticons',
+                                            'brush', 'fontsize', 'paragraph', 'link', 'table', 'hr', 'classSpan', 'superscript', 'subscript'
+                                        ],
+                                        style: {
+                                            backgroundColor: '#ffffff',
+                                            color: '#000000',
+                                            paddingLeft: '50px',
+                                            fontSize: '14px'
+                                        },
+
+                                    }}
+                                    onBlur={(newContent) => {
+                                        setHtmlMessage(newContent || '');
+                                    }}
+                                />
+                                                                <div className="absolute w-full bottom-0 h-[20px] bg-white dark:bg-[#5f5c5c]"> </div>
+
+                            </div>
+                            
+                        ):
+                            (
                             <Textarea
                                 id="requirement-input"
                                 placeholder="Enter your text here..."
@@ -239,14 +271,7 @@ const SubmissionModal = ({
                         </div>
                     )}
 
-                    {/* Show edit mode indicator */}
-                    {isEditMode && (
-                        <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
-                            <p className="text-sm text-orange-700">
-                                ✏️ You are editing an existing submission
-                            </p>
-                        </div>
-                    )}
+                   
 
                     {error && (
                         <div className="p-3 bg-red-50 border border-red-200 rounded-lg">

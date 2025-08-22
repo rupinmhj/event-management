@@ -133,7 +133,7 @@ export const SigninForm = ({ switchToSignup, setShowOtp }) => {
                                     {passwordError && <p className="text-red-500 text-[13px] pl-3">{passwordError}</p>}
                                 </div>
                             </div>
-                            <div onClick={()=>navigate('/forget-password')} className=" text-[13px] text-[#71757D] hover:text-[#2869FE] cursor-pointer pl-2 pt-2">
+                            <div onClick={()=>navigate('/forgot-password')} className=" text-[13px] text-[#71757D] hover:text-[#2869FE] cursor-pointer pl-2 pt-2">
                                 Forget Password?
                             </div>
                             <button

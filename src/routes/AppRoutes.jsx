@@ -8,6 +8,8 @@ import { RequirementSetup } from "../pages/admin/RequirementSetup";
 import { TicketsPricing } from "../pages/admin/TicketsPricing";
 import { RegisteredMembers } from "../pages/admin/RegisteredMembers";
 import { EventView } from "@/Components/admin/EventView"
+import SendEmail from "@/Components/admin/SendEmail";
+import {ParticipantReview} from "@/Components/admin/ParticipantReview";
 // User pages
 import UserLayout from "../layouts/UserLayout";
 import { Dashboard } from "../pages/user/Dashboard";
@@ -15,6 +17,7 @@ import { About } from "@/Pages/user/About";
 import { Home } from '@/Pages/user/Home'
 import { Registration } from '@/Pages/user/Registration'
 import { Tickets } from '@/Pages/user/Tickets'
+import { MyProfile } from "@/Components/user/MyProfile";
 
 //Auth page
 import { AuthPage } from '@/Pages/public/AuthPage'
@@ -28,6 +31,9 @@ import {ForgetPasswordForm} from "@/forms/ForgetPasswordForm";
 import {OtpValidation} from "@/forms/OtpValidation";
 import Password from "@/layouts/Password";
 import {ResetPasswordForm} from "@/forms/ResetPasswordForm";
+import EmailHistory from "@/Components/admin/EmailHistory";
+
+
 const router = createBrowserRouter([
     // Public routes
     {
@@ -36,7 +42,7 @@ const router = createBrowserRouter([
 
     },
     {
-        path: "/forget-password",
+        path: "/forgot-password",
         element: <Password />,
         children: [
             { index: true, element: <ForgetPasswordForm /> },
@@ -59,7 +65,10 @@ const router = createBrowserRouter([
             { path: "tickets-pricing", element: <TicketsPricing /> },
             { path: "registered-members", element: <RegisteredMembers /> },
             { path: "event-edit/:id", element: <EditEvent /> },
-            { path: "change-password", element: <ChangePasswordForm user={'admin'}/>}
+            { path: "change-password", element: <ChangePasswordForm user={'admin'}/>},
+            { path: "send-email",element: <SendEmail/>},
+            { path: "email-history", element: <EmailHistory /> } ,
+            { path:'participant-review/:id', element: <ParticipantReview />}
         ],
     },
 
@@ -76,7 +85,8 @@ const router = createBrowserRouter([
             { path: "tickets", element: <Tickets /> },
             { path: "event/:id", element: <EventDetail /> },
             { path: "event-form/:id", element: <DynamicRequirementForm /> },
-            { path: "change-password", element: <ChangePasswordForm user={'user'}/>}
+            { path: "change-password", element: <ChangePasswordForm user={'user'}/>},
+            { path: "user-profile", element: <MyProfile /> }
 
         ],
     },

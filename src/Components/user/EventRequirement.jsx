@@ -223,7 +223,7 @@ const RequirementCard = () => {
                         const response = getResponseForRequirement(event.id, requirement.id);
                         const ownParticipation = getOwnParticipationForRequirement(event.id, requirement.id);
                         const isSubmitted = response && response.is_submitted;
-                        const canEdit = isSubmitted && !isOverdue;
+                        const canEdit = isSubmitted && !isOverdue && !(response && response.is_verified);
 
                         return (
                             <Card
@@ -276,7 +276,7 @@ const RequirementCard = () => {
                                             <div className="mt-auto w-[100px] pt-4 ">
                                                 <Button
                                                     onClick={() => handleSubmitClick(event, requirement)}
-                                                    disabled={isSubmittingThis || isSubmitted || (isOverdue && !isSubmitted)}
+                                                    disabled={isSubmittingThis || (isSubmitted && !canEdit) || (isOverdue && !isSubmitted)}
                                                     className={`w-full font-medium transition-colors duration-200
         ${isSubmitted && canEdit
                                                             ? 'bg-blue hover:bg-blue/90'
@@ -319,39 +319,12 @@ const RequirementCard = () => {
                                         </div>
                                     )}
 
-                                    {/* Show own participation data if available but not submitted */}
-                                    {!isSubmitted && ownParticipation && (
-                                        <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 mb-4 ">
-                                            <a
-                                                href={ownParticipation.file}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="flex items-center text-yellow-600 text-xs mb-1 hover:underline"
-                                            >
-                                                <Eye className="w-4 h-4 mr-1" /> View File
-                                            </a>
-                                            {ownParticipation.value && (
-                                                <p className="text-yellow-600 text-xs mb-1">
-                                                    <strong>Text:</strong> {ownParticipation.value.length > 50
-                                                        ? `${ownParticipation.value.substring(0, 50)}...`
-                                                        : ownParticipation.value}
-                                                </p>
-                                            )}
-                                            {ownParticipation.file && (
-                                                <a
-                                                    href={ownParticipation.file}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="flex items-center text-yellow-600 text-xs mb-1 hover:underline"
-                                                >
-                                                    <Eye className="w-4 h-4 mr-1" /> View File
-                                                </a>
-                                            )}
-                                            <p className="text-yellow-600 text-xs">
-                                                You have a saved draft for this requirement
-                                            </p>
-                                        </div>
+                                    {response?.is_verified && (
+                                        <p className="text-xs text-green-600 mt-1">✔ Verified by admin, editing disabled</p>
                                     )}
+                                   
+
+
 
                                     {isOverdue && !isSubmitted && (
                                         <div className=" rounded-md p-3 ">

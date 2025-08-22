@@ -86,7 +86,7 @@ const UserMenu = ({ mode, logout }) => {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" portalled={false}>
         <DropdownMenuItem>
-          <NavLink to="/profile" className="w-full block">
+          <NavLink to="user-profile" className="w-full block">
             Profile
           </NavLink>
         </DropdownMenuItem>

@@ -20,6 +20,7 @@ import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom';
 /* DatePicker Component (JSX) */
 import DatePicker from '@/utils/DatePicker';
+import images from '@/assets/images';
 
 /* Reusable Detail Item Component */
 const DetailItem = ({ icon, label, value, className = "" }) => (
@@ -80,7 +81,7 @@ const setByPath = (obj, path, value) => {
   return cloned;
 };
 
-const UserProfile = ({hasProfile}) => {
+const UserProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const api = useAxiosAuth?.() || null;
@@ -88,7 +89,8 @@ const UserProfile = ({hasProfile}) => {
   const navigate = useNavigate();
   const auth = useContext(AuthContext) || {};
   const { authTokens, authReady, phone_number, fullName, email } = auth;
-
+   
+  const {hasProfile} = useContext(AuthContext);
   const [formData, setFormData] = useState({
     user_detail: {
       full_name_en: "",
@@ -120,6 +122,10 @@ const UserProfile = ({hasProfile}) => {
       }));
     }
   }, [authReady, phone_number, fullName, email]);
+
+ useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [isEditing]);
 
 
 
@@ -643,7 +649,7 @@ const UserProfile = ({hasProfile}) => {
                 <div className="flex flex-col items-center lg:items-start space-y-4 ">
                   <div className="relative group rounded-full border-4 border-green-600 ">
                     <img
-                      src={formData.profile_picture || null}
+                      src={formData?.profile_picture || images.profile}
                       alt={formData.user_detail.full_name_en || "Profile"}
                       className="w-32 h-32 rounded-full border-4 border-primary/20 object-cover group-hover:scale-105 transition-transform duration-300"
                     />
@@ -651,10 +657,10 @@ const UserProfile = ({hasProfile}) => {
                   </div>
                   <div className="text-center lg:text-left">
                     <h2 className="text-xl font-semibold text-card-foreground">
-                      {formData.designation || "—"}
+                      {formData.designation || ""}
                     </h2>
                     <p className="text-sm text-muted-foreground">
-                      {formData.organization || "—"}
+                      {formData.organization || ""}
                     </p>
                   </div>
                 </div>

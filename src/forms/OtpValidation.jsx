@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
-import {Button} from '../Components/ui/button';
+import { Button } from '../Components/ui/button';
 import AuthContext from '@/context/AuthContext';
 import useAxiosAuth from '@/hooks/useAxiosAuth';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import apiPublic from '../../api';
-export const  OtpValidation = ({ setShowOtp }) => {
+export const OtpValidation = ({ setShowOtp }) => {
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
     const [timeLeft, setTimeLeft] = useState(60);
     const [isResending, setIsResending] = useState(false);
@@ -56,32 +56,34 @@ export const  OtpValidation = ({ setShowOtp }) => {
     const isOtpComplete = otp.every(digit => digit !== '');
 
     const handleVerify = async () => {
-    if (!isOtpComplete) {
-        setError('Please enter the complete OTP');
-        return;
-    }
+        if (!isOtpComplete) {
+            setError('Please enter the complete OTP');
+            return;
+        }
 
-    setIsVerifying(true);
-    setError('');
+        setIsVerifying(true);
+        setError('');
 
-    try {
-        console.log("email", email);
-        console.log("otp", otp);
-        if (!email) return;
-        const otpCode = otp.join('');
-        const response = await apiPublic.post('/api/account/validate-otp/', {
-            email,
-            otp: otpCode,
-        });
-        console.log(response.data);
-        setTimeout(()=>navigate('/forget-password/reset-password'), 1000);
-    } catch (err) {
-        const msg = err?.response?.data?.detail || 'Verification failed. Please try again.';
-        setError(msg);
-    } finally {
-        setIsVerifying(false);
-    }
-};
+        try {
+            console.log("email", email);
+            console.log("otp", otp);
+            if (!email) return;
+            const otpCode = otp.join('');
+            const response = await apiPublic.post('/api/account/validate-otp/', {
+                email,
+                otp: otpCode,
+            });
+            console.log(response.data);
+            setTimeout(() => {
+                navigate('/forget-password/reset-password', { state: response.data.reset_token });
+            }, 1000);
+        } catch (err) {
+            const msg = err?.response?.data?.detail || 'Verification failed. Please try again.';
+            setError(msg);
+        } finally {
+            setIsVerifying(false);
+        }
+    };
 
     const handleResendOTP = async () => {
         setIsResending(true);

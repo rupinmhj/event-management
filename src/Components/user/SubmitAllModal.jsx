@@ -350,13 +350,6 @@ const SubmitAllModal = ({ isOpen, onClose, events, onRefresh }) => {
                                         <CardContent className="pt-0">
                                             <div className="flex items-center gap-2 font-medium text-gray-900 mb-2">
                                                 <span>{requirement.label}</span>
-                                                <Badge
-                                                    variant="secondary"
-                                                    className={`${getTypeColor(requirement.type)} flex items-center gap-1`}
-                                                >
-                                                    {getTypeIcon(requirement.type)}
-                                                    {requirement.type}
-                                                </Badge>
                                             </div>
 
                                             <p className="text-sm text-gray-600 mb-4">
@@ -391,14 +384,7 @@ const SubmitAllModal = ({ isOpen, onClose, events, onRefresh }) => {
                                             {/* Show existing data info */}
                                             {hasExistingData && !isCompleted && (
                                                 <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mb-4">
-                                                    {/* <p className="text-blue-700 text-sm font-medium mb-1">
-                                                        📝 You have existing data for this requirement
-                                                    </p>
-                                                    {hasExistingFile(requirement.id) && (
-                                                        <p className="text-blue-600 text-xs">
-                                                            Current file: {submissions[`${requirement.id}_filename`]}
-                                                        </p>
-                                                    )} */}
+
                                                     {submissions[requirement.id] && requirement.type !== 'FILE' && (
                                                         <p className="text-blue-600 text-xs">
                                                             Current text: {submissions[requirement.id].length > 50
@@ -446,6 +432,7 @@ const SubmitAllModal = ({ isOpen, onClose, events, onRefresh }) => {
                                                             <input
                                                                 id={`file-${requirement.id}`}
                                                                 type="file"
+                                                                disabled={isOverdue}
                                                                 className="hidden"
                                                                 onChange={(e) => handleFileChange(requirement.id, e)}
                                                                 accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif"
@@ -470,20 +457,52 @@ const SubmitAllModal = ({ isOpen, onClose, events, onRefresh }) => {
                                             ) : requirement.type === 'URL' ? (
                                                 <Input
                                                     type="url"
+                                                    disabled={isOverdue}
                                                     placeholder="https://example.com"
                                                     value={submissions[requirement.id] || ''}
                                                     onChange={(e) => handleValueChange(requirement.id, e.target.value)}
                                                     className="bg-white border-gray-200 focus:border-blue-500"
                                                 />
-                                            ) : (
-                                                <Textarea
-                                                    placeholder="Enter your text here..."
-                                                    value={submissions[requirement.id] || ''}
-                                                    onChange={(e) => handleValueChange(requirement.id, e.target.value)}
-                                                    rows={3}
-                                                    className="bg-white border-gray-200 focus:border-blue-500 resize-none"
-                                                />
-                                            )}
+                                            ) : requirement.type === 'TEXTAREA' ? (
+                                                <div className="relative">
+                                                    <JoditEditor
+                                                        value={value || ''}
+                                                        config={{
+                                                            readonly: false,
+                                                            height: 250,
+                                                            removeButtons: [
+                                                                'source', 'image', 'file', 'video', 'speechRecognize',
+                                                                'print', 'about', 'fullsize', 'selectall',
+                                                                'symbol', 'copyformat', 'preview', 'find', 'emoticons',
+                                                                'brush', 'fontsize', 'paragraph', 'link', 'table', 'hr', 'classSpan', 'superscript', 'subscript'
+                                                            ],
+                                                            style: {
+                                                                backgroundColor: '#ffffff',
+                                                                color: '#000000',
+                                                                paddingLeft: '50px',
+                                                                fontSize: '14px'
+                                                            },
+
+                                                        }}
+                                                        onBlur={(newContent) => {
+                                                            setHtmlMessage(newContent || '');
+                                                        }}
+                                                    />
+                                                    <div className="absolute w-full bottom-0 h-[20px] bg-white dark:bg-[#5f5c5c]"> </div>
+
+                                                </div>
+
+                                            ):
+                                                (
+                                                    <Textarea
+                                                        placeholder="Enter your text here..."
+                                                        disabled={isOverdue}
+                                                        value={submissions[requirement.id] || ''}
+                                                        onChange={(e) => handleValueChange(requirement.id, e.target.value)}
+                                                        rows={3}
+                                                        className="bg-white border-gray-200 focus:border-blue-500 resize-none"
+                                                    />
+                                                )}
                                         </CardContent>
                                     </Card>
                                 );
@@ -507,31 +526,31 @@ const SubmitAllModal = ({ isOpen, onClose, events, onRefresh }) => {
 
                     <div className="flex  sticky bottom-0 bg-white mt-6">
                         <div className="flex w-full gap-3 pt-6 border-t border-gray-200 px-4 py-6">
-                             <Button
-                            type="button"
-                            variant="secondary"
-                            onClick={onClose}
-                            className="flex-1 border-gray-300 hover:bg-red-600 text-white hover:text-white bg-red-500 w-[100px]"
-                            disabled={isSubmitting}
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            type="submit"
-                            className="flex-1 bg-blue hover:bg-blue/90 text-white font-medium transition-colors duration-200"
-                            disabled={isSubmitting || !selectedEventId || loading}
-                        >
-                            {isSubmitting ? (
-                                <>
-                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                                    Submitting...
-                                </>
-                            ) : (
-                                `Submit `
-                            )}
-                        </Button>
+                            <Button
+                                type="button"
+                                variant="secondary"
+                                onClick={onClose}
+                                className="flex-1 border-gray-300 hover:bg-red-600 text-white hover:text-white bg-red-500 w-[100px]"
+                                disabled={isSubmitting}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                type="submit"
+                                className="flex-1 bg-blue hover:bg-blue/90 text-white font-medium transition-colors duration-200"
+                                disabled={isSubmitting || !selectedEventId || loading}
+                            >
+                                {isSubmitting ? (
+                                    <>
+                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                        Submitting...
+                                    </>
+                                ) : (
+                                    `Submit `
+                                )}
+                            </Button>
                         </div>
-                       
+
                     </div>
                 </form>
             </DialogContent>
