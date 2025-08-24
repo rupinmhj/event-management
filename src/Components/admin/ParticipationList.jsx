@@ -30,11 +30,37 @@ export const ParticipationList = () => {
     fetchParticipants();
   }, [id, api]);
 
-  const exportParticipation=async(id)=>{
-    const res=await api.get(`/api/event/${id}/response-export/`);
-    console.log(res);
+  const exportParticipation = async (id) => {
+  try {
+    const res = await api.get(`/api/event/${id}/response-export/`, {
+      responseType: "blob", // 👈 important
+    });
 
+    // Create a download URL
+    const url = window.URL.createObjectURL(new Blob([res.data]));
+    const link = document.createElement("a");
+    link.href = url;
+
+    // You can dynamically name the file if backend sends filename in headers
+    const contentDisposition = res.headers["content-disposition"];
+    let fileName = "participation.xlsx";
+    if (contentDisposition) {
+      const match = contentDisposition.match(/filename="?([^"]+)"?/);
+      if (match?.[1]) fileName = match[1];
+    }
+
+    link.setAttribute("download", fileName);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    // Clean up URL
+    window.URL.revokeObjectURL(url);
+  } catch (err) {
+    console.error("Export failed:", err);
   }
+};
+
 
   if (loading) {
     return (
