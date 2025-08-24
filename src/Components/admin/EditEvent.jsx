@@ -259,7 +259,7 @@ const EditEvent = ({ eventId, onCancel, onSubmit }) => {
             transition={{ duration: 0.3, delay: 0.15 }}
         >
             <div className="min-h-screen bg-gradient-to-br from-background to-muted/30 px-4 sm:px-6 lg:px-8 py-6 pt-20">
-                <div className="max-w-4xl mx-auto">
+                <div className="max-w-6xl mx-auto">
                     {/* <div className="text-center mb-8">
                         <h1 className="text-3xl font-semibold text-gray-800 mb-2">Edit Event</h1>
                         <p className="text-muted-foreground">Update your event details</p>

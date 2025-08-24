@@ -163,7 +163,7 @@ const CreateEvent = ({ onCancel, onSubmit }) => {
             transition={{ duration: 0.3, delay: 0.15 }}
         >
             <div className="min-h-screen bg-gradient-to-br from-background to-muted/30 px-4 sm:px-6 lg:px-8 py-6">
-                <div className="max-w-4xl  mx-auto">
+                <div className="max-w-6xl  mx-auto">
                     <div className="text-center mb-8">
                         <h1 className="text-3xl font-semibold text-gray-800 mb-2">Create New Event</h1>
                         <p className="text-muted-foreground">Fill in the details to create your event</p>
@@ -187,7 +187,7 @@ const CreateEvent = ({ onCancel, onSubmit }) => {
                                         Basic Information
                                     </h3>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 md:gap-16">
                                         <div className="space-y-2">
                                             <Label htmlFor="title">Event Title *</Label>
                                             <Input
@@ -368,133 +368,11 @@ const CreateEvent = ({ onCancel, onSubmit }) => {
                                     </div>
                                 </div>
 
-                                {/* Payment Settings 
-                                <div className="space-y-4">
-                                    <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                                        <FaMoneyBillWave className="text-gray-800" />
-                                        Payment Settings
-                                    </h3>
-
-                                    <div className="space-y-2">
-                                        <Label htmlFor="is_payment_required">Payment Required?</Label>
-                                        <Select onValueChange={(value) => setValue('is_payment_required', value)} defaultValue="False">
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Select payment requirement" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="True">Yes, payment required</SelectItem>
-                                                <SelectItem value="False">No, free event</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                </div> */}
-
-                                {/* Requirements */}
-                                {/* <div className="space-y-4">
-                                    <div className="flex items-center justify-between">
-                                        <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                                            <FaListUl className="text-gray-800" />
-                                            Event Requirements
-                                        </h3>
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={addRequirement}
-                                            className="flex items-center gap-2"
-                                        >
-                                            <FaPlus className="w-3 h-3" />
-                                            Add Requirement
-                                        </Button>
-                                    </div>
-
-                                    <div className="space-y-4">
-                                        {fields.map((field, index) => (
-                                            <Card key={field.id} className="border-2 border-dashed border-muted">
-                                                <CardHeader className="pb-3">
-                                                    <div className="flex items-center justify-between">
-                                                        <CardTitle className="text-sm">Requirement {index + 1}</CardTitle>
-                                                        {fields.length > 1 && (
-                                                            <Button
-                                                                type="button"
-                                                                variant="ghost"
-                                                                size="sm"
-                                                                onClick={() => remove(index)}
-                                                                className="text-destructive hover:text-destructive"
-                                                            >
-                                                                <FaTrash className="w-3 h-3" />
-                                                            </Button>
-                                                        )}
-                                                    </div>
-                                                </CardHeader>
-                                                <CardContent className="space-y-4">
-                                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                                        <div className="space-y-2">
-                                                            <Label htmlFor={`requirements.${index}.label`}>Label *</Label>
-                                                            <Input
-                                                                {...register(`requirements.${index}.label`, {
-                                                                    required: "Label is required"
-                                                                })}
-                                                                placeholder="e.g., General Entry"
-                                                            />
-                                                            {errors.requirements?.[index]?.label && (
-                                                                <p className="text-sm text-destructive">
-                                                                    {errors.requirements[index].label.message}
-                                                                </p>
-                                                            )}
-                                                        </div>
-
-                                                        <div className="space-y-2">
-                                                            <Label htmlFor={`requirements.${index}.value`}>Value/Description *</Label>
-                                                            <Input
-                                                                {...register(`requirements.${index}.value`, {
-                                                                    required: "Value is required"
-                                                                })}
-                                                                placeholder="e.g., Need to bring Pass"
-                                                            />
-                                                            {errors.requirements?.[index]?.value && (
-                                                                <p className="text-sm text-destructive">
-                                                                    {errors.requirements[index].value.message}
-                                                                </p>
-                                                            )}
-                                                        </div>
-                                                       
-                                                        {is_payment_required == 'True' && (
-                                                            <div className="space-y-2">
-                                                                <Label htmlFor={`requirements.${index}.fee`}>Fee *</Label>
-                                                                <Input
-                                                                    {...register(`requirements.${index}.fee`, {
-                                                                        required: "Fee is required"
-                                                                    })}
-                                                                    placeholder="e.g., 1000"
-                                                                    type="number"
-                                                                />
-                                                                {errors.requirements?.[index]?.fee && (
-                                                                    <p className="text-sm text-destructive">
-                                                                        {errors.requirements[index].fee.message}
-                                                                    </p>
-                                                                )}
-                                                            </div>
-                                                        )}
-                                                    </div>
-
-                                                    <div className="space-y-2 pb-4 ">
-                                                        <Label htmlFor={`requirements.${index}.file`}>Additional File (Optional)</Label>
-                                                        <Input
-                                                            type="file"
-                                                            onChange={(e) => handleRequirementFileChange(index, e)}
-                                                            className="file:mr-4 h-[48px]  file:py-2 cursor-pointer  file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue file:text-gray-200 hover:file:bg-blue/80"
-                                                        />
-                                                    </div>
-                                                </CardContent>
-                                            </Card>
-                                        ))}
-                                    </div>
-                                </div>  */}
+                               
 
 
                                 {/* Form Actions */}
-                                <div className="flex gap-4 pt-6">
+                                <div className="flex justify-center gap-4 pt-6">
                                     <Button
                                         type="submit"
                                         disabled={isLoading}
@@ -512,7 +390,7 @@ const CreateEvent = ({ onCancel, onSubmit }) => {
                                         onClick={submitCreate}
                                         disabled={isLoading}
                                         size="lg"
-                                        className="hover:bg-destructive hover:text-destructive-foreground transition-all duration-300 hover:scale-[1.02]"
+                                        className="hover:bg-destructive text-white hover:text-destructive-foreground transition-all duration-300 hover:scale-[1.02] bg-red-800"
                                     >
                                         <FaTimes className="w-4 h-4 mr-2" />
                                         Cancel

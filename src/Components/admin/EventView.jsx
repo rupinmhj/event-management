@@ -128,7 +128,7 @@ export function EventView() {
             transition={{ duration: 0.4 }}
             className="min-h-screen bg-background"
         >
-            <div className="max-w-5xl mx-auto px-6 py-24">
+            <div className="max-w-6xl mx-auto px-6 py-24">
                 {/* Hero Section */}
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}

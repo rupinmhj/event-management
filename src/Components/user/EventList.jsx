@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useDebugValue, useEffect, useState } from "react";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -69,7 +69,7 @@ export default function ParticipantEventList() {
     // Filter and search logic
     useEffect(() => {
         let filtered = events;
-
+        window.scrollTo(0,0);
         // Search filter
         if (searchTerm) {
             filtered = filtered.filter(event =>
@@ -119,6 +119,7 @@ export default function ParticipantEventList() {
         });
     };
 
+
     // Check if event is upcoming
     const isUpcoming = (startDate) => {
         return new Date(startDate) > new Date();
@@ -138,6 +139,9 @@ export default function ParticipantEventList() {
             </div>
         );
     }
+
+  
+
 
     return (
         <motion.div

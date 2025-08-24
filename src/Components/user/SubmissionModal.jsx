@@ -90,7 +90,9 @@ const SubmissionModal = ({
             } else {
                 formData.append("responses[0][value]", value);
             }
-
+            formData.forEach((value, key) => {
+    console.log(key, value);
+});
             await onSubmit(formData);
 
             // Reset form
@@ -217,9 +219,9 @@ const SubmissionModal = ({
                                 onChange={(e) => setValue(e.target.value)}
                                 className="bg-white border-gray-300 focus:border-blue-500"
                             />
-                        ) : requirement.type==='TEXTAREA'?(
-                            <div className="relative">
- <JoditEditor
+                        ) : requirement.type === 'TEXTAREA' ? (
+                            <div className="relative ">
+                                <JoditEditor
                                     value={value || ''}
                                     config={{
                                         readonly: false,
@@ -239,24 +241,24 @@ const SubmissionModal = ({
 
                                     }}
                                     onBlur={(newContent) => {
-                                        setHtmlMessage(newContent || '');
+                                        setValue(newContent || '');
                                     }}
                                 />
-                                                                <div className="absolute w-full bottom-0 h-[20px] bg-white dark:bg-[#5f5c5c]"> </div>
+                                <div className="absolute w-full bottom-0 h-[20px] bg-white dark:bg-[#5f5c5c]"> </div>
 
                             </div>
-                            
-                        ):
+
+                        ) :
                             (
-                            <Textarea
-                                id="requirement-input"
-                                placeholder="Enter your text here..."
-                                value={value}
-                                onChange={(e) => setValue(e.target.value)}
-                                rows={4}
-                                className="bg-white border-gray-300 focus:border-blue-500 resize-none"
-                            />
-                        )}
+                                <Textarea
+                                    id="requirement-input"
+                                    placeholder="Enter your text here..."
+                                    value={value}
+                                    onChange={(e) => setValue(e.target.value)}
+                                    rows={4}
+                                    className="bg-white border-gray-300 focus:border-blue-500 resize-none"
+                                />
+                            )}
                     </div>
 
                     {requirement.deadline && (
@@ -271,7 +273,7 @@ const SubmissionModal = ({
                         </div>
                     )}
 
-                   
+
 
                     {error && (
                         <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
@@ -294,8 +296,8 @@ const SubmissionModal = ({
                         <Button
                             type="submit"
                             className={`flex-1 text-white ${isEditMode
-                                    ? 'bg-orange-600 hover:bg-orange-700'
-                                    : 'bg-blue hover:bg-blue/80'
+                                ? 'bg-orange-600 hover:bg-orange-700'
+                                : 'bg-blue hover:bg-blue/80'
                                 }`}
                             disabled={isSubmitting}
                         >

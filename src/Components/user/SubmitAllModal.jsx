@@ -8,7 +8,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import useAxiosAuth from '@/hooks/useAxiosAuth';
-
+import {toast, ToastContainer} from 'react-toastify'
+import JoditEditor from 'jodit-react';
+import 'jodit/es2021/jodit.min.css';
 const SubmitAllModal = ({ isOpen, onClose, events, onRefresh }) => {
     const [selectedEventId, setSelectedEventId] = useState(null);
     const [submissions, setSubmissions] = useState({});
@@ -193,6 +195,9 @@ const SubmitAllModal = ({ isOpen, onClose, events, onRefresh }) => {
                     formData.append(`responses[${index}][value]`, sub.value);
                 }
             });
+            formData.forEach((value, key) => {
+                console.log(key, value);
+            });
 
             await api.post('/api/event/participation/submit-response/', formData);
 
@@ -201,7 +206,7 @@ const SubmitAllModal = ({ isOpen, onClose, events, onRefresh }) => {
             onClose();
         } catch (error) {
             console.error('Error submitting requirements:', error);
-            alert('Failed to submit. Please try again.');
+            toast.error('Failed to submit. Please try again.');
         } finally {
             setIsSubmitting(false);
         }
@@ -466,7 +471,7 @@ const SubmitAllModal = ({ isOpen, onClose, events, onRefresh }) => {
                                             ) : requirement.type === 'TEXTAREA' ? (
                                                 <div className="relative">
                                                     <JoditEditor
-                                                        value={value || ''}
+                                                        value={submissions[requirement.id] || ''}
                                                         config={{
                                                             readonly: false,
                                                             height: 250,
@@ -484,15 +489,16 @@ const SubmitAllModal = ({ isOpen, onClose, events, onRefresh }) => {
                                                             },
 
                                                         }}
+                                                       
                                                         onBlur={(newContent) => {
-                                                            setHtmlMessage(newContent || '');
+                                                            handleValueChange(requirement.id, newContent || '');
                                                         }}
                                                     />
                                                     <div className="absolute w-full bottom-0 h-[20px] bg-white dark:bg-[#5f5c5c]"> </div>
 
                                                 </div>
 
-                                            ):
+                                            ) :
                                                 (
                                                     <Textarea
                                                         placeholder="Enter your text here..."
@@ -554,6 +560,7 @@ const SubmitAllModal = ({ isOpen, onClose, events, onRefresh }) => {
                     </div>
                 </form>
             </DialogContent>
+            <ToastContainer />
         </Dialog>
     );
 };

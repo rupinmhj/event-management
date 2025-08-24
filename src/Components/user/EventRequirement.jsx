@@ -320,7 +320,7 @@ const RequirementCard = () => {
                                     )}
 
                                     {response?.is_verified && (
-                                        <p className="text-xs text-green-600 mt-1">✔ Verified by admin, editing disabled</p>
+                                        <p className="text-xs text-green-600 mt-1">✔ Verified </p>
                                     )}
                                    
 

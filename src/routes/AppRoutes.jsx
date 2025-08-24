@@ -8,7 +8,7 @@ import { RequirementSetup } from "../pages/admin/RequirementSetup";
 import { TicketsPricing } from "../pages/admin/TicketsPricing";
 import { RegisteredMembers } from "../pages/admin/RegisteredMembers";
 import { EventView } from "@/Components/admin/EventView"
-import SendEmail from "@/Components/admin/SendEmail";
+import {SendEmail} from "@/Components/admin/SendEmail";
 import {ParticipantReview} from "@/Components/admin/ParticipantReview";
 // User pages
 import UserLayout from "../layouts/UserLayout";

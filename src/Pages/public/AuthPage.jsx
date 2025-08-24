@@ -6,7 +6,7 @@ import { SignupForm } from "../../forms/SignupForm";
 import { SigninForm } from "../../forms/SigninForm";
 
 export function AuthPage() {
-  const [authView, setAuthView] = useState("signup"); // signup | signin
+  const [authView, setAuthView] = useState("signin"); // signup | signin
   const [showOtp, setShowOtp] = useState(false);
 
   return (

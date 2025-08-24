@@ -21,8 +21,9 @@ import {
   MdCalendarToday,
   MdCheckBox,
   MdLink,
-  MdNotes
+  MdNotes,
 } from 'react-icons/md';
+import { FaTimes } from 'react-icons/fa'
 import AuthContext from '@/context/AuthContext';
 import useAxiosAuth from '@/hooks/useAxiosAuth';
 import GeneralContext from '@/context/GeneralContext';
@@ -160,6 +161,10 @@ export const RequirementSetup = () => {
     return Object.values(newErrors).every(error => error === '');
   };
 
+  useEffect(()=>{
+    window.scrollTo(0,0);
+  },[])
+
   const saveRequirement = async () => {
     // Validate form
     if (!validateForm()) {
@@ -173,7 +178,7 @@ export const RequirementSetup = () => {
       formData.append('type', requirement.type || '');
       formData.append('label', requirement.label || '');
       formData.append('description', requirement.description || '');
-      formData.append('is_verification_required', String(!!requirement.is_verification_required));  
+      formData.append('is_verification_required', String(!!requirement.is_verification_required));
       formData.append('is_active', String(!!requirement.is_active));
       const deadline = formatDateForAPI(requirement.deadline);
       if (deadline) formData.append('deadline', deadline);
@@ -393,7 +398,7 @@ export const RequirementSetup = () => {
               </div>
 
               {/* Deadline */}
-              
+
               <div className="space-y-2 max-w-sm">
                 <Label>Deadline</Label>
                 <DatePicker
@@ -436,12 +441,12 @@ export const RequirementSetup = () => {
                   <input
                     type="checkbox"
                     id="is_verification_required"
-                    checked={requirement.is_verification_required || false} 
+                    checked={requirement.is_verification_required || false}
                     onChange={e => setRequirement({
                       ...requirement,
                       is_verification_required: e.target.checked
                     })}
-                    className="accent-blue-600 h-[40px]" 
+                    className="accent-blue-600 h-[40px]"
                   />
                   <span className="text-sm font-medium">Admin verification required</span>
                 </label>
@@ -481,16 +486,17 @@ export const RequirementSetup = () => {
               onClick={saveRequirement}
               disabled={loading}
               className="flex-1 bg-blue transition-all duration-300 hover:scale-[1.02] text-primary-foreground hover:bg-blue/90"
-
+              size='lg'
             >
               {loading ? 'Saving...' : 'Save Requirement'}
             </Button>
             <Button
               onClick={() => navigate(-1)}
               disabled={loading}
-              className="hover:bg-destructive hover:text-destructive-foreground transition-all duration-300 hover:scale-[1.02] bg-red-800"
-
+              className="hover:bg-destructive text-white hover:text-destructive-foreground transition-all duration-300 hover:scale-[1.02] bg-red-800"
+              size='lg'
             >
+              <FaTimes className="w-4 h-4 mr-2" />
               Cancel
             </Button>
           </div>

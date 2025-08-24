@@ -46,6 +46,9 @@ export default function EventCardList() {
     const { authTokens, authReady } = useContext(AuthContext);
     const { submitCreate, create } = useContext(GeneralContext);
 
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [pendingToggle, setPendingToggle] = useState(null);
+
 
     // Fetch events
     useEffect(() => {
@@ -59,7 +62,7 @@ export default function EventCardList() {
                 console.log('Event list', data);
                 setEvents(data);
                 setFilteredEvents(data);
-               
+
             } catch (error) {
                 console.error("Error fetching events:", error);
             } finally {
@@ -104,28 +107,46 @@ export default function EventCardList() {
     const totalPages = Math.ceil(filteredEvents.length / eventsPerPage);
 
     // Handle event status toggle
-    const handleStatusToggle = async (eventId, currentStatus) => {
-        try {
-            const newStatus = !currentStatus;
-            // API call to update event status
-            console.log(newStatus);
-            const res2 = await api.put(`/api/event/event-status-change/${eventId}/`, {
-                is_active: newStatus
-            });
-            console.log(res2.data);
+   const handleStatusToggle = (eventId, currentStatus) => {
+    const event = events.find(e => e.id === eventId);
+    const newStatus = !currentStatus;
+    
+    setPendingToggle({ eventId, currentStatus, newStatus, event });
+    setShowConfirmModal(true);
+};
 
-            // Update local state
-            setEvents(prevEvents =>
-                prevEvents.map(event =>
-                    event.id === eventId
-                        ? { ...event, is_active: newStatus }
-                        : event
-                )
-            );
-        } catch (error) {
-            console.error("Error updating event status:", error);
-        }
-    };
+const confirmStatusToggle = async () => {
+    try {
+        const { eventId, newStatus } = pendingToggle;
+        
+        const res2 = await api.put(`/api/event/event-status-change/${eventId}/`, {
+            is_active: newStatus
+        });
+        console.log(res2.data);
+
+        // Update local state
+        setEvents(prevEvents =>
+            prevEvents.map(event =>
+                event.id === eventId
+                    ? { ...event, is_active: newStatus }
+                    : event
+            )
+        );
+        
+        // Close modal and reset pending toggle
+        setShowConfirmModal(false);
+        setPendingToggle(null);
+    } catch (error) {
+        console.error("Error updating event status:", error);
+        setShowConfirmModal(false);
+        setPendingToggle(null);
+    }
+};
+
+const handleCloseConfirmModal = () => {
+    setShowConfirmModal(false);
+    setPendingToggle(null);
+};
 
     const handleView = (id) => {
         navigate(`/admin/event/${id}`)
@@ -156,7 +177,46 @@ export default function EventCardList() {
         );
     }
 
-   
+
+    const ConfirmModal = ({ isOpen, onClose, onConfirm, event, newStatus }) => {
+    if (!isOpen || !event) return null;
+
+    return (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+            <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onClick={onClose}></div>
+            <div className="flex min-h-full items-center justify-center p-4">
+                <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full">
+                    <div className="p-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                            Confirm Status Change
+                        </h3>
+                        <p className="text-gray-600 mb-6">
+                            Are you sure you want to {newStatus ? 'activate' : 'deactivate'} the event 
+                            <span className="font-medium"> "{event.title}"</span>?
+                        </p>
+                        <div className="flex gap-3 justify-end">
+                            <Button
+                                onClick={onClose}
+                                variant="outline"
+                                size="sm"
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                onClick={onConfirm}
+                                size="sm"
+                                className={newStatus ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"}
+                            >
+                                {newStatus ? 'Activate' : 'Deactivate'}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
     return (
         <motion.div
             initial={{ opacity: 0 }}
@@ -290,7 +350,7 @@ export default function EventCardList() {
                                                 <h3 className="font-bold text-lg text-gray-900 group-hover:text-blue transition-colors line-clamp-2">
                                                     {event.title}
                                                 </h3>
-                                                <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                                                <p className="text-sm text-muted-foreground mt-1 line-clamp-2 h-[40px]">
                                                     {event.description || "No description available"}
                                                 </p>
                                             </div>
@@ -405,7 +465,13 @@ export default function EventCardList() {
                 )}
             </AnimatePresence>
 
-
+            <ConfirmModal
+    isOpen={showConfirmModal}
+    onClose={handleCloseConfirmModal}
+    onConfirm={confirmStatusToggle}
+    event={pendingToggle?.event}
+    newStatus={pendingToggle?.newStatus}
+/>
         </motion.div>
     );
 }

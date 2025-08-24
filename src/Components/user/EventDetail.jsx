@@ -69,6 +69,10 @@ export function EventDetail() {
         }
     }, [id, authTokens, authReady, api]);
 
+    useEffect(()=>{
+        window.scrollTo(0,0);
+    },[id])
+
     // Format date
     const formatDate = (dateString) => {
         const date = new Date(dateString);
@@ -155,7 +159,7 @@ export function EventDetail() {
             transition={{ duration: 0.4 }}
             className="min-h-screen bg-background"
         >
-            <div className="max-w-5xl mx-auto px-6 py-8">
+            <div className="max-w-6xl mx-auto px-6 py-8">
                 {/* Hero Section */}
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
@@ -178,33 +182,6 @@ export function EventDetail() {
                                 </div>
                             )}
 
-                            {/* Action Buttons Overlay */}
-                            {/* <div className="absolute top-4 right-4 flex gap-2">
-                                <Button
-                                    size="sm"
-                                    variant="secondary"
-                                    onClick={toggleLike}
-                                    className="bg-background/90 backdrop-blur-sm"
-                                >
-                                    <Heart className={`w-4 h-4 ${isLiked ? 'fill-red-500 text-red-500' : ''}`} />
-                                </Button>
-                                <Button
-                                    size="sm"
-                                    variant="secondary"
-                                    onClick={toggleBookmark}
-                                    className="bg-background/90 backdrop-blur-sm"
-                                >
-                                    <Bookmark className={`w-4 h-4 ${isBookmarked ? 'fill-blue-500 text-blue-500' : ''}`} />
-                                </Button>
-                                <Button
-                                    size="sm"
-                                    variant="secondary"
-                                    onClick={handleShare}
-                                    className="bg-background/90 backdrop-blur-sm"
-                                >
-                                    <Share2 className="w-4 h-4" />
-                                </Button>
-                            </div> */}
 
                             {/* Event Icon */}
                             {event.icon && (

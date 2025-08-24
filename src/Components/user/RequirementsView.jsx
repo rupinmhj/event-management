@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { TabsContent } from "@/components/ui/tabs";
+import ViewSubmissionModal from './ViewSubmissionModal';
 import {
     FileText,
     Eye,
@@ -38,7 +39,19 @@ export function RequirementsView({ requirements = [] }) {
     const { id: eventId } = useParams();
     const { authTokens, authReady, hasProfile } = useContext(AuthContext);
 
-   
+    const [viewModalOpen, setViewModalOpen] = useState(false);
+    const [selectedViewRequirement, setSelectedViewRequirement] = useState(null);
+    const [selectedViewResponse, setSelectedViewResponse] = useState(null);
+    const handleViewSubmission = (requirement) => {
+        const response = getResponseForRequirement(requirement.id);
+        setSelectedViewRequirement(requirement);
+        setSelectedViewResponse(response);
+        setViewModalOpen(true);
+    };
+
+    useEffect(() => {
+        console.log('requirements', requirements)
+    }, [requirements])
 
     useEffect(() => {
         const fetchParticipationData = async () => {
@@ -47,6 +60,7 @@ export function RequirementsView({ requirements = [] }) {
                 if (!authTokens || !authReady || !eventId) return;
                 setIsLoading(true);
                 const ownParticipationRes = await api.get(`/api/event/own-participation-list/?event=${eventId}`);
+                console.log("ownParticipationRes", ownParticipationRes.data.data)
                 setOwnParticipations(ownParticipationRes.data || []);
                 if (ownParticipationRes.data && ownParticipationRes.data.length > 0) {
                     const participantId = ownParticipationRes.data[0].id;
@@ -73,7 +87,7 @@ export function RequirementsView({ requirements = [] }) {
     const getResponseForRequirement = (requirementId) => {
         if (!participationDetails || !participationDetails.responses) return null;
         return participationDetails.responses.find(response =>
-            response.requirement === requirementId
+            response.requirement === requirementId || response.requirement_detail?.id === requirementId
         );
     };
 
@@ -91,6 +105,10 @@ export function RequirementsView({ requirements = [] }) {
         return ownParticipations[0].id;
     };
 
+    useEffect(() => {
+        console.log('participationData', participationDetails);
+
+    }, [participationDetails])
     const getTypeIcon = (type) => {
         switch (type) {
             case 'URL':
@@ -132,18 +150,18 @@ export function RequirementsView({ requirements = [] }) {
 
     const getStatusBadge = (status) => {
         switch (status) {
-            case 'approved':
-                return <Badge className="bg-green-100 text-green-800 text-xs">Approved</Badge>;
-            case 'rejected':
-                return <Badge className="bg-red-100 text-red-800 text-xs">Rejected</Badge>;
-            case 'submitted':
-                return <Badge className="bg-blue-100 text-blue-800 text-xs">Submitted</Badge>;
-            case 'draft':
-                return <Badge className="bg-yellow-100 text-yellow-800 text-xs">Draft</Badge>;
-            case 'not_filled':
-                return <Badge className="bg-gray-100 text-gray-800 text-xs">Not Started</Badge>;
+            case 'true':
+                return <Badge className="bg-green-100 text-green-800 text-xs">{status}Verified</Badge>;
+            case 'false':
+                return <Badge className="bg-red-100 text-red-800 text-xs">Not verified</Badge>;
+            // case 'submitted':
+            //     return <Badge className="bg-blue-100 text-blue-800 text-xs">Submitted</Badge>;
+            // case 'draft':
+            //     return <Badge className="bg-yellow-100 text-yellow-800 text-xs">Draft</Badge>;
+            // case 'not_filled':
+            //     return <Badge className="bg-gray-100 text-gray-800 text-xs">Not Started</Badge>;
             default:
-                return <Badge className="bg-gray-100 text-gray-800 text-xs">Unknown</Badge>;
+                return <Badge className="bg-gray-100 text-gray-800 text-xs">{status}Unknown</Badge>;
         }
     };
 
@@ -271,7 +289,7 @@ export function RequirementsView({ requirements = [] }) {
                                         </div>
                                     </div>
                                 </div>
-                                <div className="bg-orange-50 dark:bg-orange-950 p-4 rounded-lg">
+                                {/* <div className="bg-orange-50 dark:bg-orange-950 p-4 rounded-lg">
                                     <div className="flex items-center gap-2">
                                         <AlertCircle className="w-5 h-5 text-orange-600" />
                                         <div>
@@ -283,55 +301,98 @@ export function RequirementsView({ requirements = [] }) {
                                             </p>
                                         </div>
                                     </div>
-                                </div>
+                                </div> */}
                             </div>
 
-                            {/* Requirements Table */}
                             <div className="overflow-x-auto">
                                 <table className="min-w-full divide-y-2 divide-gray-200">
                                     <thead className="ltr:text-left rtl:text-right">
-                                        <tr className="*:font-medium *:text-gray-900 *:first:sticky *:first:left-0 *:first:bg-white text-[16px]">
-                                            <th className="px-3 py-2 whitespace-nowrap text-[14px]">S.N</th>
-                                            <th className="px-3 py-2 whitespace-nowrap text-[14px]">Name</th>
-                                            <th className="px-3 py-2 whitespace-nowrap text-[14px]">Status</th>
-                                            <th className="px-3 py-2 whitespace-nowrap text-center text-[14px]">Action</th>
+                                        <tr className="*:font-medium *:text-gray-900 *:first:sticky *:first:left-0 *:first:bg-white">
+                                            <th className="px-3 py-2 whitespace-nowrap text-xs sm:text-sm md:text-base lg:text-[16px] w-16">S.N</th>
+                                            <th className="px-3 py-2 whitespace-nowrap text-xs sm:text-sm md:text-base lg:text-[16px] min-w-[200px]">Name</th>
+                                            <th className="px-3 py-2 whitespace-nowrap text-xs sm:text-sm md:text-base lg:text-[16px] w-40">Status</th>
+                                            <th className="px-3 py-2 whitespace-nowrap text-center text-xs sm:text-sm md:text-base lg:text-[16px] min-w-[200px]">Action</th>
                                         </tr>
                                     </thead>
+
                                     <tbody className="divide-y divide-gray-200">
                                         {requirementsData
-                                            .filter(req => req.is_active !== false)
+                                            .filter((req) => req.is_active !== false)
                                             .map((req, index) => {
-                                                const status = getSubmissionStatus(req);
-                                                const isOverdue = isDeadlinePassed(req.deadline);
                                                 const response = getResponseForRequirement(req.id);
+                                                const isOverdue = isDeadlinePassed(req.deadline);
 
                                                 return (
                                                     <tr
                                                         key={req.id}
-                                                        className={`hover:bg-gray-50 ${isOverdue && status === 'not_filled' ? 'bg-red-100' : ''
+                                                        className={`hover:bg-gray-50 ${isOverdue && !response ? "bg-red-100" : ""
                                                             }`}
                                                     >
-                                                        <td className="px-3 py-2 whitespace-nowrap text-[13px] font-medium">
+                                                        {/* S.N */}
+                                                        <td className="px-3 py-2 whitespace-nowrap text-xs sm:text-sm md:text-base lg:text-[14px] font-medium">
                                                             {index + 1}
                                                         </td>
-                                                        <td className="px-3 py-2 whitespace-nowrap text-[13px] font-medium">
+
+                                                        {/* Name */}
+                                                        <td className="px-3 py-2 whitespace-nowrap text-xs sm:text-sm md:text-base lg:text-[14px] font-medium">
                                                             <div className="flex items-center gap-2">
-                                                                {req.label || req.type}
+                                                               
+                                                                <span className="truncate">{req.label || req.type}</span>
                                                             </div>
                                                         </td>
-                                                        <td className="px-3 py-2 whitespace-nowrap">
-                                                            {getStatusBadge(status)}
+
+                                                        {/* Status */}
+                                                        <td className="px-3 py-2 whitespace-nowrap text-xs sm:text-sm md:text-base lg:text-[14px]">
+                                                            {response ? (
+                                                                req.is_verification_required ? (
+                                                                    response.is_verified ? (
+                                                                        <Badge className="bg-green-100 text-green-800 text-xs sm:text-sm">
+                                                                            Verified
+                                                                        </Badge>
+                                                                    ) : (
+                                                                        <Badge className="bg-yellow-100 text-yellow-800 text-xs sm:text-sm">
+                                                                            Pending Verification
+                                                                        </Badge>
+                                                                    )
+                                                                ) : (
+                                                                    <Badge className="bg-blue-100 text-blue-800 text-xs sm:text-sm">
+                                                                        Submitted
+                                                                    </Badge>
+                                                                )
+                                                            ) : (
+                                                                <Badge className="bg-gray-100 text-gray-800 text-xs sm:text-sm">
+                                                                    Not Started
+                                                                </Badge>
+                                                            )}
                                                         </td>
+
+                                                        {/* Actions */}
                                                         <td className="px-3 py-2 whitespace-nowrap text-center">
-                                                            {/* Only allow edit/apply if not overdue */}
-                                                            {!isOverdue ? (
+                                                            <div className="flex gap-1 justify-center flex-wrap">
+                                                                {response && (
+                                                                    <Button
+                                                                        size="sm"
+                                                                        variant="outline"
+                                                                        className="min-w-[70px] border-blue-300 text-blue-600 hover:bg-blue-50 text-xs sm:text-sm"
+                                                                        onClick={() => handleViewSubmission(req)}
+                                                                    >
+                                                                        <Eye className="w-3 h-3 mr-1" />
+                                                                        View
+                                                                    </Button>
+                                                                )}
+
                                                                 <Button
                                                                     size="sm"
-
-                                                                    className={ `min-w-[86.6px] ${status === 'not_filled' ? 'bg-blue text-white hover:bg-blue/80' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'} `}
+                                                                    className={`min-w-[86.6px] text-xs sm:text-sm ${!response
+                                                                            ? "bg-blue text-white hover:bg-blue/80"
+                                                                            : "bg-gray-200 text-gray-800 hover:bg-gray-300"
+                                                                        }`}
                                                                     onClick={() => handleRequirementModal(req)}
+                                                                    disabled={isOverdue || response?.is_verified}
                                                                 >
-                                                                    {status === 'not_filled' ? (
+                                                                    {isOverdue ? (
+                                                                        "Overdue"
+                                                                    ) : !response ? (
                                                                         <>
                                                                             <Plus className="w-3 h-3 mr-1" />
                                                                             Apply
@@ -343,15 +404,7 @@ export function RequirementsView({ requirements = [] }) {
                                                                         </>
                                                                     )}
                                                                 </Button>
-                                                            ) : (
-                                                                <Button
-                                                                    size="sm"
-                                                                    disabled
-                                                                    className="bg-gray-400 text-white cursor-not-allowed"
-                                                                >
-                                                                    Overdue
-                                                                </Button>
-                                                            )}
+                                                            </div>
                                                         </td>
                                                     </tr>
                                                 );
@@ -359,6 +412,8 @@ export function RequirementsView({ requirements = [] }) {
                                     </tbody>
                                 </table>
                             </div>
+
+
                         </>
                     )}
                 </CardContent>
@@ -379,6 +434,17 @@ export function RequirementsView({ requirements = [] }) {
                 participationId={selectedParticipationId}
                 isEditMode={isEditMode}
                 onSubmit={handleModalSubmit}
+            />
+            <ViewSubmissionModal
+                isOpen={viewModalOpen}
+                onClose={() => {
+                    setViewModalOpen(false);
+                    setSelectedViewRequirement(null);
+                    setSelectedViewResponse(null);
+                }}
+                event={{ id: eventId, title: requirementsData[0]?.event_name }}
+                requirement={selectedViewRequirement}
+                response={selectedViewResponse}
             />
         </TabsContent>
     );

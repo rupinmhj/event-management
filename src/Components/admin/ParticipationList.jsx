@@ -30,6 +30,12 @@ export const ParticipationList = () => {
     fetchParticipants();
   }, [id, api]);
 
+  const exportParticipation=async(id)=>{
+    const res=await api.get(`/api/event/${id}/response-export/`);
+    console.log(res);
+
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[200px]">
@@ -51,9 +57,9 @@ export const ParticipationList = () => {
             <Button
               variant="ghost"
               className="flex items-center gap-2"
-              onClick={() => navigate(-1)}
+              onClick={() => navigate(exportParticipation(id))}
             >
-              <ArrowLeft className="w-4 h-4" /> Back
+              <ArrowLeft className="w-4 h-4" /> Export Participation detail
             </Button>
           </div>
         </CardHeader>
@@ -80,7 +86,8 @@ export const ParticipationList = () => {
                         <button
                           className="p-1 rounded hover:bg-blue/20 text-blue-600"
                           title="View"
-                          onClick={() => console.log("View participant", p)}
+                          // onClick={() => console.log("View participant", p)}
+                          onClick={()=>navigate(`/admin/participant-review/${p.id}`)}
                         >
                           <Eye className="w-4 h-4" />
                         </button>

@@ -24,6 +24,7 @@ import {
   MdEdit,
   MdNotes
 } from 'react-icons/md';
+import {FaTimes} from 'react-icons/fa'
 import AuthContext from '@/context/AuthContext';
 import useAxiosAuth from '@/hooks/useAxiosAuth';
 
@@ -124,7 +125,7 @@ export const RequirementUpdate = () => {
           description: reqData.description || '',
           file: null, // We'll handle existing file separately
           is_active: reqData.is_active || false,
-          is_verification_required:reqData.is_verification_required || false,
+          is_verification_required: reqData.is_verification_required || false,
           deadline: deadlineValue
         });
 
@@ -320,7 +321,7 @@ export const RequirementUpdate = () => {
       <div className="min-h-screen bg-gradient-to-br from-background via-primary-soft to-background pt-14">
         <div className="max-w-6xl mx-auto space-y-8">
 
-        
+
 
           {/* Single Requirement */}
           <Card className="shadow-lg border-0 bg-gradient-to-r from-card to-primary-soft/10">
@@ -516,23 +517,23 @@ export const RequirementUpdate = () => {
           </Card>
 
           {/* Action Buttons */}
-          <div className="flex justify-center gap-4 pt-6 w-full max-w-2xl mx-auto">
+          <div className="flex justify-center gap-4 pt-6">
 
 
             <Button
               onClick={updateRequirement}
               disabled={loading}
-              className="w-full bg-blue transition-all duration-300 hover:scale-[1.02] text-primary-foreground hover:bg-blue/90"
-
+              className="flex-1 bg-blue transition-all duration-300 hover:scale-[1.02] text-primary-foreground hover:bg-blue/90"
+              size="lg"
             >
               {loading ? 'Updating...' : 'Update Requirement'}
             </Button>
             <Button
               onClick={() => navigate(-1)}
               disabled={loading}
-              className="w-full  hover:bg-destructive hover:text-destructive-foreground transition-all duration-300 hover:scale-[1.02] bg-red-800"
-
-            >
+              size="lg"
+              className="hover:bg-destructive text-white hover:text-destructive-foreground transition-all duration-300 hover:scale-[1.02] bg-red-800"
+            >  <FaTimes className="w-4 h-4 mr-2" />
               Cancel
             </Button>
           </div>
