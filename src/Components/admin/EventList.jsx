@@ -182,10 +182,10 @@ const handleCloseConfirmModal = () => {
     if (!isOpen || !event) return null;
 
     return (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
-            <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onClick={onClose}></div>
-            <div className="flex min-h-full items-center justify-center p-4">
-                <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full">
+        <div className="fixed inset-0 z-50 overflow-y-auto ">
+            <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity " onClick={onClose}></div>
+            <div className="flex min-h-full items-center justify-center p-4 ">
+                <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full ">
                     <div className="p-6">
                         <h3 className="text-lg font-semibold text-gray-900 mb-4">
                             Confirm Status Change
@@ -223,10 +223,10 @@ const handleCloseConfirmModal = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="space-y-6 pt-4 pb-8 px-12"
+            className="space-y-6 pt-4 pb-8 md:px-12 px-4  "
         >
             {/* Header */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="flex  justify-between items-start sm:items-center gap-4 ">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-800">Events</h2>
                     {/* <p className="text-muted-foreground">Manage your events and track their performance</p> */}

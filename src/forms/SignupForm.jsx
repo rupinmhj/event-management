@@ -105,8 +105,10 @@ export const SignupForm = ({ switchToSignin }) => {
 
         } catch (error) {
             const msg =
-                error.response?.data?.detail || error.response?.data?.message || 'Signup failed, try again';
-            toast.error(msg);
+                 error.response?.data?.email || error.response?.data?.phone_number ||'Signup failed, try again';
+            toast.error(String(msg));
+            console.error(msg);
+            console.error(error);
         } finally {
             setLoading(false);
         }

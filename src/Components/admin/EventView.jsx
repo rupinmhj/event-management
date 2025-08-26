@@ -28,12 +28,82 @@ import {
     Delete,
     FileText,
     CreditCard,
-    UserCheck
+    UserCheck,
+    X,
+    Trash2,
+    AlertTriangle
 } from "lucide-react";
 import { motion } from 'framer-motion';
 import { RequirementsView } from "./RequirementsView";
 import GeneralContext from "@/context/GeneralContext";
-import {ParticipationList}  from "./ParticipationList";
+import { ParticipationList } from "./ParticipationList";
+
+// Delete Confirmation Modal Component
+const DeleteConfirmationModal = ({ isOpen, onClose, onConfirm, eventTitle, isDeleting = false }) => {
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+                {/* Header */}
+                <div className="flex items-center justify-between p-6 border-b">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-red-100 rounded-full">
+                            <AlertTriangle className="w-6 h-6 text-red-600" />
+                        </div>
+                        <h3 className="text-lg font-semibold text-gray-900">Delete Event</h3>
+                    </div>
+                    <button
+                        onClick={onClose}
+                        className="text-gray-400 hover:text-gray-600 transition-colors"
+                        disabled={isDeleting}
+                    >
+                        <X className="w-6 h-6" />
+                    </button>
+                </div>
+
+                {/* Content */}
+                <div className="p-6">
+                    <p className="text-gray-600 mb-4">
+                        Are you sure you want to delete the event{' '}
+                        <span className="font-medium text-gray-900">"{eventTitle}"</span>?
+                    </p>
+                    <p className="text-sm text-red-600">
+                        This action cannot be undone. All event data will be permanently removed.
+                    </p>
+                </div>
+
+                {/* Footer */}
+                <div className="flex justify-end gap-3 p-6 border-t bg-gray-50">
+                    <button
+                        onClick={onClose}
+                        className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                        disabled={isDeleting}
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={onConfirm}
+                        className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={isDeleting}
+                    >
+                        {isDeleting ? (
+                            <>
+                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                Deleting...
+                            </>
+                        ) : (
+                            <>
+                                <Trash2 className="w-4 h-4" />
+                                Delete Event
+                            </>
+                        )}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 export function EventView() {
     const { id } = useParams();
@@ -41,10 +111,13 @@ export function EventView() {
     const [event, setEvent] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const api = useAxiosAuth();
     const { authTokens, authReady } = useContext(AuthContext);
     const { eventNameFunc } = useContext(GeneralContext);
+
     // Fetch single event
     useEffect(() => {
         const fetchEvent = async () => {
@@ -95,6 +168,27 @@ export function EventView() {
 
     const handleEdit = () => {
         navigate(`/admin/event-edit/${id}`);
+    };
+
+    const handleDelete = async () => {
+        setIsDeleting(true);
+        try {
+            const res = await api.delete(`/api/event/delete-event/${id}/`);
+            
+            if (res.status === 200 || res.status === 204) {
+                console.log('Event deleted successfully');
+                setShowDeleteModal(false);
+                // Navigate back to events list after successful deletion
+                navigate('/admin/events');
+                // You can also show a success toast here
+            }
+        } catch (error) {
+            console.error('Error deleting event:', error);
+            // Handle error (show error message, etc.)
+            // You can show an error toast here
+        } finally {
+            setIsDeleting(false);
+        }
     };
 
     if (isLoading) {
@@ -216,7 +310,7 @@ export function EventView() {
                 >
                     <Tabs defaultValue="overview">
                         <ScrollArea>
-                            <TabsList className="bg-background mb-6 h-auto -space-x-px p-0 shadow-xs rtl:space-x-reverse">
+                            <TabsList className="bg-background mb-6 h-auto -space-x-px p-0 shadow-xs rtl:space-x-reverse ">
                                 <TabsTrigger
                                     value="overview"
                                     className=" text-gray-600 data-[state=active]:bg-muted data-[state=active]:after:bg-primary relative overflow-hidden rounded-none border py-2 after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 first:rounded-s last:rounded-e"
@@ -409,6 +503,7 @@ export function EventView() {
                                             <Button
                                                 variant="outline"
                                                 className="w-full hover:bg-red-400 text-white bg-red-800 hover:text-white"
+                                                onClick={() => setShowDeleteModal(true)}
                                             >
                                                 <Delete className="w-4 h-4 mr-2" />
                                                 Delete Event
@@ -420,16 +515,38 @@ export function EventView() {
                         </TabsContent>
 
                         {/* Requirements Tab Content */}
-                        <RequirementsView requirements={event.requirements} />
+                        <TabsContent value="requirements">
+                            {event && event.requirements ? (
+                                <RequirementsView requirements={event.requirements}/>
+                            ) : (
+                                <div className="text-center py-8">
+                                    <p className="text-muted-foreground">No requirements data available</p>
+                                </div>
+                            )}
+                        </TabsContent>
 
                         {/* Ticket Price Tab Content */}
+                        <TabsContent value="ticket-price">
+                            <div className="text-center py-8">
+                                <p className="text-muted-foreground">Ticket price information coming soon...</p>
+                            </div>
+                        </TabsContent>
 
-
-                            <ParticipationList /> 
-                       
-
+                        {/* Participants Tab Content */}
+                        <TabsContent value="participants">
+                            <ParticipationList />
+                        </TabsContent>
                     </Tabs>
                 </motion.div>
+
+                {/* Delete Confirmation Modal */}
+                <DeleteConfirmationModal
+                    isOpen={showDeleteModal}
+                    onClose={() => setShowDeleteModal(false)}
+                    onConfirm={handleDelete}
+                    eventTitle={event.title}
+                    isDeleting={isDeleting}
+                />
             </div>
         </motion.div>
     );

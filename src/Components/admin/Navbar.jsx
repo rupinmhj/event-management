@@ -79,23 +79,24 @@ const UserMenu = ({ mode, logout }) => {
     const navigate = useNavigate();
 
     return (
-        <DropdownMenu modal={false} >
+        <div className="">
+                <DropdownMenu modal={false} >
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="size-8">
                     <User className="size-4" />
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" portalled={false}>
+            <DropdownMenuContent align="end" portalled={false} className='mt-3 '>
                 <DropdownMenuItem>
                     <Link to="/profile" className="w-full block">
                         Profile
                     </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                {/* <DropdownMenuItem>
                     <Link to="/settings" className="w-full block">
                         Settings
                     </Link>
-                </DropdownMenuItem>
+                </DropdownMenuItem> */}
                 <DropdownMenuItem>
                     <Link to="/admin/change-password" className="w-full block">
                         Change Password
@@ -119,6 +120,8 @@ const UserMenu = ({ mode, logout }) => {
                 )}
             </DropdownMenuContent>
         </DropdownMenu>
+        </div>
+    
     );
 };
 
@@ -127,7 +130,8 @@ const navigationLinks = [
     { to: "/admin/events", label: "Events" },
     { to: "/admin/requirement-setup", label: "Requirement Setup" },
     { to: "/admin/tickets-pricing", label: "Tickets/Pricing" },
-    { to: "/admin/registered-members", label: "Registered Members" },
+    { to: "/admin/send-email", label: "Email" },
+    // { to: "/admin/registered-members", label: "Registered Members" },
 ];
 
 const Navbar = ({ mode }) => {
@@ -140,10 +144,10 @@ const Navbar = ({ mode }) => {
     };
 
     return (
-        <header className="border-b font-sans bg-white">
-            <div className="px-12 flex h-16 items-center justify-between gap-4">
+        <header className="border-b font-sans bg-white ">
+            <div className="md:px-12 px-2 flex h-16 items-center justify-between gap-4">
                 {/* Left side */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 ">
                     {/* Mobile menu trigger */}
                     <Popover modal={false}>
                         <PopoverTrigger asChild>
@@ -179,7 +183,7 @@ const Navbar = ({ mode }) => {
                                 </svg>
                             </Button>
                         </PopoverTrigger>
-                        <PopoverContent align="start" className="w-36 p-1 md:hidden" portalled={false}>
+                        <PopoverContent align="start" className="w-36 p-1 md:hidden " portalled={false}>
                             <NavigationMenu className="max-w-none *:w-full">
                                 <NavigationMenuList className="flex-col items-start gap-0 md:gap-2">
                                     {navigationLinks.map((link, index) => (
@@ -232,12 +236,12 @@ const Navbar = ({ mode }) => {
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
                         {/* Info menu */}
-                        <InfoMenu />
+                        {/* <InfoMenu /> */}
                         {/* Notification */}
-                        <NotificationMenu />
+                        {/* <NotificationMenu /> */}
                     </div>
                     {/* User menu */}
-                    <UserMenu mode={mode} logout={logout} />
+                    <UserMenu mode={mode} logout={logout}  />
                 </div>
             </div>
         </header>

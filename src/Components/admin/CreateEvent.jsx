@@ -162,15 +162,15 @@ const CreateEvent = ({ onCancel, onSubmit }) => {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3, delay: 0.15 }}
         >
-            <div className="min-h-screen bg-gradient-to-br from-background to-muted/30 px-4 sm:px-6 lg:px-8 py-6">
+            <div className="min-h-screen bg-gradient-to-br from-background to-muted/30 px-2 sm:px-6 lg:px-8 md:py-6 ">
                 <div className="max-w-6xl  mx-auto">
-                    <div className="text-center mb-8">
-                        <h1 className="text-3xl font-semibold text-gray-800 mb-2">Create New Event</h1>
+                    <div className="text-center md:mb-8">
+                        <h1 className="md:text-3xl text-2xl font-semibold text-gray-800 mb-2">Create New Event</h1>
                         <p className="text-muted-foreground">Fill in the details to create your event</p>
                     </div>
 
                     <Card className="shadow-xl border bg-card">
-                        <CardHeader className="text-center pb-6">
+                        <CardHeader className="text-center  pb-6">
                             <CardTitle className="text-xl flex items-center text-gray-800 justify-center gap-2">
                                 <FaCalendar className="text-gray-800" />
                                 Event Information
@@ -187,7 +187,7 @@ const CreateEvent = ({ onCancel, onSubmit }) => {
                                         Basic Information
                                     </h3>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 md:gap-16">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 md:gap-16 gap-5">
                                         <div className="space-y-2">
                                             <Label htmlFor="title">Event Title *</Label>
                                             <Input

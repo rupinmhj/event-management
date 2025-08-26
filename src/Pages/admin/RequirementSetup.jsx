@@ -48,6 +48,7 @@ export const RequirementSetup = () => {
   const [loading, setLoading] = useState(false);
   const { eventName } = useContext(GeneralContext);
   const location = useLocation();
+  console.log('Location state:', location.state);
   // const { id } = location.state || {};
   // const event_id = id;
   const [requirement, setRequirement] = useState({
@@ -76,6 +77,23 @@ export const RequirementSetup = () => {
       event: selectedEvent ? selectedEvent.id : null
     }));
   }, [selectedEvent]);
+
+useEffect(() => {
+  const { eventId } = location.state || {};
+  console.log("eventId from location:", eventId);
+
+  if (eventId && events.length > 0) {
+    const event = events.find(e => Number(e.id) === Number(eventId));
+    console.log("Matched event:", event);
+
+    if (event) {
+      setSelectedEvent(event);
+    } else {
+      console.warn("No event found for eventId:", eventId);
+    }
+  }
+}, [events, location.state]);
+
 
   useEffect(() => {
     if (!authTokens || !authReady) return;
@@ -242,9 +260,9 @@ export const RequirementSetup = () => {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
-      className="space-y-6 pt-4 pb-8 px-12"
+      className="space-y-6 pt-4 pb-8 md:px-12 "
     >
-      <div className="min-h-screen bg-gradient-to-br from-background via-primary-soft to-background p-20">
+      <div className="min-h-screen bg-gradient-to-br from-background via-primary-soft to-background md:p-20 pt-10 ">
         <div className="max-w-6xl mx-auto space-y-8">
 
           {/* Header */}
@@ -479,7 +497,7 @@ export const RequirementSetup = () => {
           </Card>
 
 
-          <div className="flex justify-center gap-4 pt-6">
+          <div className="flex justify-center gap-4 pt-6 md:px-0 px-4">
 
 
             <Button

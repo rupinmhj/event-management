@@ -169,19 +169,59 @@ export const SendEmail = () => {
 
                         {/* Recipients list */}
                         <div className="px-6 py-4 border-b border-gray-100">
-                            <h3 className="text-sm font-medium text-gray-900 mb-3">Recipients</h3>
+                            <h3 className="text-sm font-medium text-gray-900 mb-3">
+                                Recipients ({email.recipients.length})
+                            </h3>
                             <div className="max-h-32 overflow-y-auto">
-                                <div className="flex flex-wrap gap-2">
-                                    {email.recipients.map((recipient, index) => (
-                                        <span
-                                            key={index}
-                                            className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800"
-                                        >
-                                            <Mail className="w-3 h-3 mr-1" />
-                                            {recipient}
-                                        </span>
-                                    ))}
-                                </div>
+                                {email.recipients.length <= 10 ? (
+                                    // Show all recipients if 20 or fewer
+                                    <div className="flex flex-wrap gap-2">
+                                        {email.recipients.map((recipient, index) => (
+                                            <span
+                                                key={index}
+                                                className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800"
+                                            >
+                                                <Mail className="w-3 h-3 mr-1" />
+                                                {recipient}
+                                            </span>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    // Show condensed view for large lists
+                                    <div className="space-y-2">
+                                        <div className="flex flex-wrap gap-2">
+                                            {email.recipients.slice(0, 10).map((recipient, index) => (
+                                                <span
+                                                    key={index}
+                                                    className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800"
+                                                >
+                                                    <Mail className="w-3 h-3 mr-1" />
+                                                    {recipient}
+                                                </span>
+                                            ))}
+                                        </div>
+                                        {email.recipients.length > 10 && (
+                                            <details className="group">
+                                                <summary className="cursor-pointer text-sm text-blue-600 hover:text-blue-800 font-medium">
+                                                    Show {email.recipients.length - 10} more recipients
+                                                </summary>
+                                                <div className="mt-2 pt-2 border-t border-gray-100">
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {email.recipients.slice(10).map((recipient, index) => (
+                                                            <span
+                                                                key={index + 10}
+                                                                className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800"
+                                                            >
+                                                                <Mail className="w-3 h-3 mr-1" />
+                                                                {recipient}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </details>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -507,7 +547,7 @@ export const SendEmail = () => {
     const sidebarItems = [
         // { id: 'inbox', icon: Inbox, label: 'Inbox', count: filteredEmails.length },
         { id: 'compose', icon: Edit3, label: 'Compose' },
-        { id: 'sent', icon: Send, label: 'Sent', count: emails.length }
+        { id: 'sent', icon: Send, label: 'Sent',  }
     ];
 
     const currentUserList = isEventBased ? eventParticipants : allUsers;
@@ -560,7 +600,7 @@ export const SendEmail = () => {
 
     // Render inbox/sent view
     const renderEmailList = () => (
-        <div className="flex w-full justify-center ">
+        <div className="flex w-full justify-center  ">
             <div className="flex-1 flex flex-col  max-w-6xl">
                 {/* Header */}
                 <div className="border-b border-gray-200 p-4">
@@ -602,7 +642,7 @@ export const SendEmail = () => {
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                         </div>
                     ) : filteredEmails.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center h-64 text-gray-500">
+                        <div className="flex flex-col items-center justify-center h-64 text-gray-500 ">
                             <Mail className="w-16 h-16 mb-4 opacity-50" />
                             <h3 className="text-lg font-medium mb-2">No emails found</h3>
                             <p className="text-sm">
@@ -613,14 +653,14 @@ export const SendEmail = () => {
                             </p>
                         </div>
                     ) : (
-                        <div className="divide-y divide-gray-200">
+                        <div className="divide-y divide-gray-200 ">
                             {filteredEmails.map((email) => (
                                 <div
                                     key={email.id}
-                                    className="p-4 hover:bg-gray-50 cursor-pointer transition-colors border-l-4 border-transparent hover:border-blue-200"
+                                    className="p-4 hover:bg-gray-50 cursor-pointer transition-colors border-l-4  hover:border-blue-200 "
                                     onClick={() => handleViewEmail(email)}
                                 >
-                                    <div className="flex items-start justify-between">
+                                    <div className="flex items-start justify-between ">
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-3 mb-2">
                                                 <h3 className="font-semibold text-gray-900 truncate text-base">
@@ -881,7 +921,7 @@ export const SendEmail = () => {
                                     <Button
                                         type="submit"
                                         disabled={isLoading}
-                                       className="flex-1 bg-blue transition-all duration-300 hover:scale-[1.02] text-primary-foreground hover:bg-blue/90"
+                                        className="flex-1 bg-blue transition-all duration-300 hover:scale-[1.02] text-primary-foreground hover:bg-blue/90"
                                         size="lg"
                                     >
                                         {isLoading ? (

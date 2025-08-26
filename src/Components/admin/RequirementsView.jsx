@@ -1,94 +1,80 @@
-import React from 'react'
-import { useContext, useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { Pencil, Plus, Trash2 } from "lucide-react";
-import {
-    Tabs,
-    TabsContent,
-    TabsList,
-    TabsTrigger,
-} from "@/components/ui/tabs";
-// import AuthContext from "@/context/AuthContext";
+import { FileText, Pencil, Trash2, Eye, Plus } from "lucide-react";
+import { TabsContent } from "@/components/ui/tabs";
 import useAxiosAuth from "@/hooks/useAxiosAuth";
-import {
-    ArrowLeft,
-    Calendar,
-    MapPin,
-    Clock,
-    DollarSign,
-    Globe,
-    Building,
-    Image as ImageIcon,
-    Edit,
-    Users,
-    Info,
-    Delete,
-    FileText,
-    CreditCard,
-    UserCheck,
-    Eye
-} from "lucide-react";
-import { motion } from 'framer-motion';
-import AuthContext from '@/context/AuthContext';
+
 export const RequirementsView = ({ requirements }) => {
     const [requirementsData, setRequirementsData] = useState(requirements || []);
     const api = useAxiosAuth();
     const navigate = useNavigate();
-    const handleStatusToggle = async (eventId, currentStatus) => {
+
+    // Safely get event ID if there is at least one requirement
+    const eventId = requirementsData.length > 0 ? requirementsData[0].event : null;
+
+    const handleStatusToggle = async (reqId, currentStatus) => {
         try {
             const newStatus = !currentStatus;
+
+            // Optimistic UI update
             setRequirementsData((prev) =>
                 prev.map((req) =>
-                    req.id === eventId ? { ...req, is_active: newStatus } : req
+                    req.id === reqId ? { ...req, is_active: newStatus } : req
                 )
             );
-            console.log(newStatus);
-            const res2 = await api.put(`/api/event/requirement-status-change/${eventId}/`, {
-                is_active: newStatus
+
+            await api.put(`/api/event/requirement-status-change/${reqId}/`, {
+                is_active: newStatus,
             });
-            console.log(res2.data);
         } catch (error) {
             console.error("Error updating event status:", error);
+            // Revert state on error
             setRequirementsData((prev) =>
                 prev.map((req) =>
-                    req.id === eventId ? { ...req, is_active: currentStatus } : req
+                    req.id === reqId ? { ...req, is_active: currentStatus } : req
                 )
             );
         }
     };
+
     return (
-        <>
-            <TabsContent value="requirements">
-                <Card>
-                    <CardHeader >
-                        <div className='flex  justify-between '>
-                            <div className="flex items-center gap-2">
-                                <FileText className="w-5 h-5 text-primary" />
-                                <h2 className="text-[16px] font-semibold">Event Requirements</h2>
-                            </div>
-                            <div className="">
-                                <Button
-                                    onClick={() => navigate('/admin/requirement-setup')}
-                                    className="bg-blue hover:bg-blue/90 text-white shadow-lg hover:shadow-xl transition-all duration-200"
-                                >
-                                    <Plus className="w-4 h-4 mr-2" />
-                                    Add requirements
-                                </Button>
-                            </div>
+        <TabsContent value="requirements" className="min-h-[70vh]">
+            <Card>
+                <div>
+                    <div className="flex justify-between md:px-8 px-2 md:py-6 py-3 ">
+                        <div className="flex items-center gap-2 min-lg:hidden">
+                            <FileText className="w-5 h-5 text-primary" />
+                            <h2 className="text-[16px] font-semibold">Event Requirements</h2>
                         </div>
 
+                        {/* Show Add Requirements button if we have an event ID */}
+                        {eventId && (
+                            <Button
+                                onClick={() =>
+                                    navigate("/admin/requirement-setup", {
+                                        state: { eventId },
+                                    })
+                                }
+                                className="bg-blue hover:bg-blue/90 text-white shadow-lg hover:shadow-xl transition-all duration-200 flex items-center"
+                            >
+                                <Plus className="w-4 h-4 mr-2" />
+                                <span className="hidden md:inline">Add requirements</span>
+                            </Button>
 
-                    </CardHeader>
+                        )}
+                    </div>
+                </div>
 
-
-
-                    <div className="overflow-x-auto ">
+                {/* If no requirements, show a message */}
+                {requirementsData.length === 0 ? (
+                    <CardContent className="text-center text-gray-500 py-10">
+                        No requirements set up yet.
+                    </CardContent>
+                ) : (
+                    <div className="overflow-x-auto">
                         <table className="min-w-full divide-y-2 divide-gray-200">
                             <thead className="ltr:text-left rtl:text-right">
                                 <tr className="*:font-medium *:text-gray-900 *:first:sticky *:first:left-0 *:first:bg-white text-[16px]">
@@ -104,9 +90,7 @@ export const RequirementsView = ({ requirements }) => {
 
                             <tbody className="divide-y divide-gray-200">
                                 {requirementsData.map((req) => (
-                                    <tr
-                                        key={req.id}
-                                    >
+                                    <tr key={req.id}>
                                         <td className="px-3 py-2 whitespace-nowrap text-[13px]">{req.type}</td>
                                         <td className="px-3 py-2 whitespace-nowrap text-[13px]">{req.label}</td>
                                         <td className="px-3 py-2 whitespace-nowrap text-[13px]">{req.description}</td>
@@ -118,7 +102,7 @@ export const RequirementsView = ({ requirements }) => {
                                                     rel="noopener noreferrer"
                                                     className="text-blue-600 hover:underline"
                                                 >
-                                                    <Eye className='h-[16px] hover:text-blue' />
+                                                    <Eye className="h-[16px] hover:text-blue" />
                                                 </a>
                                             ) : (
                                                 "—"
@@ -143,13 +127,13 @@ export const RequirementsView = ({ requirements }) => {
                                             </div>
                                         </td>
                                         <td className="px-3 py-2 whitespace-nowrap text-[13px]">
-                                            {req.deadline ? req.deadline : "—"}
+                                            {req.deadline || "—"}
                                         </td>
                                         <td className="px-3 py-2 whitespace-nowrap text-center">
                                             <div className="flex gap-2 justify-center">
                                                 <button
                                                     onClick={() => navigate(`/admin/requirement-update/${req.id}`)}
-                                                    className="p-1 rounded hover:bg-blue/20 text-blue-600 "
+                                                    className="p-1 rounded hover:bg-blue/20 text-blue-600"
                                                     title="Edit"
                                                 >
                                                     <Pencil className="w-4 h-4" />
@@ -168,10 +152,8 @@ export const RequirementsView = ({ requirements }) => {
                             </tbody>
                         </table>
                     </div>
-
-
-                </Card>
-            </TabsContent>
-        </>
-    )
-}
+                )}
+            </Card>
+        </TabsContent>
+    );
+};

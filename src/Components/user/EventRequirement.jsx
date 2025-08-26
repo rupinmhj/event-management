@@ -181,9 +181,17 @@ const RequirementCard = () => {
             // Use the same POST endpoint for both create and update
             res = await api.post("/api/event/participation/submit-response/", formData);
             console.log('Submission response:', res.data);
+            toast.success("Response submitted successfully!");
 
             // Refresh data after submission
-            await fetchEventsAndParticipations();
+            setTimeout(() => {
+                (async () => {
+                    await fetchEventsAndParticipations();
+                })();
+                window.scrollTo(0,0);
+            }, 1000);
+
+
 
         } catch (error) {
             console.error('Error submitting:', error);
@@ -322,7 +330,7 @@ const RequirementCard = () => {
                                     {response?.is_verified && (
                                         <p className="text-xs text-green-600 mt-1">✔ Verified </p>
                                     )}
-                                   
+
 
 
 

@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { TabsContent } from "@/components/ui/tabs";
-import { Users, Eye, ArrowLeft } from "lucide-react";
+import { Users, Eye, ArrowRight } from "lucide-react";
 import useAxiosAuth from "@/hooks/useAxiosAuth";
 export const ParticipationList = () => {
   const [participants, setParticipants] = useState([]);
@@ -31,35 +31,35 @@ export const ParticipationList = () => {
   }, [id, api]);
 
   const exportParticipation = async (id) => {
-  try {
-    const res = await api.get(`/api/event/${id}/response-export/`, {
-      responseType: "blob", // 👈 important
-    });
+    try {
+      const res = await api.get(`/api/event/${id}/response-export/`, {
+        responseType: "blob", // important
+      });
 
-    // Create a download URL
-    const url = window.URL.createObjectURL(new Blob([res.data]));
-    const link = document.createElement("a");
-    link.href = url;
+      // Create a download URL
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement("a");
+      link.href = url;
 
-    // You can dynamically name the file if backend sends filename in headers
-    const contentDisposition = res.headers["content-disposition"];
-    let fileName = "participation.xlsx";
-    if (contentDisposition) {
-      const match = contentDisposition.match(/filename="?([^"]+)"?/);
-      if (match?.[1]) fileName = match[1];
+      // You can dynamically name the file if backend sends filename in headers
+      const contentDisposition = res.headers["content-disposition"];
+      let fileName = "participation.xlsx";
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename="?([^"]+)"?/);
+        if (match?.[1]) fileName = match[1];
+      }
+
+      link.setAttribute("download", fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      // Clean up URL
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Export failed:", err);
     }
-
-    link.setAttribute("download", fileName);
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-
-    // Clean up URL
-    window.URL.revokeObjectURL(url);
-  } catch (err) {
-    console.error("Export failed:", err);
-  }
-};
+  };
 
 
   if (loading) {
@@ -81,11 +81,12 @@ export const ParticipationList = () => {
               <h2 className="text-[16px] font-semibold">Participants</h2>
             </div>
             <Button
-              variant="ghost"
-              className="flex items-center gap-2"
+              
+              className="flex items-center gap-2 bg-blue/90 text:white hover:text-white hover:bg-blue/70 "
               onClick={() => navigate(exportParticipation(id))}
             >
-              <ArrowLeft className="w-4 h-4" /> Export Participation detail
+             Export Participation detail  <ArrowRight className="w-4 h-4 transform transition-transform duration-200 hover:scale-x-110" />
+
             </Button>
           </div>
         </CardHeader>
@@ -97,7 +98,7 @@ export const ParticipationList = () => {
                 <tr className="*:font-medium *:text-gray-900 text-[14px]">
                   <th className="px-3 py-2 whitespace-nowrap text-left">#</th>
                   <th className="px-3 py-2 whitespace-nowrap text-left">Participant Name</th>
-                  <th className="px-3 py-2 whitespace-nowrap text-center">Actions</th>
+                  <th className="px-3 py-2 whitespace-nowrap text-center">View details</th>
                 </tr>
               </thead>
 
@@ -113,7 +114,7 @@ export const ParticipationList = () => {
                           className="p-1 rounded hover:bg-blue/20 text-blue-600"
                           title="View"
                           // onClick={() => console.log("View participant", p)}
-                          onClick={()=>navigate(`/admin/participant-review/${p.id}`)}
+                          onClick={() => navigate(`/admin/participant-review/${p.id}`)}
                         >
                           <Eye className="w-4 h-4" />
                         </button>

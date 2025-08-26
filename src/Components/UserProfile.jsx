@@ -133,7 +133,7 @@ const UserProfile = () => {
   const [previewUrl, setPreviewUrl] = useState("");
   const [supportDocument, setSupportDocument] = useState(null);
   const [supportDocumentName, setSupportDocumentName] = useState();
-
+  const {setProfilePicture}=useContext(AuthContext);
   const [errors, setErrors] = useState({});
   const imageRef = useRef(null);
 
@@ -151,7 +151,10 @@ const UserProfile = () => {
           ...(response.data?.user_detail || {}),
         },
       }));
-      // toast({ title: "Profile data loaded", description: "Your profile information has been loaded successfully." });
+      if (response.data?.profile_picture) {
+    setProfilePicture(response.data.profile_picture);
+    localStorage.setItem("profilePicture", response.data.profile_picture);
+  }
     } catch (error) {
       const err = error?.response?.data?.code
       console.log(err)
@@ -165,7 +168,7 @@ const UserProfile = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [api, authReady, authTokens]);
+  }, [api, authReady, authTokens,setProfilePicture]);
 
   useEffect(() => {
     fetchUserData();
@@ -523,7 +526,7 @@ const UserProfile = () => {
 
                 {/* Row 8 (Last): Support Document */}
                 <div className="space-y-2">
-                  <Label htmlFor="supportDocument">Support Document</Label>
+                  <Label htmlFor="supportDocument">Upload Verification Document</Label>
                   <div className="flex items-center justify-center w-full">
                     <label
                       htmlFor="supportDocument"

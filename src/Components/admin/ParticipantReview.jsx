@@ -17,6 +17,7 @@ import {
   AlertCircle,
   Eye,
 } from "lucide-react";
+
 import useAxiosAuth from "@/hooks/useAxiosAuth";
 import AuthContext from "@/context/AuthContext";
 export const ParticipantReview = () => {
@@ -130,70 +131,70 @@ export const ParticipantReview = () => {
       case 'TEXT':
         return <span className="text-sm">{response.value}</span>;
       case 'TEXTAREA':
-      return (
-        <>
-          {/* Preview with click to expand */}
-          <div 
-            className="bg-gray-50 p-3 rounded-md text-sm prose cursor-pointer hover:bg-gray-100 transition-colors relative"
-            onClick={() => setIsModalOpen(true)}
-          >
-            <div 
-              className="line-clamp-3"
-              dangerouslySetInnerHTML={{ 
-                __html: DOMPurify.sanitize(response.value) 
-              }} 
-            />
-            <div className="absolute bottom-2 right-2 text-xs text-gray-500">
-              Click to expand
-            </div>
-          </div>
-
-          {/* Modal */}
-          {isModalOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center">
-              {/* Backdrop */}
-              <div 
-                className="fixed inset-0 bg-black bg-opacity-50"
-                onClick={() => setIsModalOpen(false)}
+        return (
+          <>
+            {/* Preview with click to expand */}
+            <div
+              className="bg-gray-50 p-3 rounded-md text-sm prose cursor-pointer hover:bg-gray-100 transition-colors relative"
+              onClick={() => setIsModalOpen(true)}
+            >
+              <div
+                className="line-clamp-3"
+                dangerouslySetInnerHTML={{
+                  __html: DOMPurify.sanitize(response.value)
+                }}
               />
-              
-              {/* Modal Content */}
-              <div className="relative bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[80vh] flex flex-col">
-                {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b">
-                  <h3 className="text-lg font-semibold">Content</h3>
-                  <button
-                    onClick={() => setIsModalOpen(false)}
-                    className="text-gray-400 hover:text-gray-600 text-xl"
-                  >
-                    ×
-                  </button>
-                </div>
-                
-                {/* Scrollable Content */}
-                <div className="flex-1 overflow-y-auto p-4">
-                  <div 
-                    className="prose max-w-none"
-                    dangerouslySetInnerHTML={{ 
-                      __html: DOMPurify.sanitize(response.value) 
-                    }} 
-                  />
-                </div>
-                
-                {/* Footer */}
-                <div className="flex justify-end p-4 border-t">
-                  <button
-                    onClick={() => setIsModalOpen(false)}
-                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
-                  >
-                    Close
-                  </button>
-                </div>
+              <div className="absolute bottom-2 right-2 text-xs text-gray-500">
+                Click to expand
               </div>
             </div>
-          )}
-        </>
-      );
+
+            {/* Modal */}
+            {isModalOpen && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center">
+                {/* Backdrop */}
+                <div
+                  className="fixed inset-0 bg-black bg-opacity-50"
+                  onClick={() => setIsModalOpen(false)}
+                />
+
+                {/* Modal Content */}
+                <div className="relative bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[80vh] flex flex-col">
+                  {/* Header */}
+                  <div className="flex items-center justify-between p-4 border-b">
+                    <h3 className="text-lg font-semibold">Content</h3>
+                    <button
+                      onClick={() => setIsModalOpen(false)}
+                      className="text-gray-400 hover:text-gray-600 text-xl"
+                    >
+                      ×
+                    </button>
+                  </div>
+
+                  {/* Scrollable Content */}
+                  <div className="flex-1 overflow-y-auto p-4">
+                    <div
+                      className="prose max-w-none"
+                      dangerouslySetInnerHTML={{
+                        __html: DOMPurify.sanitize(response.value)
+                      }}
+                    />
+                  </div>
+
+                  {/* Footer */}
+                  <div className="flex justify-end p-4 border-t">
+                    <button
+                      onClick={() => setIsModalOpen(false)}
+                      className="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
+        );
 
       default:
         return <span className="text-sm">{response.value}</span>;
@@ -227,49 +228,52 @@ export const ParticipantReview = () => {
     <div className="container mx-auto p-6 pt-20 max-w-6xl  ">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        {/* <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            onClick={() => navigate(-1)}
-            className="p-2"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Participant Review</h1>
-            <p className="text-gray-600">Review and verify submitted requirements</p>
-          </div>
-        </div> */}
+
       </div>
 
       {/* Participant Info Card */}
-      <Card className="mb-6">
+      <Card className="mb-6 border ">
         <CardHeader>
-          <div className="flex items-center gap-3">
-            <User className="w-5 h-5 text-primary" />
-            <h2 className="text-xl font-semibold text-gray-800">Participant Information</h2>
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex gap-4 items-center">
+              <User className="w-5 h-5 text-primary" />
+              <h2 className="text-xl font-semibold text-gray-800">Participant Information</h2>
+            </div>
+            <div className="">
+              <button
+                
+                onClick={() => navigate(`/admin/user-profile/${participantData.user}`)}
+              >
+                <Eye className="w-5 h-5 text-gray-600 hover:text-blue/80" />
+              </button>
+            </div>
+
           </div>
         </CardHeader>
-       <CardContent>
-  <div className="grid md:grid-cols-2 gap-4">
-    <div>
-      <p className="text-sm text-gray-600">Name</p>
-      <p className="font-semibold text-lg text-gray-800">{participantData.participant_name}</p>
-    </div>
-    <div>
-      <p className="text-sm text-gray-600">Event</p>
-      <p className="font-semibold text-gray-800">{participantData["event-title"]}</p>
-    </div>
-    <div>
-      <p className="text-sm text-gray-600">Email</p>
-      <p className="font-semibold text-gray-800 ">{participantData?.user_detail?.email}</p>
-    </div>
-    <div>
-      <p className="text-sm text-gray-600">Contact Number</p>
-      <p className="font-semibold text-gray-800">{participantData?.user_detail?.phone_number}</p>
-    </div>
-  </div>
-</CardContent>
+        <CardContent className="relative cursor-pointer"  onClick={() => navigate(`/admin/user-profile/${participantData.user}`)}>
+          {/* Eye icon at top-right */}
+
+
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm text-gray-600">Name</p>
+              <p className="font-semibold text-lg text-gray-800">{participantData.participant_name}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Event</p>
+              <p className="font-semibold text-gray-800">{participantData["event-title"]}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Email</p>
+              <p className="font-semibold text-gray-800">{participantData?.user_detail?.email}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Contact Number</p>
+              <p className="font-semibold text-gray-800">{participantData?.user_detail?.phone_number}</p>
+            </div>
+          </div>
+        </CardContent>
+
 
       </Card>
 

@@ -20,7 +20,6 @@ import {
 import { Bell, HelpCircle, User } from "lucide-react";
 import AuthContext from "@/context/AuthContext";
 import { NavLink, Link, useNavigate, useLocation } from "react-router-dom";
-
 // Logo Component
 const Logo = () => (
   <div className="flex items-center gap-2">
@@ -77,24 +76,29 @@ const NotificationMenu = () => (
 // User Menu Component
 const UserMenu = ({ mode, logout }) => {
   const navigate = useNavigate();
+   const {profilePicture}=useContext(AuthContext);
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="size-8">
-          <User className="size-4" />
+          {profilePicture ? (
+            <img src={profilePicture}  alt="Profile" className="rounded-full size-8 object-cover" />
+          ) : (
+            <User className="size-4" />
+          )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" portalled={false}>
+      <DropdownMenuContent align="end" portalled={false} className='mt-3'>
         <DropdownMenuItem>
           <NavLink to="user-profile" className="w-full block">
             Profile
           </NavLink>
         </DropdownMenuItem>
-        <DropdownMenuItem>
+        {/* <DropdownMenuItem>
           <NavLink to="/settings" className="w-full block">
             Settings
           </NavLink>
-        </DropdownMenuItem>
+        </DropdownMenuItem> */}
         <DropdownMenuItem>
           <Link to="/user/change-password" className="w-full block">
             Change Password
@@ -126,17 +130,17 @@ const navigationLinks = [
   { to: "/user/events", label: "Events" },
   { to: "/user/about", label: "About" },
   { to: "/user/tickets", label: "Tickets" },
-  { to: "/user/registration", label: "Registration" },
+  // { to: "/user/registration", label: "Registration" },
 ];
 
 const Navbar = ({ mode }) => {
   const { logout } = useContext(AuthContext);
   const location = useLocation();
   const isActiveLink = (linkPath) => location.pathname === linkPath;
-
+ 
   return (
     <header className="border-b font-sans bg-white ">
-      <div className="px-12 flex h-16 items-center justify-between gap-4">
+      <div className="md:px-12 px-2 flex h-16 items-center justify-between gap-4">
         {/* Left side */}
         <div className="flex items-center gap-2 ">
           {/* Mobile menu trigger */}
@@ -221,10 +225,10 @@ const Navbar = ({ mode }) => {
         {/* Right side */}
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <InfoMenu />
-            <NotificationMenu />
+            {/* <InfoMenu />
+            <NotificationMenu /> */}
           </div>
-          <UserMenu mode={mode} logout={logout} />
+          <UserMenu mode={mode} logout={logout}  />
         </div>
       </div>
     </header>
