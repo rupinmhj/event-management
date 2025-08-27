@@ -37,7 +37,7 @@ import { motion } from 'framer-motion';
 import { RequirementsView } from "./RequirementsView";
 import GeneralContext from "@/context/GeneralContext";
 import { ParticipationList } from "./ParticipationList";
-
+import { PricingView } from "./PricingView";
 // Delete Confirmation Modal Component
 const DeleteConfirmationModal = ({ isOpen, onClose, onConfirm, eventTitle, isDeleting = false }) => {
     if (!isOpen) return null;
@@ -307,6 +307,7 @@ export function EventView() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.2 }}
+                    className="min-h-[70vh]"
                 >
                     <Tabs defaultValue="overview">
                         <ScrollArea>
@@ -527,9 +528,10 @@ export function EventView() {
 
                         {/* Ticket Price Tab Content */}
                         <TabsContent value="ticket-price">
-                            <div className="text-center py-8">
+                            {/* <div className="text-center py-8">
                                 <p className="text-muted-foreground">Ticket price information coming soon...</p>
-                            </div>
+                            </div> */}
+                            <PricingView eventId={id}  />
                         </TabsContent>
 
                         {/* Participants Tab Content */}

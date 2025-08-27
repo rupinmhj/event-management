@@ -19,6 +19,7 @@ import { Home } from '@/Pages/user/Home'
 import { Registration } from '@/Pages/user/Registration'
 import { Tickets } from '@/Pages/user/Tickets'
 import { MyProfile } from "@/Components/user/MyProfile";
+import { Payment } from "@/Components/user/Payment";
 
 //Auth page
 import { AuthPage } from '@/Pages/public/AuthPage'
@@ -34,13 +35,15 @@ import Password from "@/layouts/Password";
 import { ResetPasswordForm } from "@/forms/ResetPasswordForm";
 import EmailHistory from "@/Components/admin/EmailHistory";
 import ProtectedRoute from "./ProtectedRoute";
+// Updated payment component imports
+import PaymentSuccess from "@/components/user/payment/PaymentSuccess";
+import PaymentFailure from "@/components/user/payment/PaymentFailure";
 
 const router = createBrowserRouter([
     // Public routes
     {
         path: "/",
         element: <AuthPage />,
-
     },
     {
         path: "/forgot-password",
@@ -51,7 +54,16 @@ const router = createBrowserRouter([
             { path: "reset-password", element: <ResetPasswordForm /> },
         ],
     },
-
+    
+    // Payment routes - moved outside of user layout for better UX
+    {
+        path: "/payment-success/:productdata",
+        element: <PaymentSuccess />
+    },
+    {
+        path: "/payment-failed",
+        element: <PaymentFailure />
+    },
 
     // Admin routes
     {
@@ -78,29 +90,31 @@ const router = createBrowserRouter([
                 ],
     },
 
-                // User routes
-                {
-                    path: "/user",
-                element:(
-                    // <ProtectedRoute allowedRole="USER">
-                         <UserLayout />
-                    // </ProtectedRoute>
-                )
-                , 
-                children: [
-                {index: true, element: <Dashboard /> }, // /user
-                {path: 'setup-profile', element: <Setup /> },
-                {path: "events", element: <Home /> },
-                {path: "event/:id", element: <EventDetail /> },
-                {path: "about", element: <About /> },
-                {path: "registration", element: <Registration /> },
-                {path: "tickets", element: <Tickets /> },
-                {path: "event-form/:id", element: <DynamicRequirementForm /> },
-                {path: "change-password", element: <ChangePasswordForm user={'user'} /> },
-                {path: "user-profile", element: <MyProfile /> }
-
-                ],
+    // User routes
+    {
+        path: "/user",
+        element:(
+            // <ProtectedRoute allowedRole="USER">
+                 <UserLayout />
+            // </ProtectedRoute>
+        ), 
+        children: [
+            {index: true, element: <Dashboard /> }, // /user
+            {path: 'setup-profile', element: <Setup /> },
+            {path: "events", element: <Home /> },
+            {path: "event/:id", element: <EventDetail /> },
+            {path: "about", element: <About /> },
+            {path: "registration", element: <Registration /> },
+            {path: "tickets", element: <Tickets /> },
+            {path: "event-form/:id", element: <DynamicRequirementForm /> },
+            {path: "change-password", element: <ChangePasswordForm user={'user'} /> },
+            {path: "user-profile", element: <MyProfile /> },
+            {path:'payment', element:<Payment/>},
+            // Optional: Keep these routes if you want them within user layout as well
+            // {path: 'payment-success/:productdata', element:<PaymentSuccess/>},
+            // {path: 'payment-failed', element:<PaymentFailure/>}
+        ],
     },
-                ]);
+]);
 
-                export default router;
+export default router;

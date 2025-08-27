@@ -128,7 +128,7 @@ const UserMenu = ({ mode, logout }) => {
 // Navigation links array
 const navigationLinks = [
   { to: "/user/events", label: "Events" },
-  { to: "/user/about", label: "About" },
+  // { to: "/user/about", label: "About" },
   { to: "/user/tickets", label: "Tickets" },
   // { to: "/user/registration", label: "Registration" },
 ];

@@ -1,288 +1,422 @@
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { TabsContent } from "@/components/ui/tabs";
-import { 
-    CreditCard, 
-    DollarSign, 
-    Gift, 
-    Clock, 
-    Users, 
-    Star,
+import { Checkbox } from "@/components/ui/checkbox";
+import useAxiosAuth from '@/hooks/useAxiosAuth';
+import {
     Ticket,
+    CreditCard,
+    ShoppingCart,
+    Clock,
+    DollarSign,
     Calendar,
-    AlertCircle,
     CheckCircle,
-    Info
+    AlertCircle
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
-export function TicketPriceView({ event }) {
-    const navigate = useNavigate();
+export function TicketPriceView() {
+    const [ticketsData, setTicketsData] = useState([]);
+    const [selectedTickets, setSelectedTickets] = useState(new Set());
+    const [isLoading, setIsLoading] = useState(true);
+    const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+    const api=useAxiosAuth();
 
-    const handleRegister = () => {
-        navigate(`/user/event-form/${event.id}`);
+    // const { toast } = useToast();
+    const { id: eventId } = useParams();
+
+    useEffect(() => {
+        const fetchTickets = async () => {
+            setIsLoading(true);
+            try {
+                const res = await api.get(`/api/event/ticket-list/?event=${eventId}`);
+                setTicketsData(res.data || []);
+            } catch (error) {
+                console.error("Error fetching tickets:", error);
+                toast({
+                    title: "Failed to load tickets",
+                    description: "Unable to fetch ticket data. Please try again.",
+                    variant: "destructive"
+                });
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        if (eventId) {
+            fetchTickets();
+        }
+    }, [eventId]);
+
+    const handleTicketSelection = (ticketId, checked) => {
+        const newSelection = new Set(selectedTickets);
+        if (checked) newSelection.add(ticketId);
+        else newSelection.delete(ticketId);
+        setSelectedTickets(newSelection);
     };
 
-    // Mock ticket tiers - replace with actual data from event.tickets or event.pricing
-    const ticketTiers = event.tickets || event.pricing || [];
-
-    // Format currency
-    const formatPrice = (price) => {
-        if (price === 0 || price === "0") return "Free";
-        return `$${typeof price === 'number' ? price.toFixed(2) : price}`;
-    };
-
-    // Get tier color based on type
-    const getTierColor = (type) => {
-        switch (type?.toLowerCase()) {
-            case 'early':
-            case 'earlybird':
-                return 'bg-green-50 border-green-200 text-green-800';
-            case 'regular':
-            case 'standard':
-                return 'bg-blue-50 border-blue-200 text-blue-800';
-            case 'vip':
-            case 'premium':
-                return 'bg-purple-50 border-purple-200 text-purple-800';
-            case 'student':
-            case 'discount':
-                return 'bg-orange-50 border-orange-200 text-orange-800';
-            default:
-                return 'bg-gray-50 border-gray-200 text-gray-800';
+    const handleSelectAll = (checked) => {
+        if (checked) {
+            const allTicketIds = ticketsData.map(ticket => ticket.id);
+            setSelectedTickets(new Set(allTicketIds));
+        } else {
+            setSelectedTickets(new Set());
         }
     };
 
-    const getTierIcon = (type) => {
-        switch (type?.toLowerCase()) {
-            case 'early':
-            case 'earlybird':
-                return <Clock className="w-5 h-5 text-green-600" />;
-            case 'regular':
-            case 'standard':
-                return <Ticket className="w-5 h-5 text-blue-600" />;
-            case 'vip':
-            case 'premium':
-                return <Star className="w-5 h-5 text-purple-600" />;
-            case 'student':
-            case 'discount':
-                return <Users className="w-5 h-5 text-orange-600" />;
-            default:
-                return <CreditCard className="w-5 h-5 text-gray-600" />;
+    const getSelectedTicketsData = () => {
+        return ticketsData.filter(ticket => selectedTickets.has(ticket.id));
+    };
+
+    const getTotalAmount = () => {
+        return getSelectedTicketsData().reduce((total, ticket) => total + parseFloat(ticket.amount), 0);
+    };
+
+    const isDeadlineNear = (deadline) => {
+        if (!deadline) return false;
+        const deadlineDate = new Date(deadline);
+        const now = new Date();
+        const diffInDays = Math.ceil((deadlineDate - now) / (1000 * 60 * 60 * 24));
+        return diffInDays <= 3 && diffInDays > 0;
+    };
+
+    const isDeadlinePassed = (deadline) => {
+        if (!deadline) return false;
+        return new Date(deadline) < new Date();
+    };
+
+    const formatDeadline = (deadline) => {
+        if (!deadline) return 'No deadline';
+        const date = new Date(deadline);
+        return date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+        });
+    };
+
+    const handleSingleTicketPurchase = async (ticket) => {
+        if (isDeadlinePassed(ticket.deadline)) {
+            toast({
+                title: "Deadline Passed",
+                description: "Ticket sales deadline has passed.",
+                variant: "destructive"
+            });
+            return;
+        }
+
+        setIsProcessingPayment(true);
+        try {
+            toast({
+                title: "Processing Payment",
+                description: `Processing payment for ${ticket.label} ticket - Rs. ${ticket.amount}`,
+            });
+
+            setTimeout(() => {
+                toast({
+                    title: "Payment Successful",
+                    description: "Your payment has been processed successfully!",
+                });
+                setIsProcessingPayment(false);
+            }, 2000);
+        } catch (error) {
+            toast({
+                title: "Payment Failed",
+                description: "Payment failed. Please try again.",
+                variant: "destructive"
+            });
+            setIsProcessingPayment(false);
         }
     };
+
+    const handleBulkPayment = async () => {
+        if (selectedTickets.size === 0) {
+            toast({
+                title: "No Tickets Selected",
+                description: "Please select at least one ticket.",
+                variant: "destructive"
+            });
+            return;
+        }
+
+        const selectedTicketsData = getSelectedTicketsData();
+        const expiredTickets = selectedTicketsData.filter(ticket => isDeadlinePassed(ticket.deadline));
+
+        if (expiredTickets.length > 0) {
+            toast({
+                title: "Expired Tickets",
+                description: "Some selected tickets have expired. Please remove them and try again.",
+                variant: "destructive"
+            });
+            return;
+        }
+
+        setIsProcessingPayment(true);
+        try {
+            const totalAmount = getTotalAmount();
+            const ticketLabels = selectedTicketsData.map(t => t.label).join(', ');
+
+            toast({
+                title: "Processing Bulk Payment",
+                description: `Processing bulk payment for ${ticketLabels} - Rs. ${totalAmount.toFixed(2)}`,
+            });
+
+            setTimeout(() => {
+                toast({
+                    title: "Bulk Payment Successful",
+                    description: "All tickets have been purchased successfully!",
+                });
+                setSelectedTickets(new Set());
+                setIsProcessingPayment(false);
+            }, 2000);
+        } catch (error) {
+            toast({
+                title: "Bulk Payment Failed",
+                description: "Bulk payment failed. Please try again.",
+                variant: "destructive"
+            });
+            setIsProcessingPayment(false);
+        }
+    };
+
+    const totalTickets = ticketsData.length;
+    const availableTickets = ticketsData.filter(ticket => !isDeadlinePassed(ticket.deadline)).length;
+    const expiredTickets = totalTickets - availableTickets;
+
+    if (isLoading) {
+        return (
+            <TabsContent value="tickets">
+                <Card>
+                    <CardContent className="flex items-center justify-center py-12">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                    </CardContent>
+                </Card>
+            </TabsContent>
+        );
+    }
 
     return (
-        <TabsContent value="ticket-price">
-            <div className="space-y-6">
-                {!event.is_payment_required ? (
-                    // Free Event Display
-                    <Card>
-                        <CardHeader>
-                            <div className="flex items-center gap-2">
-                                <Gift className="w-5 h-5 text-green-600" />
-                                <h2 className="text-[16px] font-semibold">Free Event</h2>
+      
+            <Card>
+               
+                <CardContent>
+                    {!ticketsData || ticketsData.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-12 text-center">
+                            <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
+                                <Ticket className="w-8 h-8 text-muted-foreground" />
                             </div>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-center py-8">
-                                <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <Gift className="w-10 h-10 text-green-600" />
-                                </div>
-                                <h3 className="text-[18px] font-bold text-green-800 mb-2">
-                                    No Cost to Join!
-                                </h3>
-                                <p className="text-[14px] text-muted-foreground mb-6 max-w-md mx-auto">
-                                    This event is completely free to attend. Simply register to secure your spot
-                                    and join us for an amazing experience.
-                                </p>
-                                <Button 
-                                    onClick={handleRegister}
-                                    className="bg-green-600 hover:bg-green-700 text-white px-8"
-                                >
-                                    <Ticket className="w-4 h-4 mr-2" />
-                                    Register for Free
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
-                ) : (
-                    // Paid Event Display
-                    <>
-                        <Card>
-                            <CardHeader>
-                                <div className="flex items-center gap-2">
-                                    <CreditCard className="w-5 h-5 text-primary" />
-                                    <h2 className="text-[16px] font-semibold">Ticket Options</h2>
-                                </div>
-                                <p className="text-[13px] text-muted-foreground">
-                                    Choose the ticket that best fits your needs and budget.
-                                </p>
-                            </CardHeader>
-                            <CardContent>
-                                {(!ticketTiers || ticketTiers.length === 0) ? (
-                                    // Default pricing display when no specific tiers are available
-                                    <div className="space-y-4">
-                                        <div className="border rounded-lg p-6">
-                                            <div className="flex items-center justify-between mb-4">
-                                                <div className="flex items-center gap-3">
-                                                    <Ticket className="w-6 h-6 text-primary" />
-                                                    <div>
-                                                        <h3 className="text-[16px] font-semibold">General Admission</h3>
-                                                        <p className="text-[13px] text-muted-foreground">
-                                                            Access to all event activities
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                <div className="text-right">
-                                                    <div className="text-[20px] font-bold text-primary">
-                                                        {event.price ? formatPrice(event.price) : "Contact Organizer"}
-                                                    </div>
-                                                    <div className="text-[12px] text-muted-foreground">per person</div>
-                                                </div>
-                                            </div>
-                                            <Separator className="mb-4" />
-                                            <div className="space-y-2 mb-4">
-                                                <div className="flex items-center gap-2 text-[13px]">
-                                                    <CheckCircle className="w-4 h-4 text-green-600" />
-                                                    <span>Full event access</span>
-                                                </div>
-                                                <div className="flex items-center gap-2 text-[13px]">
-                                                    <CheckCircle className="w-4 h-4 text-green-600" />
-                                                    <span>All materials included</span>
-                                                </div>
-                                                <div className="flex items-center gap-2 text-[13px]">
-                                                    <CheckCircle className="w-4 h-4 text-green-600" />
-                                                    <span>Certificate of participation</span>
-                                                </div>
-                                            </div>
-                                            <Button 
-                                                onClick={handleRegister}
-                                                className="w-full bg-primary hover:bg-primary/90"
-                                            >
-                                                Select This Ticket
-                                            </Button>
+                            <h3 className="text-[16px] font-semibold mb-2">No Tickets Available</h3>
+                            <p className="text-[13px] text-muted-foreground max-w-md">
+                                This event currently has no tickets available for purchase.
+                            </p>
+                        </div>
+                    ) : (
+                        <>
+                            {/* Summary Cards */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                                <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg">
+                                    <div className="flex items-center gap-2">
+                                        <Ticket className="w-5 h-5 text-blue-600" />
+                                        <div>
+                                            <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                                                Total Tickets
+                                            </p>
+                                            <p className="text-xl font-bold text-blue-900 dark:text-blue-100">
+                                                {totalTickets}
+                                            </p>
                                         </div>
                                     </div>
-                                ) : (
-                                    // Multiple ticket tiers display
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {ticketTiers.map((tier, index) => (
-                                            <div
-                                                key={index}
-                                                className={`border-2 rounded-lg p-6 ${getTierColor(tier.type)} ${
-                                                    tier.popular ? 'ring-2 ring-primary ring-opacity-50' : ''
-                                                }`}
-                                            >
-                                                <div className="flex items-start justify-between mb-4">
-                                                    <div className="flex items-center gap-3">
-                                                        {getTierIcon(tier.type)}
-                                                        <div>
-                                                            <div className="flex items-center gap-2">
-                                                                <h3 className="text-[16px] font-semibold capitalize">
-                                                                    {tier.name || tier.type}
-                                                                </h3>
-                                                                {tier.popular && (
-                                                                    <Badge className="bg-primary text-primary-foreground text-xs">
-                                                                        Popular
-                                                                    </Badge>
-                                                                )}
-                                                            </div>
-                                                            {tier.deadline && (
-                                                                <div className="flex items-center gap-1 mt-1">
-                                                                    <Calendar className="w-3 h-3" />
-                                                                    <span className="text-[12px]">
-                                                                        Until {new Date(tier.deadline).toLocaleDateString()}
-                                                                    </span>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                    <div className="text-right">
-                                                        <div className="text-[18px] font-bold">
-                                                            {formatPrice(tier.price)}
-                                                        </div>
-                                                        {tier.originalPrice && tier.originalPrice > tier.price && (
-                                                            <div className="text-[12px] text-muted-foreground line-through">
-                                                                {formatPrice(tier.originalPrice)}
-                                                            </div>
-                                                        )}
-                                                    </div>
+                                </div>
+                                <div className="bg-green-50 dark:bg-green-950 p-4 rounded-lg">
+                                    <div className="flex items-center gap-2">
+                                        <CheckCircle className="w-5 h-5 text-green-600" />
+                                        <div>
+                                            <p className="text-sm font-medium text-green-800 dark:text-green-200">
+                                                Available
+                                            </p>
+                                            <p className="text-xl font-bold text-green-900 dark:text-green-100">
+                                                {availableTickets}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="bg-orange-50 dark:bg-orange-950 p-4 rounded-lg">
+                                    <div className="flex items-center gap-2">
+                                        <AlertCircle className="w-5 h-5 text-orange-600" />
+                                        <div>
+                                            <p className="text-sm font-medium text-orange-800 dark:text-orange-200">
+                                                Expired
+                                            </p>
+                                            <p className="text-xl font-bold text-orange-900 dark:text-orange-100">
+                                                {expiredTickets}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Bulk Selection Controls */}
+                            {availableTickets > 1 && (
+                                <div className="bg-muted/50 p-4 rounded-lg mb-6">
+                                    <div className="flex items-center justify-between flex-wrap gap-4">
+                                        <div className="flex items-center gap-3">
+                                            <Checkbox
+                                                id="select-all"
+                                                checked={selectedTickets.size === availableTickets}
+                                                onCheckedChange={handleSelectAll}
+                                            />
+                                            <label htmlFor="select-all" className="text-sm font-medium">
+                                                Select all available tickets
+                                            </label>
+                                        </div>
+                                        {selectedTickets.size > 0 && (
+                                            <div className="flex items-center gap-4">
+                                                <div className="text-sm text-muted-foreground">
+                                                    {selectedTickets.size} ticket{selectedTickets.size > 1 ? 's' : ''} selected
                                                 </div>
-                                                
-                                                <p className="text-[13px] text-muted-foreground mb-4">
-                                                    {tier.description || "Standard event access with all basic features included."}
-                                                </p>
-
-                                                {tier.features && tier.features.length > 0 && (
-                                                    <>
-                                                        <Separator className="mb-3" />
-                                                        <div className="space-y-2 mb-4">
-                                                            {tier.features.map((feature, idx) => (
-                                                                <div key={idx} className="flex items-center gap-2 text-[13px]">
-                                                                    <CheckCircle className="w-4 h-4 text-green-600" />
-                                                                    <span>{feature}</span>
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    </>
-                                                )}
-
-                                                <Button 
-                                                    onClick={handleRegister}
-                                                    className="w-full"
-                                                    variant={tier.popular ? "default" : "outline"}
+                                                <div className="text-lg font-semibold text-primary">
+                                                    Rs. {getTotalAmount().toFixed(2)}
+                                                </div>
+                                                <Button
+                                                    onClick={handleBulkPayment}
+                                                    disabled={isProcessingPayment}
+                                                    className="bg-primary hover:bg-primary/80"
                                                 >
-                                                    Select {tier.name || tier.type}
+                                                    <ShoppingCart className="w-4 h-4 mr-2" />
+                                                    {isProcessingPayment ? 'Processing...' : 'Pay Now'}
                                                 </Button>
                                             </div>
-                                        ))}
+                                        )}
                                     </div>
-                                )}
-                            </CardContent>
-                        </Card>
+                                </div>
+                            )}
 
-                        {/* Payment Information */}
-                        <Card>
-                            <CardHeader>
-                                <div className="flex items-center gap-2">
-                                    <Info className="w-5 h-5 text-blue-600" />
-                                    <h3 className="text-[16px] font-semibold">Payment Information</h3>
-                                </div>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="space-y-3 text-[13px]">
-                                    <div className="flex items-start gap-2">
-                                        <CreditCard className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
-                                        <p>
-                                            We accept all major credit cards and secure online payment methods.
-                                        </p>
-                                    </div>
-                                    <div className="flex items-start gap-2">
-                                        <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
-                                        <p>
-                                            All prices are in USD and include applicable taxes and fees.
-                                        </p>
-                                    </div>
-                                    <div className="flex items-start gap-2">
-                                        <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
-                                        <p>
-                                            Your payment is secured with industry-standard encryption.
-                                        </p>
-                                    </div>
-                                    <div className="flex items-start gap-2">
-                                        <Clock className="w-4 h-4 text-purple-600 flex-shrink-0 mt-0.5" />
-                                        <p>
-                                            Registration confirmation will be sent immediately after payment.
-                                        </p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </>
-                )}
-            </div>
-        </TabsContent>
-        )
-    }
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full divide-y-2 divide-gray-200">
+                                    <thead className="ltr:text-left rtl:text-right">
+                                        <tr className="*:font-medium *:text-gray-900 *:first:sticky *:first:left-0 *:first:bg-white">
+                                            {availableTickets > 1 && (
+                                                <th className="px-3 py-2 whitespace-nowrap text-xs sm:text-sm md:text-base lg:text-[16px] w-12">
+                                                    Select
+                                                </th>
+                                            )}
+                                            <th className="px-3 py-2 whitespace-nowrap text-xs sm:text-sm md:text-base lg:text-[16px] w-16">S.N</th>
+                                            <th className="px-3 py-2 whitespace-nowrap text-xs sm:text-sm md:text-base lg:text-[16px] min-w-[200px]">Ticket Type</th>
+                                            <th className="px-3 py-2 whitespace-nowrap text-xs sm:text-sm md:text-base lg:text-[16px] min-w-[250px]">Description</th>
+                                            <th className="px-3 py-2 whitespace-nowrap text-xs sm:text-sm md:text-base lg:text-[16px] w-32">Price</th>
+                                            <th className="px-3 py-2 whitespace-nowrap text-xs sm:text-sm md:text-base lg:text-[16px] w-40">Deadline</th>
+                                            <th className="px-3 py-2 whitespace-nowrap text-center text-xs sm:text-sm md:text-base lg:text-[16px] min-w-[120px]">Action</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody className="divide-y divide-gray-200">
+                                        {ticketsData.map((ticket, index) => {
+                                            const isExpired = isDeadlinePassed(ticket.deadline);
+                                            const isNearDeadline = isDeadlineNear(ticket.deadline);
+                                            const isSelected = selectedTickets.has(ticket.id);
+
+                                            return (
+                                                <tr
+                                                    key={ticket.id}
+                                                    className={`hover:bg-gray-50 ${isExpired ? "bg-red-50 text-gray-400" : ""
+                                                        } ${isSelected ? "bg-blue-50" : ""}`}
+                                                >
+                                                    {/* Select Checkbox */}
+                                                    {availableTickets > 1 && (
+                                                        <td className="px-3 py-2 whitespace-nowrap">
+                                                            <Checkbox
+                                                                checked={isSelected}
+                                                                onCheckedChange={(checked) =>
+                                                                    handleTicketSelection(ticket.id, checked)
+                                                                }
+                                                                disabled={isExpired}
+                                                            />
+                                                        </td>
+                                                    )}
+
+                                                    {/* S.N */}
+                                                    <td className="px-3 py-2 whitespace-nowrap text-xs sm:text-sm md:text-base lg:text-[14px] font-medium">
+                                                        {index + 1}
+                                                    </td>
+
+                                                    {/* Ticket Type */}
+                                                    <td className="px-3 py-2 whitespace-nowrap text-xs sm:text-sm md:text-base lg:text-[14px] font-medium">
+                                                        <div className="flex items-center gap-2">
+                                                            <Ticket className="w-4 h-4 text-primary" />
+                                                            <span className="truncate">{ticket.label}</span>
+                                                        </div>
+                                                    </td>
+
+                                                    {/* Description */}
+                                                    <td className="px-3 py-2 text-xs sm:text-sm md:text-base lg:text-[14px]">
+                                                        <div className="max-w-xs truncate" title={ticket.description}>
+                                                            {ticket.description}
+                                                        </div>
+                                                    </td>
+
+                                                    {/* Price */}
+                                                    <td className="px-3 py-2 whitespace-nowrap text-xs sm:text-sm md:text-base lg:text-[14px] font-semibold">
+                                                        <div className="flex items-center gap-1">
+                                                            <DollarSign className="w-4 h-4 text-green-600" />
+                                                            Rs. {parseFloat(ticket.amount).toFixed(2)}
+                                                        </div>
+                                                    </td>
+
+                                                    {/* Deadline */}
+                                                    <td className="px-3 py-2 whitespace-nowrap text-xs sm:text-sm md:text-base lg:text-[14px]">
+                                                        <div className="flex items-center gap-1">
+                                                            <Calendar className="w-4 h-4 text-muted-foreground" />
+                                                            <span className={isNearDeadline ? "text-orange-600 font-medium" : ""}>
+                                                                {formatDeadline(ticket.deadline)}
+                                                            </span>
+                                                        </div>
+                                                        {isNearDeadline && !isExpired && (
+                                                            <Badge className="bg-orange-100 text-orange-800 text-xs mt-1">
+                                                                <Clock className="w-3 h-3 mr-1" />
+                                                                Ending Soon
+                                                            </Badge>
+                                                        )}
+                                                        {isExpired && (
+                                                            <Badge className="bg-red-100 text-red-800 text-xs mt-1">
+                                                                Expired
+                                                            </Badge>
+                                                        )}
+                                                    </td>
+
+                                                    {/* Actions */}
+                                                    <td className="px-3 py-2 whitespace-nowrap text-center">
+                                                        <Button
+                                                        
+                                                            size="sm"
+                                                            className={`min-w-[80px] text-xs sm:text-sm ${isExpired
+                                                                ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                                                                : "bg-blue text-white hover:bg-blue/80"
+                                                                }`}
+                                                            onClick={() => handleSingleTicketPurchase(ticket)}
+                                                            disabled={isExpired || isProcessingPayment}
+                                                        >
+                                                            {isExpired ? (
+                                                                "Expired"
+                                                            ) : (
+                                                                <>
+                                                                    <CreditCard className="w-3 h-3 mr-1" />
+                                                                    {isProcessingPayment ? 'Processing...' : 'Buy Now'}
+                                                                </>
+                                                            )}
+                                                        </Button>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </>
+                    )}
+                </CardContent>
+            </Card>
+       
+    );
+}

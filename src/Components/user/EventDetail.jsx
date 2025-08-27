@@ -69,9 +69,9 @@ export function EventDetail() {
         }
     }, [id, authTokens, authReady, api]);
 
-    useEffect(()=>{
-        window.scrollTo(0,0);
-    },[id])
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [id])
 
     // Format date
     const formatDate = (dateString) => {
@@ -216,11 +216,10 @@ export function EventDetail() {
                                     </div>
                                     <div className="flex flex-wrap gap-2">
                                         <button
-                                            className={`text-sm px-3 py-1 rounded font-medium ${
-                                                event.is_payment_required
+                                            className={`text-sm px-3 py-1 rounded font-medium ${event.is_payment_required
                                                     ? "bg-yellow-200 text-yellow-800"
                                                     : "bg-gray-100 text-gray-800"
-                                            }`}
+                                                }`}
                                         >
                                             {event.is_payment_required ? "Paid Event" : "Free Event"}
                                         </button>
@@ -439,7 +438,11 @@ export function EventDetail() {
                         <RequirementsView requirements={event.requirements} />
 
                         {/* Ticket Price Tab Content */}
-                        <TicketPriceView event={event} />
+
+                        <TabsContent value="ticket-price">
+                            <TicketPriceView />
+                        </TabsContent>
+
                     </Tabs>
                 </motion.div>
             </div>

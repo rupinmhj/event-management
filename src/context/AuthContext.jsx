@@ -10,7 +10,7 @@ export const AuthProvider = ({ children }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [email, setEmail] = useState(null);
     const [role, setRole] = useState(null);
-    const [id, setId] = useState(null);
+    const [pid, setPid] = useState(null);
     const [phone_number, setPhone_number] = useState(null);
     const [fullName, setFullName] = useState(null);
     const [hasProfile, setHasProfile] = useState(false);
@@ -27,6 +27,7 @@ export const AuthProvider = ({ children }) => {
         const storedPhoneno = localStorage.getItem('phone_number');
         const storedHasProfile = localStorage.getItem('has_profile') === 'true';
         const storedProfilePicture=localStorage.getItem('profilePicture');
+        
         const init = () => {
             if (encryptedAccess) {
                 try {
@@ -47,7 +48,7 @@ export const AuthProvider = ({ children }) => {
                 setRole(storedRole);
             }
             if (storedId) {
-                setId(storedId);
+                setPid(storedId);
             }
             if (storedPhoneno) {
                 setPhone_number(storedPhoneno);
@@ -119,6 +120,7 @@ export const AuthProvider = ({ children }) => {
                 profilePicture,
                 setProfilePicture,
                 role,
+                pid,
             }}
         >
             {children}
