@@ -107,46 +107,46 @@ export default function EventCardList() {
     const totalPages = Math.ceil(filteredEvents.length / eventsPerPage);
 
     // Handle event status toggle
-   const handleStatusToggle = (eventId, currentStatus) => {
-    const event = events.find(e => e.id === eventId);
-    const newStatus = !currentStatus;
-    
-    setPendingToggle({ eventId, currentStatus, newStatus, event });
-    setShowConfirmModal(true);
-};
+    const handleStatusToggle = (eventId, currentStatus) => {
+        const event = events.find(e => e.id === eventId);
+        const newStatus = !currentStatus;
 
-const confirmStatusToggle = async () => {
-    try {
-        const { eventId, newStatus } = pendingToggle;
-        
-        const res2 = await api.put(`/api/event/event-status-change/${eventId}/`, {
-            is_active: newStatus
-        });
-        console.log(res2.data);
+        setPendingToggle({ eventId, currentStatus, newStatus, event });
+        setShowConfirmModal(true);
+    };
 
-        // Update local state
-        setEvents(prevEvents =>
-            prevEvents.map(event =>
-                event.id === eventId
-                    ? { ...event, is_active: newStatus }
-                    : event
-            )
-        );
-        
-        // Close modal and reset pending toggle
+    const confirmStatusToggle = async () => {
+        try {
+            const { eventId, newStatus } = pendingToggle;
+
+            const res2 = await api.put(`/api/event/event-status-change/${eventId}/`, {
+                is_active: newStatus
+            });
+            console.log(res2.data);
+
+            // Update local state
+            setEvents(prevEvents =>
+                prevEvents.map(event =>
+                    event.id === eventId
+                        ? { ...event, is_active: newStatus }
+                        : event
+                )
+            );
+
+            // Close modal and reset pending toggle
+            setShowConfirmModal(false);
+            setPendingToggle(null);
+        } catch (error) {
+            console.error("Error updating event status:", error);
+            setShowConfirmModal(false);
+            setPendingToggle(null);
+        }
+    };
+
+    const handleCloseConfirmModal = () => {
         setShowConfirmModal(false);
         setPendingToggle(null);
-    } catch (error) {
-        console.error("Error updating event status:", error);
-        setShowConfirmModal(false);
-        setPendingToggle(null);
-    }
-};
-
-const handleCloseConfirmModal = () => {
-    setShowConfirmModal(false);
-    setPendingToggle(null);
-};
+    };
 
     const handleView = (id) => {
         navigate(`/admin/event/${id}`)
@@ -179,43 +179,43 @@ const handleCloseConfirmModal = () => {
 
 
     const ConfirmModal = ({ isOpen, onClose, onConfirm, event, newStatus }) => {
-    if (!isOpen || !event) return null;
+        if (!isOpen || !event) return null;
 
-    return (
-        <div className="fixed inset-0 z-50 overflow-y-auto ">
-            <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity " onClick={onClose}></div>
-            <div className="flex min-h-full items-center justify-center p-4 ">
-                <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full ">
-                    <div className="p-6">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                            Confirm Status Change
-                        </h3>
-                        <p className="text-gray-600 mb-6">
-                            Are you sure you want to {newStatus ? 'activate' : 'deactivate'} the event 
-                            <span className="font-medium"> "{event.title}"</span>?
-                        </p>
-                        <div className="flex gap-3 justify-end">
-                            <Button
-                                onClick={onClose}
-                                variant="outline"
-                                size="sm"
-                            >
-                                Cancel
-                            </Button>
-                            <Button
-                                onClick={onConfirm}
-                                size="sm"
-                                className={newStatus ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"}
-                            >
-                                {newStatus ? 'Activate' : 'Deactivate'}
-                            </Button>
+        return (
+            <div className="fixed inset-0 z-50 overflow-y-auto ">
+                <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity " onClick={onClose}></div>
+                <div className="flex min-h-full items-center justify-center p-4 ">
+                    <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full ">
+                        <div className="p-6">
+                            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                                Confirm Status Change
+                            </h3>
+                            <p className="text-gray-600 mb-6">
+                                Are you sure you want to {newStatus ? 'activate' : 'deactivate'} the event
+                                <span className="font-medium"> "{event.title}"</span>?
+                            </p>
+                            <div className="flex gap-3 justify-end">
+                                <Button
+                                    onClick={onClose}
+                                    variant="outline"
+                                    size="sm"
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    onClick={onConfirm}
+                                    size="sm"
+                                    className={newStatus ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"}
+                                >
+                                    {newStatus ? 'Activate' : 'Deactivate'}
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    );
-};
+        );
+    };
 
     return (
         <motion.div
@@ -228,7 +228,7 @@ const handleCloseConfirmModal = () => {
             {/* Header */}
             <div className="flex  justify-between items-start sm:items-center gap-4 ">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-800">Events</h2>
+                    {/* <h2 className="text-2xl font-bold text-gray-800">Events</h2> */}
                     {/* <p className="text-muted-foreground">Manage your events and track their performance</p> */}
                 </div>
                 <Button
@@ -239,48 +239,6 @@ const handleCloseConfirmModal = () => {
                     Create Event
                 </Button>
             </div>
-
-            {/* Filters and Search */}
-            {/* <Card className="p-4">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div className="relative">
-                        <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            placeholder="Search events..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pl-10"
-                        />
-                    </div>
-
-                    <Select value={filterType} onValueChange={setFilterType}>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Event Type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">All Types</SelectItem>
-                            <SelectItem value="ONLINE">Online</SelectItem>
-                            <SelectItem value="PHYSICAL">Physical</SelectItem>
-                        </SelectContent>
-                    </Select>
-
-                    <Select value={filterPayment} onValueChange={setFilterPayment}>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Payment Type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">All Payment Types</SelectItem>
-                            <SelectItem value="paid">Paid Events</SelectItem>
-                            <SelectItem value="free">Free Events</SelectItem>
-                        </SelectContent>
-                    </Select>
-
-                    <div className="text-sm text-muted-foreground flex items-center justify-center">
-                        <Filter className="w-4 h-4 mr-2" />
-                        {filteredEvents.length} of {events.length} events
-                    </div>
-                </div>
-            </Card> */}
 
             {/* Event Cards Grid */}
             <AnimatePresence mode="wait">
@@ -315,7 +273,7 @@ const handleCloseConfirmModal = () => {
                                     </div>
 
                                     {/* Event Banner */}
-                                    <div className="relative h-36 bg-gradient-to-br from-blue/20 to-purple-500/20 overflow-hidden cursor-pointer" onClick={() => handleView(event.id)}>
+                                    <div className="relative h-[180px] bg-gradient-to-br from-blue/20 to-purple-500/20 overflow-hidden cursor-pointer" onClick={() => handleView(event.id)}>
                                         {event.banner ? (
                                             <img
                                                 src={event.banner}
@@ -466,12 +424,12 @@ const handleCloseConfirmModal = () => {
             </AnimatePresence>
 
             <ConfirmModal
-    isOpen={showConfirmModal}
-    onClose={handleCloseConfirmModal}
-    onConfirm={confirmStatusToggle}
-    event={pendingToggle?.event}
-    newStatus={pendingToggle?.newStatus}
-/>
+                isOpen={showConfirmModal}
+                onClose={handleCloseConfirmModal}
+                onConfirm={confirmStatusToggle}
+                event={pendingToggle?.event}
+                newStatus={pendingToggle?.newStatus}
+            />
         </motion.div>
     );
 }

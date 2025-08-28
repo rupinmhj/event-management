@@ -6,8 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import useAxiosAuth from '@/hooks/useAxiosAuth';
 import AuthContext from '@/context/AuthContext';
-import { useNavigate, useParams } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import { useNavigate, useParams, Navigate } from 'react-router-dom';
+import { toast, ToastContainer } from 'react-toastify';
 
 export const Tickets = () => {
   const [tickets, setTickets] = useState([]);
@@ -19,9 +19,10 @@ export const Tickets = () => {
   const { hasProfile } = useContext(AuthContext);
   const api = useAxiosAuth();
   const navigate = useNavigate();
-  const { id: eventId } = useParams()
+  const { id: eventId } = useParams();
 
   useEffect(() => {
+    window.scrollTo(0, 0)
     fetchTicketsAndEvents();
   }, [api, eventId]);
 
@@ -34,8 +35,13 @@ export const Tickets = () => {
         ? `/api/event/ticket-list/?event=${eventId}`
         : '/api/event/ticket-list';
 
-      const ticketsRes = await api.get(ticketUrl);
+      // const ticketsRes = await api.get(ticketUrl);
+      const [ticketsRes, ticketData] = await Promise.all([
+        api.get(ticketUrl),
+        api.get(`/api/event/10/tickets/`),
+      ]);
       console.log('Tickets data:', ticketsRes.data);
+      console.log('Tickets with paid/unpaid', ticketData.data)
       setTickets(ticketsRes.data);
 
       // Fetch events for display names (if not filtering by specific event)
@@ -98,31 +104,43 @@ export const Tickets = () => {
       const { event } = ticket;
       const res2 = await api.get(`/api/event/own-participation-list/?event=${event}`);
       console.log(res2.data);
-      const pid = res2.data[0].id;
+      const pid = res2.data[0]?.id;
       console.log(pid);
+      if (!pid) {
+        toast.error("Fill the requirements first!!");
+        setTimeout(() => {
+          navigate('/user')
+        }, 1000)
+
+        return;
+      }
+      console.log('Participation ID:', pid);
+
       setProcessingPayment(ticket.id);
-      console.log('ticket-id', ticket.id)
-      // Replace `26` with your dynamic eventId if needed
+      console.log('Ticket ID:', ticket.id);
+
       const payload = {
         tickets: [
-          { ticket_id: ticket.id } // sending only the selected ticket
+          { ticket_id: ticket.id }
         ]
       };
-      console.log('payload', payload);
+      console.log('Payload:', payload);
 
       const res = await api.post(
         `/api/event/participation/${pid}/tickets/`,
         payload
       );
-      console.log(res.data);
+      console.log('Response:', res.data);
       const { total_amount } = res.data;
-      console.log("totalamount", total_amount);
+      console.log("Total amount:", total_amount);
 
-      toast.success(`Payment successful for ${ticket.label} ticket!`);
-      navigate('/user/payment', { state: { totalAmount: total_amount } });
-
-      // Refresh tickets data after payment
-      await fetchTicketsAndEvents();
+      // Navigate to payment page with correct path
+      navigate(`/user/payment/${pid}`, {
+        state: {
+          totalAmount: total_amount,
+          pid: pid
+        }
+      });
 
     } catch (error) {
       console.error('Payment failed:', error);
@@ -153,43 +171,48 @@ export const Tickets = () => {
     try {
       setProcessingBulk(prev => ({ ...prev, [eventId]: true }));
 
-      // Get participation ID for this event (similar to individual payment)
+      // Get participation ID for this event
       const res2 = await api.get(`/api/event/own-participation-list/?event=${eventId}`);
       console.log(res2.data);
-      const pid = res2.data[0].id;
-      console.log('participation id:', pid);
+      const pid = res2.data[0]?.id;
+      console.log(pid);
+      if (!pid) {
+        toast.error("Fill the requirements first!!");
+        setTimeout(() => {
+          navigate('/user')
+        }, 1000)
+        return;
+      }
+
+      console.log('Participation ID:', pid);
 
       // Create payload with selected tickets for this event
       const payload = {
         tickets: eventTickets.map(ticket => ({ ticket_id: ticket.id }))
       };
-      console.log('bulk payload:', payload);
+      console.log('Bulk payload:', payload);
 
       // Make the API call for bulk payment
       const res = await api.post(
         `/api/event/participation/${pid}/tickets/`,
         payload
       );
-      console.log('bulk payment response:', res.data);
+      console.log('Bulk payment response:', res.data);
       const { total_amount } = res.data;
-      console.log("totalamount", total_amount);
+      console.log("Total amount:", total_amount);
 
-      // toast.success(`Payment successful for ${ticket.label} ticket!`);
-      navigate('/user/payment', { state: { totalAmount: total_amount } });
-
-      const totalAmount = eventTickets.reduce((sum, ticket) =>
-        sum + parseFloat(ticket.amount), 0
-      );
-
-      toast.success(`Bulk payment successful! Total: ${formatPrice(totalAmount)}`);
+      // Navigate to payment page
+      navigate(`/user/payment/${pid}`, {
+        state: {
+          totalAmount: total_amount,
+          pid: pid
+        }
+      });
 
       // Clear selections for this event
       const newSelected = new Set(selectedTickets);
       eventTickets.forEach(ticket => newSelected.delete(ticket.id));
       setSelectedTickets(newSelected);
-
-      // Refresh tickets data after payment
-      await fetchTicketsAndEvents();
 
     } catch (error) {
       console.error('Bulk payment failed:', error);
@@ -251,8 +274,6 @@ export const Tickets = () => {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
-
-
       <div className="space-y-8">
         {Object.entries(groupedTickets).map(([eventId, eventTickets]) => {
           const selectedCount = getSelectedTicketsForEvent(parseInt(eventId)).length;
@@ -428,7 +449,7 @@ export const Tickets = () => {
           </p>
         </div>
       )}
+      <ToastContainer />
     </div>
   );
 };
-

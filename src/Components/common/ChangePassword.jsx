@@ -133,7 +133,7 @@ export const ChangePasswordForm = ({ user }) => {
                 <div className="px-6 min-w-[420px] md:max-w-4xl mx-auto">
                     <main className="pt-5">
                         <div className="mb-6">
-                            <h2 className="text-2xl font-bold text-center text-gray-900 dark:text-white">
+                            <h2 className="text-2xl font-bold text-center text-gray-800 dark:text-white">
                                 Change Password
                             </h2>
                             <p className="text-center text-gray-600 dark:text-gray-400 mt-2">

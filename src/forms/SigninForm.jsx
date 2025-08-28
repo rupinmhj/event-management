@@ -82,7 +82,9 @@ export const SigninForm = ({ switchToSignup, setShowOtp }) => {
             // toast.error(msg);
             // console.log(error.response);
             const msg = error.response.data.non_field_errors[0];
+            // const msg = error.response;
             console.log(msg);
+            console.log("error",error)
             toast.error(msg);
         } finally {
             setLoading(false);

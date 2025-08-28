@@ -57,11 +57,11 @@ const router = createBrowserRouter([
 
     // Payment routes - moved outside of user layout for better UX
     {
-        path: "/payment-success/",
+        path: "/user/payment-success/",
         element: <PaymentSuccess />
     },
     {
-        path: "/payment-failed",
+        path: "/user/payment-failed",
         element: <PaymentFailure />
     },
 
@@ -109,7 +109,7 @@ const router = createBrowserRouter([
             { path: "event-form/:id", element: <DynamicRequirementForm /> },
             { path: "change-password", element: <ChangePasswordForm user={'user'} /> },
             { path: "user-profile", element: <MyProfile /> },
-            { path: 'payment', element: <Payment /> },
+            { path: 'payment/:pid', element: <Payment /> },
             // Optional: Keep these routes if you want them within user layout as well
             // {path: 'payment-success/:productdata', element:<PaymentSuccess/>},
             // {path: 'payment-failed', element:<PaymentFailure/>}

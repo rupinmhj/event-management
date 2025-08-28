@@ -1,5 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import AuthContext from '@/context/AuthContext';
+import useAxiosAuth from '@/hooks/useAxiosAuth';
+import React, { useContext, useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 export const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
@@ -7,12 +10,29 @@ export const PaymentSuccess = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [paymentData, setPaymentData] = useState(null);
+  const api = useAxiosAuth();
+  const { authTokens, authReady } = useContext(AuthContext);
+
+  // Function to extract participation_id from transaction_uuid
+  const extractParticipationId = (transactionUuid) => {
+    if (!transactionUuid) return null;
+    
+    // Check if the UUID contains a participation_id (format: participationId-uuid)
+    const parts = transactionUuid.split('-');
+    if (parts.length > 4) { // Standard UUID has 4 hyphens, so if more, first part is participation_id
+      return parts[0];
+    }
+    return null;
+  };
 
   useEffect(() => {
+    if (!authReady) return; // Wait for auth to be ready
+
     const processPayment = async () => {
       try {
         // Get the base64 encoded data from URL query params
         const base64Response = searchParams.get("data");
+        console.log("Base64 Response:", base64Response);
         
         if (!base64Response) {
           setError("No payment data found");
@@ -24,15 +44,33 @@ export const PaymentSuccess = () => {
         const decodedData = JSON.parse(atob(base64Response));
         console.log("Payment Response:", decodedData);
         
+        // Extract participation_id from transaction_uuid
+        const participationId = extractParticipationId(decodedData.transaction_uuid);
+        console.log("Extracted Participation ID:", participationId);
+        
+        if (!participationId) {
+          setError("No participation ID found in transaction");
+          setLoading(false);
+          return;
+        }
+        
         setPaymentData(decodedData);
 
+        // Check if payment was successful
+        if (decodedData.status !== 'COMPLETE') {
+          setError(`Payment ${decodedData.status.toLowerCase()}. Please try again.`);
+          setLoading(false);
+          return;
+        }
+
         // Verify the payment with your backend
-        const verificationResult = await verifyPayment(decodedData);
+        const verificationResult = await verifyPayment(decodedData, participationId);
         
         if (verificationResult.success) {
           // Payment verified successfully
+          toast.success('Payment completed successfully!');
           setTimeout(() => {
-            // Navigate back to user dashboard or appropriate page
+            // Navigate back to user dashboard
             navigate('/user', { 
               state: { 
                 paymentSuccess: true, 
@@ -41,47 +79,58 @@ export const PaymentSuccess = () => {
             });
           }, 3000);
         } else {
-          setError("Payment verification failed");
+          setError(verificationResult.error || "Payment verification failed");
         }
       } catch (error) {
         console.error("Error processing payment:", error);
         setError("Failed to process payment data");
+        toast.error('Payment processing failed');
       } finally {
         setLoading(false);
       }
     };
 
     processPayment();
-  }, [searchParams, navigate]);
+  }, [searchParams, navigate, authTokens, authReady, api]);
 
   // Function to verify payment with backend
-  const verifyPayment = async (paymentData) => {
+  const verifyPayment = async (paymentData, participationId) => {
     try {
-      const response = await fetch('/api/verify-payment', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          // Add authorization headers if needed
-          // 'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify({
-          transaction_code: paymentData.transaction_code,
-          status: paymentData.status,
-          total_amount: paymentData.total_amount,
+      console.log("Verifying payment with backend...");
+      
+      const response = await api.post(
+        '/api/event/payment/',
+        {
+          participation_id: participationId,
           transaction_uuid: paymentData.transaction_uuid,
+          transaction_code: paymentData.transaction_code,
+          // status: paymentData.status,
+          total_amount: paymentData.total_amount,
           product_code: paymentData.product_code,
           signature: paymentData.signature
-        }),
-      });
+        }
+      );
 
-      if (!response.ok) {
-        throw new Error('Verification request failed');
-      }
-
-      return await response.json();
+      console.log("Payment verification response:", response.data);
+      
+      // Axios automatically throws for HTTP error status codes
+      return { success: true, data: response.data };
+      
     } catch (error) {
       console.error("Payment verification error:", error);
-      return { success: false, error: "Verification failed" };
+      
+      // Handle different types of errors
+      if (error.response) {
+        // Server responded with error status
+        const errorMessage = error.response.data?.message || error.response.data?.error || 'Verification failed';
+        return { success: false, error: errorMessage };
+      } else if (error.request) {
+        // Request was made but no response received
+        return { success: false, error: "Network error - please check your connection" };
+      } else {
+        // Something else happened
+        return { success: false, error: "Unexpected error during verification" };
+      }
     }
   };
 
@@ -110,7 +159,7 @@ export const PaymentSuccess = () => {
           <p className="text-gray-600 mb-4">{error}</p>
           <div className="space-y-2">
             <button
-              onClick={() => navigate('/user/payment')}
+              onClick={() => navigate('/user/tickets')}
               className="w-full bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-md transition-colors"
             >
               Try Again
@@ -126,6 +175,8 @@ export const PaymentSuccess = () => {
       </div>
     );
   }
+
+  const participationId = extractParticipationId(paymentData?.transaction_uuid);
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -144,7 +195,8 @@ export const PaymentSuccess = () => {
             <p className="text-sm"><strong>Transaction ID:</strong> {paymentData.transaction_code}</p>
             <p className="text-sm"><strong>Amount:</strong> Rs. {paymentData.total_amount}</p>
             <p className="text-sm"><strong>Status:</strong> {paymentData.status}</p>
-            <p className="text-sm"><strong>UUID:</strong> {paymentData.transaction_uuid}</p>
+            {/* <p className="text-sm"><strong>UUID:</strong> {paymentData.transaction_uuid}</p> */}
+            {/* <p className="text-sm"><strong>Participation ID:</strong> {participationId}</p> */}
           </div>
         )}
         

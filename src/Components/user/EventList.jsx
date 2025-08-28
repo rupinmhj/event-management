@@ -47,6 +47,8 @@ export default function ParticipantEventList() {
             try {
                 setIsLoading(true);
                 if (!authTokens && !authReady) return;
+                const res2 = await api.get('/api/event/participant/24/ticket-list/');
+                console.log('res2', res2.data);
 
                 const res = await api.get("/api/event/active-events/");
                 const data = res.data;
@@ -69,7 +71,7 @@ export default function ParticipantEventList() {
     // Filter and search logic
     useEffect(() => {
         let filtered = events;
-        window.scrollTo(0,0);
+        window.scrollTo(0, 0);
         // Search filter
         if (searchTerm) {
             filtered = filtered.filter(event =>
@@ -140,7 +142,7 @@ export default function ParticipantEventList() {
         );
     }
 
-  
+
 
 
     return (
@@ -154,52 +156,10 @@ export default function ParticipantEventList() {
             {/* Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-800">Available Events</h2>
+                    {/* <h2 className="text-2xl font-bold text-gray-800">Available Events</h2> */}
                     <p className="text-muted-foreground">Discover and join exciting events</p>
                 </div>
             </div>
-
-            {/* Filters and Search */}
-            {/* <Card className="p-4">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div className="relative">
-                        <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            placeholder="Search events..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pl-10"
-                        />
-                    </div>
-
-                    <Select value={filterType} onValueChange={setFilterType}>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Event Type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">All Types</SelectItem>
-                            <SelectItem value="ONLINE">Online</SelectItem>
-                            <SelectItem value="PHYSICAL">Physical</SelectItem>
-                        </SelectContent>
-                    </Select>
-
-                    <Select value={filterPayment} onValueChange={setFilterPayment}>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Payment Type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">All Payment Types</SelectItem>
-                            <SelectItem value="paid">Paid Events</SelectItem>
-                            <SelectItem value="free">Free Events</SelectItem>
-                        </SelectContent>
-                    </Select>
-
-                    <div className="text-sm text-muted-foreground flex items-center justify-center">
-                        <Filter className="w-4 h-4 mr-2" />
-                        {filteredEvents.length} events available
-                    </div>
-                </div>
-            </Card> */}
 
             {/* Event Cards Grid */}
             <AnimatePresence mode="wait">
@@ -220,7 +180,7 @@ export default function ParticipantEventList() {
                                 exit="exit"
                                 transition={{ duration: 0.3, delay: index * 0.1 }}
                             >
-                                <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden">
+                                <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden ">
                                     {/* Event Status Badge */}
                                     <div className="absolute top-3 right-3 z-10">
                                         <Badge
@@ -232,7 +192,7 @@ export default function ParticipantEventList() {
                                     </div>
 
                                     {/* Event Banner */}
-                                    <div className="relative h-36 bg-gradient-to-br from-blue/20 to-purple-500/20 overflow-hidden cursor-pointer" onClick={() => handleView(event.id)}>
+                                    <div className="relative h-[180px] bg-gradient-to-br from-blue/20 to-purple-500/20 overflow-hidden cursor-pointer" onClick={() => handleView(event.id)}>
                                         {event.banner ? (
                                             <img
                                                 src={event.banner}
@@ -331,26 +291,6 @@ export default function ParticipantEventList() {
                                                 View Details
                                             </Button>
 
-                                            {/* {isUpcoming(event.start_date) ? (
-                                                <Button
-                                                    onClick={() => handleJoinEvent(event.id)}
-                                                    size="sm"
-                                                    className="bg-green-600 hover:bg-green-700 text-white"
-                                                >
-                                                    <UserPlus className="w-3 h-3 mr-1" />
-                                                    Join Event
-                                                </Button>
-                                            ) : (
-                                                <Button
-                                                    onClick={() => handleView(event.id)}
-                                                    size="sm"
-                                                    variant="secondary"
-                                                    className="text-gray-600"
-                                                >
-                                                    <ExternalLink className="w-3 h-3 mr-1" />
-                                                    View Past Event
-                                                </Button>
-                                            )} */}
                                         </div>
                                     </CardFooter>
                                 </Card>
@@ -379,40 +319,7 @@ export default function ParticipantEventList() {
                 )}
             </AnimatePresence>
 
-            {/* Pagination */}
-            {totalPages > 1 && (
-                <div className="flex items-center justify-between">
-                    <div className="text-sm text-muted-foreground">
-                        Showing {indexOfFirstEvent + 1} to {Math.min(indexOfLastEvent, filteredEvents.length)} of {filteredEvents.length} events
-                    </div>
 
-                    <div className="flex items-center gap-2">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                            disabled={currentPage === 1}
-                        >
-                            <ChevronLeft className="w-4 h-4" />
-                            Previous
-                        </Button>
-
-                        <span className="text-sm">
-                            Page {currentPage} of {totalPages}
-                        </span>
-
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                            disabled={currentPage === totalPages}
-                        >
-                            Next
-                            <ChevronRight className="w-4 h-4" />
-                        </Button>
-                    </div>
-                </div>
-            )}
         </motion.div>
     );
 }

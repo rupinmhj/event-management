@@ -188,7 +188,7 @@ const RequirementCard = () => {
                 (async () => {
                     await fetchEventsAndParticipations();
                 })();
-                window.scrollTo(0,0);
+                window.scrollTo(0, 0);
             }, 1000);
 
 
@@ -226,19 +226,21 @@ const RequirementCard = () => {
                 {events.map((event) =>
                     event.requirements?.map((requirement) => {
                         const isOverdue = isDeadlinePassed(requirement.deadline);
+                        
                         const isNearDeadline = isDeadlineNear(requirement.deadline);
                         const isSubmittingThis = submitting[`${event.id}-${requirement.id}`];
                         const response = getResponseForRequirement(event.id, requirement.id);
+                        {console.log('response-sub',response)}
                         const ownParticipation = getOwnParticipationForRequirement(event.id, requirement.id);
                         const isSubmitted = response && response.is_submitted;
                         const canEdit = isSubmitted && !isOverdue && !(response && response.is_verified);
 
                         return (
-                            <Card
+                           !response?.is_submitted && !isOverdue && <Card
                                 key={`${event.id}-${requirement.id}`}
-                                className={`${isNearDeadline ? 'bg-red-50' : 'bg-blue/5'} border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300`}
+                                className={`${isNearDeadline ? 'bg-red-50' : 'bg-blue/5'} border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 `}
                             >
-                                <CardHeader className="pb-2">
+                                <CardHeader className="pb-2 ">
                                     <div className="flex items-start justify-between gap-2">
                                         <div className="flex-1">
                                             <CardTitle onClick={() => navigate(`/user/event/${event.id}`)} className="text-lg font-semibold text-blue mb-1 hover:text-blue/80 cursor-pointer">
