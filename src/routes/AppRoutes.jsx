@@ -36,7 +36,7 @@ import { ResetPasswordForm } from "@/forms/ResetPasswordForm";
 import EmailHistory from "@/Components/admin/EmailHistory";
 import ProtectedRoute from "./ProtectedRoute";
 // Updated payment component imports
-import PaymentSuccess from "@/components/user/payment/PaymentSuccess";
+import { PaymentSuccess } from "@/components/user/payment/PaymentSuccess";
 import PaymentFailure from "@/components/user/payment/PaymentFailure";
 
 const router = createBrowserRouter([
@@ -54,10 +54,10 @@ const router = createBrowserRouter([
             { path: "reset-password", element: <ResetPasswordForm /> },
         ],
     },
-    
+
     // Payment routes - moved outside of user layout for better UX
     {
-        path: "/payment-success/:productdata",
+        path: "/payment-success/",
         element: <PaymentSuccess />
     },
     {
@@ -68,48 +68,48 @@ const router = createBrowserRouter([
     // Admin routes
     {
         path: "/admin",
-        element:(
+        element: (
             // <ProtectedRoute allowedRole="ADMIN">
-                <AdminLayout />
-                // </ProtectedRoute >
-                ) ,
-                children: [
-                {index: true, element: <DashboardAdmin /> },
-                {path: "events", element: <Events /> },
-                {path: "event/:id", element: <EventView /> },
-                {path: "requirement-setup", element: <RequirementSetup /> },
-                {path: "requirement-update/:id", element: <RequirementUpdate /> },
-                {path: "tickets-pricing", element: <TicketsPricing /> },
-                {path: "registered-members", element: <RegisteredMembers /> },
-                {path: "event-edit/:id", element: <EditEvent /> },
-                {path: "change-password", element: <ChangePasswordForm user={'admin'} /> },
-                {path: "send-email", element: <SendEmail /> },
-                {path: "email-history", element: <EmailHistory /> },
-                {path: 'participant-review/:id', element: <ParticipantReview /> },
-                {path: 'user-profile/:userId', element: <AdminUserProfileView /> }
-                ],
+            <AdminLayout />
+            // </ProtectedRoute >
+        ),
+        children: [
+            { index: true, element: <DashboardAdmin /> },
+            { path: "events", element: <Events /> },
+            { path: "event/:id", element: <EventView /> },
+            { path: "requirement-setup", element: <RequirementSetup /> },
+            { path: "requirement-update/:id", element: <RequirementUpdate /> },
+            { path: "tickets-pricing", element: <TicketsPricing /> },
+            { path: "registered-members", element: <RegisteredMembers /> },
+            { path: "event-edit/:id", element: <EditEvent /> },
+            { path: "change-password", element: <ChangePasswordForm user={'admin'} /> },
+            { path: "send-email", element: <SendEmail /> },
+            { path: "email-history", element: <EmailHistory /> },
+            { path: 'participant-review/:id', element: <ParticipantReview /> },
+            { path: 'user-profile/:userId', element: <AdminUserProfileView /> }
+        ],
     },
 
     // User routes
     {
         path: "/user",
-        element:(
+        element: (
             // <ProtectedRoute allowedRole="USER">
-                 <UserLayout />
+            <UserLayout />
             // </ProtectedRoute>
-        ), 
+        ),
         children: [
-            {index: true, element: <Dashboard /> }, // /user
-            {path: 'setup-profile', element: <Setup /> },
-            {path: "events", element: <Home /> },
-            {path: "event/:id", element: <EventDetail /> },
-            {path: "about", element: <About /> },
-            {path: "registration", element: <Registration /> },
-            {path: "tickets", element: <Tickets /> },
-            {path: "event-form/:id", element: <DynamicRequirementForm /> },
-            {path: "change-password", element: <ChangePasswordForm user={'user'} /> },
-            {path: "user-profile", element: <MyProfile /> },
-            {path:'payment', element:<Payment/>},
+            { index: true, element: <Dashboard /> }, // /user
+            { path: 'setup-profile', element: <Setup /> },
+            { path: "events", element: <Home /> },
+            { path: "event/:id", element: <EventDetail /> },
+            { path: "about", element: <About /> },
+            { path: "registration", element: <Registration /> },
+            { path: "tickets", element: <Tickets /> },
+            { path: "event-form/:id", element: <DynamicRequirementForm /> },
+            { path: "change-password", element: <ChangePasswordForm user={'user'} /> },
+            { path: "user-profile", element: <MyProfile /> },
+            { path: 'payment', element: <Payment /> },
             // Optional: Keep these routes if you want them within user layout as well
             // {path: 'payment-success/:productdata', element:<PaymentSuccess/>},
             // {path: 'payment-failed', element:<PaymentFailure/>}

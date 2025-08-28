@@ -7,6 +7,7 @@ export const Payment = () => {
   const location = useLocation();
   const totalAmount = location.state?.totalAmount || 0;
   const { user_full_name } = useContext(AuthContext);
+  const currentDomain = window.location.origin;
   const [formData, setformData] = useState({
     amount: totalAmount.toString(),
     tax_amount: "0",
@@ -15,8 +16,8 @@ export const Payment = () => {
     product_service_charge: "0",
     product_delivery_charge: "0",
     product_code: "EPAYTEST",
-    success_url: "http://localhost:5173/paymentsuccess",
-    failure_url: "http://localhost:5173/paymentfailure",
+    success_url: `${currentDomain}/payment-success/`,
+    failure_url: `${currentDomain}/payment-success/`,
     signed_field_names: "total_amount,transaction_uuid,product_code",
     signature: "",
     secret: "8gBm/:&EnhH.1/q",
@@ -87,7 +88,7 @@ export const Payment = () => {
                       total_amount: target.value,
                     })
                   }
-                  readOnly
+                  // readOnly
                   required
                 />
                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
@@ -97,7 +98,7 @@ export const Payment = () => {
             </div>
 
             {/* Customer Information */}
-            <div className="bg-gray-50 p-4 rounded-lg">
+            {/* <div className="bg-gray-50 p-4 rounded-lg">
               <h3 className="text-lg font-medium text-gray-900 mb-4">Customer Information</h3>
 
               <div className="grid grid-cols-1 gap-y-4 gap-x-4 sm:grid-cols-2">
@@ -115,7 +116,7 @@ export const Payment = () => {
 
 
               </div>
-            </div>
+            </div> */}
 
             {/* Hidden fields required for eSewa */}
             <input type="hidden" id="tax_amount" name="tax_amount" value={formData.tax_amount} required />
