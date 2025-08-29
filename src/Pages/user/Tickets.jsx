@@ -11,6 +11,8 @@ import { toast, ToastContainer } from 'react-toastify';
 
 export const Tickets = () => {
   const [tickets, setTickets] = useState([]);
+  const [paidTickets, setPaidTickets] = useState([]);
+  const [unpaidTickets, setUnpaidTickets] = useState([]);
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedTickets, setSelectedTickets] = useState(new Set());
@@ -20,6 +22,7 @@ export const Tickets = () => {
   const api = useAxiosAuth();
   const navigate = useNavigate();
   const { id: eventId } = useParams();
+  const [tid, setTid] = useState([]);
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -35,20 +38,46 @@ export const Tickets = () => {
         ? `/api/event/ticket-list/?event=${eventId}`
         : '/api/event/ticket-list';
 
-      // const ticketsRes = await api.get(ticketUrl);
-      const [ticketsRes, ticketData] = await Promise.all([
-        api.get(ticketUrl),
-        api.get(`/api/event/10/tickets/`),
-      ]);
+      const ticketsRes = await api.get(ticketUrl);
       console.log('Tickets data:', ticketsRes.data);
-      console.log('Tickets with paid/unpaid', ticketData.data)
       setTickets(ticketsRes.data);
 
-      // Fetch events for display names (if not filtering by specific event)
+      // Fetch events for display names and get paid/unpaid status for each event
       if (!eventId) {
         const eventsRes = await api.get("/api/event/active-events/");
         setEvents(eventsRes.data);
         console.log('Events data:', eventsRes.data);
+
+        // Get paid/unpaid status for all active events
+        const allPaidTickets = [];
+        const allUnpaidTickets = [];
+
+        for (const event of eventsRes.data) {
+          try {
+            const ticketData = await api.get(`/api/event/${event.id}/tickets/`);
+            console.log(`Tickets with paid/unpaid for event ${event.id}:`, ticketData.data);
+
+            allPaidTickets.push(...(ticketData.data.paid_tickets || []));
+            allUnpaidTickets.push(...(ticketData.data.unpaid_tickets || []));
+          } catch (eventError) {
+            console.warn(`Failed to fetch ticket status for event ${event.id}:`, eventError);
+          }
+        }
+
+        setPaidTickets(allPaidTickets);
+        setUnpaidTickets(allUnpaidTickets);
+      } else {
+        // For specific event, fetch its paid/unpaid status
+        try {
+          const ticketData = await api.get(`/api/event/${eventId}/tickets/`);
+          console.log('Tickets with paid/unpaid', ticketData.data);
+          setPaidTickets(ticketData.data.paid_tickets || []);
+          setUnpaidTickets(ticketData.data.unpaid_tickets || []);
+        } catch (eventError) {
+          console.warn(`Failed to fetch ticket status for event ${eventId}:`, eventError);
+          setPaidTickets([]);
+          setUnpaidTickets([]);
+        }
       }
 
     } catch (error) {
@@ -75,6 +104,10 @@ export const Tickets = () => {
   const isDeadlinePassed = (deadline) => {
     if (!deadline) return false;
     return new Date(deadline) < new Date();
+  };
+
+  const isTicketPaid = (ticketId) => {
+    return paidTickets.some(ticket => ticket.id === ticketId);
   };
 
   const formatPrice = (amount) => {
@@ -131,12 +164,17 @@ export const Tickets = () => {
         payload
       );
       console.log('Response:', res.data);
-      const { total_amount } = res.data;
+      // const { total_amount } = res.data;
+      const { total_amount, participant_ticket_ids } = res.data;
+
+
+      setTid(participant_ticket_ids);
       console.log("Total amount:", total_amount);
 
       // Navigate to payment page with correct path
       navigate(`/user/payment/${pid}`, {
         state: {
+          tid: participant_ticket_ids,
           totalAmount: total_amount,
           pid: pid
         }
@@ -160,11 +198,14 @@ export const Tickets = () => {
     }
 
     const eventTickets = tickets.filter(ticket =>
-      ticket.event === eventId && selectedTickets.has(ticket.id)
+      ticket.event === eventId &&
+      selectedTickets.has(ticket.id) &&
+      !isTicketPaid(ticket.id) &&
+      !isDeadlinePassed(ticket.deadline)
     );
 
     if (eventTickets.length === 0) {
-      toast.warning('Please select at least one ticket for bulk payment.');
+      toast.warning('Please select at least one unpaid ticket for bulk payment.');
       return;
     }
 
@@ -198,12 +239,14 @@ export const Tickets = () => {
         payload
       );
       console.log('Bulk payment response:', res.data);
-      const { total_amount } = res.data;
+      const { total_amount, participant_ticket_ids } = res.data;
+      setTid(participant_ticket_ids);
       console.log("Total amount:", total_amount);
 
       // Navigate to payment page
       navigate(`/user/payment/${pid}`, {
         state: {
+          tid: participant_ticket_ids,
           totalAmount: total_amount,
           pid: pid
         }
@@ -224,7 +267,9 @@ export const Tickets = () => {
 
   const handleSelectAllForEvent = (eventId, checked) => {
     const eventTickets = tickets.filter(ticket =>
-      ticket.event === eventId && !isDeadlinePassed(ticket.deadline)
+      ticket.event === eventId &&
+      !isDeadlinePassed(ticket.deadline) &&
+      !isTicketPaid(ticket.id)
     );
 
     const newSelected = new Set(selectedTickets);
@@ -240,7 +285,9 @@ export const Tickets = () => {
 
   const getSelectedTicketsForEvent = (eventId) => {
     return tickets.filter(ticket =>
-      ticket.event === eventId && selectedTickets.has(ticket.id)
+      ticket.event === eventId &&
+      selectedTickets.has(ticket.id) &&
+      !isTicketPaid(ticket.id)
     );
   };
 
@@ -279,7 +326,7 @@ export const Tickets = () => {
           const selectedCount = getSelectedTicketsForEvent(parseInt(eventId)).length;
           const totalAmount = getTotalAmountForEvent(parseInt(eventId));
           const availableTickets = eventTickets.filter(ticket =>
-            !isDeadlinePassed(ticket.deadline)
+            !isDeadlinePassed(ticket.deadline) && !isTicketPaid(ticket.id)
           );
 
           return (
@@ -293,7 +340,7 @@ export const Tickets = () => {
                       {getEventName(parseInt(eventId))}
                     </h2>
                     <p className="text-sm text-muted-foreground">
-                      {eventTickets.length} ticket type{eventTickets.length > 1 ? 's' : ''} available
+                      {eventTickets.length} ticket type{eventTickets.length > 1 ? 's' : ''} • {availableTickets.length} available for purchase
                     </p>
                   </div>
                 </div>
@@ -312,7 +359,7 @@ export const Tickets = () => {
                         htmlFor={`select-all-${eventId}`}
                         className="text-sm font-medium cursor-pointer"
                       >
-                        Select All
+                        Select All Available
                       </label>
                     </div>
 
@@ -351,16 +398,29 @@ export const Tickets = () => {
                   const isNearDeadline = isDeadlineNear(ticket.deadline);
                   const isSelected = selectedTickets.has(ticket.id);
                   const isProcessing = processingPayment === ticket.id;
+                  const isPaid = isTicketPaid(ticket.id);
 
                   return (
                     <Card
                       key={ticket.id}
-                      className={`relative transition-all duration-300  ${isSelected ? 'ring-2 ring-green-600 bg-primary/5' :
-                        isNearDeadline ? 'bg-destructive/5 border-destructive/20' :
-                          'bg-card hover:shadow-md'
+                      className={`relative transition-all duration-300 ${isPaid ? 'bg-green-50 border-green-200' :
+                        isSelected ? 'ring-2 ring-green-600 bg-primary/5' :
+                          isNearDeadline ? 'bg-destructive/5 border-destructive/20' :
+                            'bg-card hover:shadow-md'
                         } ${isOverdue ? 'opacity-50' : ''}`}
                     >
-                      {!isOverdue && availableTickets.length > 1 && (
+                      {/* Paid Badge */}
+                      {isPaid && (
+                        <div className="absolute top-3 right-3">
+                          <Badge className="bg-green-500 text-white">
+                            <Check className="w-3 h-3 mr-1" />
+                            Purchased
+                          </Badge>
+                        </div>
+                      )}
+
+                      {/* Selection Checkbox - only for unpaid, non-overdue tickets */}
+                      {!isOverdue && !isPaid && availableTickets.length > 1 && (
                         <div className="absolute top-3 right-3">
                           <Checkbox
                             checked={isSelected}
@@ -372,8 +432,8 @@ export const Tickets = () => {
                         </div>
                       )}
 
-                      <CardHeader className="pb-2 ">
-                        <div className="flex items-start justify-between ">
+                      <CardHeader className="pb-2">
+                        <div className="flex items-start justify-between">
                           <div className="flex items-center space-x-2">
                             <Tag className="w-5 h-5 text-primary" />
                             <CardTitle className="text-lg font-semibold text-gray-700">
@@ -381,7 +441,7 @@ export const Tickets = () => {
                             </CardTitle>
                           </div>
                         </div>
-                        <div className="text-2xl font-bold text-green-600">
+                        <div className={`text-2xl font-bold ${isPaid ? 'text-green-600' : 'text-green-600'}`}>
                           {formatPrice(ticket.amount)}
                         </div>
                       </CardHeader>
@@ -405,7 +465,14 @@ export const Tickets = () => {
                           </div>
                         )}
 
-                        {isOverdue ? (
+                        {isPaid ? (
+                          <div className="bg-green-50 border border-green-200 rounded-md p-3">
+                            <p className="text-green-700 text-sm font-medium flex items-center">
+                              <Check className="w-4 h-4 mr-2" />
+                              Ticket purchased successfully
+                            </p>
+                          </div>
+                        ) : isOverdue ? (
                           <div className="bg-destructive/10 border border-destructive/20 rounded-md p-3">
                             <p className="text-destructive text-sm font-medium">
                               ⚠️ Deadline has passed

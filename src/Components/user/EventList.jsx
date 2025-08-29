@@ -47,8 +47,8 @@ export default function ParticipantEventList() {
             try {
                 setIsLoading(true);
                 if (!authTokens && !authReady) return;
-                const res2 = await api.get('/api/event/participant/24/ticket-list/');
-                console.log('res2', res2.data);
+                // const res2 = await api.get('/api/event/participant/24/ticket-list/');
+                // console.log('res2', res2.data);
 
                 const res = await api.get("/api/event/active-events/");
                 const data = res.data;

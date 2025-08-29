@@ -356,6 +356,17 @@ export function EventView() {
                                     />
                                     Participants
                                 </TabsTrigger>
+                                <TabsTrigger
+                                    value="participants-payment"
+                                    className="text-gray-600 data-[state=active]:bg-muted data-[state=active]:after:bg-primary relative overflow-hidden rounded-none border py-2 after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 first:rounded-s last:rounded-e"
+                                >
+                                    <UserCheck
+                                        className="-ms-0.5 me-1.5 opacity-60"
+                                        size={16}
+                                        aria-hidden="true"
+                                    />
+                                    Participants Payment
+                                </TabsTrigger>
                             </TabsList>
                             <ScrollBar orientation="horizontal" />
                         </ScrollArea>
@@ -537,6 +548,9 @@ export function EventView() {
                         {/* Participants Tab Content */}
                         <TabsContent value="participants">
                             <ParticipationList />
+                        </TabsContent>
+                        <TabsContent value="participants-payment">
+                            <ParticipationPayment />
                         </TabsContent>
                     </Tabs>
                 </motion.div>

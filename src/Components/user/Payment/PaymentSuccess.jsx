@@ -16,13 +16,32 @@ export const PaymentSuccess = () => {
   // Function to extract participation_id from transaction_uuid
   const extractParticipationId = (transactionUuid) => {
     if (!transactionUuid) return null;
-    
+
     // Check if the UUID contains a participation_id (format: participationId-uuid)
     const parts = transactionUuid.split('-');
     if (parts.length > 4) { // Standard UUID has 4 hyphens, so if more, first part is participation_id
       return parts[0];
     }
+
+
+
     return null;
+  };
+
+  const extract_tids = (transactionUuid) => {
+    try {
+      if (!transactionUuid) return [];
+
+      const idsss = transactionUuid
+        ?.split("___")
+        ?.slice(1)?.[0]?.split("__")
+        ?.map(Number);
+
+      return idsss;
+    } catch (error) {
+      console.error("Error extracting tids:", error);
+      return [];
+    }
   };
 
   useEffect(() => {
@@ -33,7 +52,12 @@ export const PaymentSuccess = () => {
         // Get the base64 encoded data from URL query params
         const base64Response = searchParams.get("data");
         console.log("Base64 Response:", base64Response);
-        
+
+
+
+        const tid = searchParams.get("q");
+
+
         if (!base64Response) {
           setError("No payment data found");
           setLoading(false);
@@ -43,17 +67,27 @@ export const PaymentSuccess = () => {
         // Decode the base64 data
         const decodedData = JSON.parse(atob(base64Response));
         console.log("Payment Response:", decodedData);
-        
+
+
+
+
+
+
+
         // Extract participation_id from transaction_uuid
-        const participationId = extractParticipationId(decodedData.transaction_uuid);
+        const participationId = extractParticipationId(decodedData?.transaction_uuid);
         console.log("Extracted Participation ID:", participationId);
-        
+
+        const participant_ticket_ids = extract_tids(decodedData?.transaction_uuid);
+
+
+
         if (!participationId) {
           setError("No participation ID found in transaction");
           setLoading(false);
           return;
         }
-        
+
         setPaymentData(decodedData);
 
         // Check if payment was successful
@@ -64,18 +98,18 @@ export const PaymentSuccess = () => {
         }
 
         // Verify the payment with your backend
-        const verificationResult = await verifyPayment(decodedData, participationId);
-        
+        const verificationResult = await verifyPayment(decodedData, participationId, participant_ticket_ids);
+
         if (verificationResult.success) {
           // Payment verified successfully
           toast.success('Payment completed successfully!');
           setTimeout(() => {
             // Navigate back to user dashboard
-            navigate('/user', { 
-              state: { 
-                paymentSuccess: true, 
-                transactionCode: decodedData.transaction_code 
-              } 
+            navigate('/user', {
+              state: {
+                paymentSuccess: true,
+                transactionCode: decodedData.transaction_code
+              }
             });
           }, 3000);
         } else {
@@ -94,17 +128,19 @@ export const PaymentSuccess = () => {
   }, [searchParams, navigate, authTokens, authReady, api]);
 
   // Function to verify payment with backend
-  const verifyPayment = async (paymentData, participationId) => {
+  const verifyPayment = async (paymentData, participationId, participant_ticket_ids) => {
     try {
       console.log("Verifying payment with backend...");
-      
+
       const response = await api.post(
         '/api/event/payment/',
         {
           participation_id: participationId,
+          participant_ticket_ids: participant_ticket_ids,
           transaction_uuid: paymentData.transaction_uuid,
           transaction_code: paymentData.transaction_code,
           // status: paymentData.status,
+
           total_amount: paymentData.total_amount,
           product_code: paymentData.product_code,
           signature: paymentData.signature
@@ -112,13 +148,13 @@ export const PaymentSuccess = () => {
       );
 
       console.log("Payment verification response:", response.data);
-      
+
       // Axios automatically throws for HTTP error status codes
       return { success: true, data: response.data };
-      
+
     } catch (error) {
       console.error("Payment verification error:", error);
-      
+
       // Handle different types of errors
       if (error.response) {
         // Server responded with error status
@@ -188,7 +224,7 @@ export const PaymentSuccess = () => {
         </div>
         <h2 className="text-2xl font-semibold text-gray-800 mb-2">Payment Successful!</h2>
         <p className="text-gray-600 mb-4">Your payment has been processed successfully.</p>
-        
+
         {paymentData && (
           <div className="bg-gray-50 p-4 rounded-lg mb-4 text-left">
             <h3 className="font-semibold mb-2">Transaction Details:</h3>
@@ -199,9 +235,9 @@ export const PaymentSuccess = () => {
             {/* <p className="text-sm"><strong>Participation ID:</strong> {participationId}</p> */}
           </div>
         )}
-        
+
         <p className="text-sm text-gray-500 mb-4">Redirecting to dashboard in a moment...</p>
-        
+
         <button
           onClick={() => navigate('/user')}
           className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-md transition-colors"

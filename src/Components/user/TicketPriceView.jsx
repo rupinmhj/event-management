@@ -16,11 +16,14 @@ import {
     DollarSign,
     Calendar,
     CheckCircle,
-    AlertCircle
+    AlertCircle,
+    Check
 } from "lucide-react";
 
 export function TicketPriceView() {
     const [ticketsData, setTicketsData] = useState([]);
+    const [paidTickets, setPaidTickets] = useState([]);
+    const [unpaidTickets, setUnpaidTickets] = useState([]);
     const [selectedTickets, setSelectedTickets] = useState(new Set());
     const [isLoading, setIsLoading] = useState(true);
     const [isProcessingPayment, setIsProcessingPayment] = useState(false);
@@ -34,8 +37,15 @@ export function TicketPriceView() {
         const fetchTickets = async () => {
             setIsLoading(true);
             try {
+                // Fetch all tickets for the event
                 const res = await api.get(`/api/event/ticket-list/?event=${eventId}`);
                 setTicketsData(res.data || []);
+
+                // Fetch paid/unpaid ticket status for this event
+                const ticketStatusRes = await api.get(`/api/event/${eventId}/tickets/`);
+                console.log('Tickets with paid/unpaid status:', ticketStatusRes.data);
+                setPaidTickets(ticketStatusRes.data.paid_tickets || []);
+                setUnpaidTickets(ticketStatusRes.data.unpaid_tickets || []);
             } catch (error) {
                 console.error("Error fetching tickets:", error);
                 toast.error('Failed to load tickets. Please try again.');
@@ -49,7 +59,14 @@ export function TicketPriceView() {
         }
     }, [eventId, api]);
 
+    const isTicketPaid = (ticketId) => {
+        return paidTickets.some(ticket => ticket.id === ticketId);
+    };
+
     const handleTicketSelection = (ticketId, checked) => {
+        // Only allow selection of unpaid tickets
+        if (isTicketPaid(ticketId)) return;
+        
         const newSelection = new Set(selectedTickets);
         if (checked) newSelection.add(ticketId);
         else newSelection.delete(ticketId);
@@ -59,7 +76,7 @@ export function TicketPriceView() {
     const handleSelectAll = (checked) => {
         if (checked) {
             const availableTicketIds = ticketsData
-                .filter(ticket => !isDeadlinePassed(ticket.deadline))
+                .filter(ticket => !isDeadlinePassed(ticket.deadline) && !isTicketPaid(ticket.id))
                 .map(ticket => ticket.id);
             setSelectedTickets(new Set(availableTicketIds));
         } else {
@@ -68,7 +85,7 @@ export function TicketPriceView() {
     };
 
     const getSelectedTicketsData = () => {
-        return ticketsData.filter(ticket => selectedTickets.has(ticket.id));
+        return ticketsData.filter(ticket => selectedTickets.has(ticket.id) && !isTicketPaid(ticket.id));
     };
 
     const getTotalAmount = () => {
@@ -112,13 +129,27 @@ export function TicketPriceView() {
             return;
         }
 
+        if (isTicketPaid(ticket.id)) {
+            toast.info('This ticket has already been purchased.');
+            return;
+        }
+
         try {
             setProcessingTicketId(ticket.id);
             
             // Get participation ID for this event
             const participationRes = await api.get(`/api/event/own-participation-list/?event=${eventId}`);
             console.log('Participation data:', participationRes.data);
-            const pid = participationRes.data[0].id;
+            const pid = participationRes.data[0]?.id;
+            
+            if (!pid) {
+                toast.error("Fill the requirements first!!");
+                setTimeout(() => {
+                    navigate('/user');
+                }, 1000);
+                return;
+            }
+            
             console.log('Participation ID:', pid);
             
             // Create payload with selected ticket
@@ -174,13 +205,27 @@ export function TicketPriceView() {
             return;
         }
 
+        if (selectedTicketsData.length === 0) {
+            toast.warning('No unpaid tickets selected.');
+            return;
+        }
+
         try {
             setIsProcessingPayment(true);
             
             // Get participation ID for this event
             const participationRes = await api.get(`/api/event/own-participation-list/?event=${eventId}`);
             console.log('Participation data:', participationRes.data);
-            const pid = participationRes.data[0].id;
+            const pid = participationRes.data[0]?.id;
+            
+            if (!pid) {
+                toast.error("Fill the requirements first!!");
+                setTimeout(() => {
+                    navigate('/user');
+                }, 1000);
+                return;
+            }
+            
             console.log('Participation ID:', pid);
 
             // Create payload with selected tickets
@@ -218,8 +263,9 @@ export function TicketPriceView() {
     };
 
     const totalTickets = ticketsData.length;
-    const availableTickets = ticketsData.filter(ticket => !isDeadlinePassed(ticket.deadline)).length;
-    const expiredTickets = totalTickets - availableTickets;
+    const availableTickets = ticketsData.filter(ticket => !isDeadlinePassed(ticket.deadline) && !isTicketPaid(ticket.id)).length;
+    const expiredTickets = ticketsData.filter(ticket => isDeadlinePassed(ticket.deadline)).length;
+    const paidTicketsCount = ticketsData.filter(ticket => isTicketPaid(ticket.id)).length;
 
     if (isLoading) {
         return (
@@ -249,7 +295,7 @@ export function TicketPriceView() {
                 ) : (
                     <>
                         {/* Summary Cards */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                             <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg">
                                 <div className="flex items-center gap-2">
                                     <Ticket className="w-5 h-5 text-blue-600" />
@@ -272,6 +318,19 @@ export function TicketPriceView() {
                                         </p>
                                         <p className="text-xl font-bold text-green-900 dark:text-green-100">
                                             {availableTickets}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="bg-purple-50 dark:bg-purple-950 p-4 rounded-lg">
+                                <div className="flex items-center gap-2">
+                                    <Check className="w-5 h-5 text-purple-600" />
+                                    <div>
+                                        <p className="text-sm font-medium text-purple-800 dark:text-purple-200">
+                                            Purchased
+                                        </p>
+                                        <p className="text-xl font-bold text-purple-900 dark:text-purple-100">
+                                            {paidTicketsCount}
                                         </p>
                                     </div>
                                 </div>
@@ -316,7 +375,7 @@ export function TicketPriceView() {
                                             <Button
                                                 onClick={handleBulkPayment}
                                                 disabled={isProcessingPayment}
-                                                className="bg-primary hover:bg-primary/80"
+                                                className="bg-blue hover:bg-blue/80"
                                             >
                                                 {isProcessingPayment ? (
                                                     <>
@@ -360,12 +419,16 @@ export function TicketPriceView() {
                                         const isNearDeadline = isDeadlineNear(ticket.deadline);
                                         const isSelected = selectedTickets.has(ticket.id);
                                         const isProcessing = processingTicketId === ticket.id;
+                                        const isPaid = isTicketPaid(ticket.id);
 
                                         return (
                                             <tr
                                                 key={ticket.id}
-                                                className={`hover:bg-gray-50 ${isExpired ? "bg-red-50 text-gray-400" : ""
-                                                    } ${isSelected ? "bg-blue-50" : ""}`}
+                                                className={`hover:bg-gray-50 ${
+                                                    isPaid ? "bg-green-50" :
+                                                    isExpired ? "bg-red-50 text-gray-400" : 
+                                                    isSelected ? "bg-blue-50" : ""
+                                                }`}
                                             >
                                                 {/* Select Checkbox */}
                                                 {availableTickets > 1 && (
@@ -375,7 +438,7 @@ export function TicketPriceView() {
                                                             onCheckedChange={(checked) =>
                                                                 handleTicketSelection(ticket.id, checked)
                                                             }
-                                                            disabled={isExpired}
+                                                            disabled={isExpired || isPaid}
                                                         />
                                                     </td>
                                                 )}
@@ -390,6 +453,12 @@ export function TicketPriceView() {
                                                     <div className="flex items-center gap-2">
                                                         <Ticket className="w-4 h-4 text-primary" />
                                                         <span className="truncate">{ticket.label}</span>
+                                                        {isPaid && (
+                                                            <Badge className="bg-green-100 text-green-800 text-xs">
+                                                                <Check className="w-3 h-3 mr-1" />
+                                                                Paid
+                                                            </Badge>
+                                                        )}
                                                     </div>
                                                 </td>
 
@@ -416,13 +485,13 @@ export function TicketPriceView() {
                                                             {formatDeadline(ticket.deadline)}
                                                         </span>
                                                     </div>
-                                                    {isNearDeadline && !isExpired && (
+                                                    {isNearDeadline && !isExpired && !isPaid && (
                                                         <Badge className="bg-orange-100 text-orange-800 text-xs mt-1">
                                                             <Clock className="w-3 h-3 mr-1" />
                                                             Ending Soon
                                                         </Badge>
                                                     )}
-                                                    {isExpired && (
+                                                    {isExpired && !isPaid && (
                                                         <Badge className="bg-red-100 text-red-800 text-xs mt-1">
                                                             Expired
                                                         </Badge>
@@ -431,29 +500,36 @@ export function TicketPriceView() {
 
                                                 {/* Actions */}
                                                 <td className="px-3 py-2 whitespace-nowrap text-center">
-                                                    <Button
-                                                        size="sm"
-                                                        className={`min-w-[80px] text-xs sm:text-sm ${isExpired
-                                                            ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-                                                            : "bg-blue text-white hover:bg-blue/80"
-                                                            }`}
-                                                        onClick={() => handleSingleTicketPurchase(ticket)}
-                                                        disabled={isExpired || isProcessing}
-                                                    >
-                                                        {isExpired ? (
-                                                            "Expired"
-                                                        ) : isProcessing ? (
-                                                            <>
-                                                                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1"></div>
-                                                                Processing...
-                                                            </>
-                                                        ) : (
-                                                            <>
-                                                                <CreditCard className="w-3 h-3 mr-1" />
-                                                                Buy Now
-                                                            </>
-                                                        )}
-                                                    </Button>
+                                                    {isPaid ? (
+                                                        <div className="flex items-center justify-center gap-1 text-green-600 font-medium text-sm">
+                                                            <Check className="w-4 h-4" />
+                                                            Purchased
+                                                        </div>
+                                                    ) : (
+                                                        <Button
+                                                            size="sm"
+                                                            className={`min-w-[80px] text-xs sm:text-sm ${isExpired
+                                                                ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                                                                : "bg-blue text-white hover:bg-blue/80"
+                                                                }`}
+                                                            onClick={() => handleSingleTicketPurchase(ticket)}
+                                                            disabled={isExpired || isProcessing}
+                                                        >
+                                                            {isExpired ? (
+                                                                "Expired"
+                                                            ) : isProcessing ? (
+                                                                <>
+                                                                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1"></div>
+                                                                    Processing...
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <CreditCard className="w-3 h-3 mr-1" />
+                                                                    Buy Now
+                                                                </>
+                                                            )}
+                                                        </Button>
+                                                    )}
                                                 </td>
                                             </tr>
                                         );

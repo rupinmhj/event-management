@@ -161,7 +161,7 @@ const SubmitAllModal = ({ isOpen, onClose, events, onRefresh }) => {
         e.preventDefault();
 
         if (!selectedEventId) {
-            alert('Please select an event.');
+            toast.success('Please select an event.');
             return;
         }
 
@@ -174,7 +174,7 @@ const SubmitAllModal = ({ isOpen, onClose, events, onRefresh }) => {
             }));
 
         if (submissionData.length === 0) {
-            alert('Please fill at least one requirement.');
+            toast.success('Please fill at least one requirement.');
             return;
         }
 

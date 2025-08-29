@@ -139,7 +139,7 @@ export const RequirementUpdate = () => {
 
       } catch (err) {
         console.error('Failed to fetch data:', err);
-        alert('Failed to load requirement data. Please try again.');
+        // alert('Failed to load requirement data. Please try again.');
         navigate('/requirements'); // Navigate back if fetch fails
       } finally {
         setInitialLoading(false);
@@ -288,7 +288,6 @@ export const RequirementUpdate = () => {
         }
       }
 
-      alert('Failed to update requirement. Please check your inputs and try again.');
     } finally {
       setLoading(false);
     }

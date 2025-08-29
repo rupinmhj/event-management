@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useContext } from "react";
 import { toast, ToastContainer } from 'react-toastify';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { Upload, User, Camera, Calendar, ChevronLeft, ChevronRight } from "lucid
 import useAxiosAuth from "@/hooks/useAxiosAuth";
 import { useNavigate } from "react-router-dom";
 import DatePicker from "@/utils/DatePicker";
+import AuthContext from "@/context/AuthContext";
 
 const ProfileSetup = () => {
     const api = useAxiosAuth();
@@ -41,6 +42,7 @@ const ProfileSetup = () => {
     const imageRef = useRef(null);
     const containerRef = useRef(null);
     const [isProfileActive, setIsProfileActive] = useState(true);
+    const {setHasProfile}=useContext(AuthContext)
 
     // Default profile image URL
     const defaultProfileImage = "https://via.placeholder.com/96x96/e5e7eb/6b7280?text=Profile";
@@ -155,6 +157,9 @@ const ProfileSetup = () => {
             setTimeout(() => {
                 navigate('/user');
             }, 1000);
+
+            localStorage.setItem('has_profile',true)
+            setHasProfile(true);
 
         } catch (error) {
             console.error("Error submitting form:", error);
@@ -288,17 +293,17 @@ const ProfileSetup = () => {
 
                                 {/* Organization */}
                                 <div className="space-y-2">
-                                                        <Label htmlFor="organization">Organization </Label>
-                                                        <Input
-                                                            id="organization"
-                                                            placeholder="Your organization name"
-                                                            value={organization}
-                                                            onChange={(e) => handleInputChange('organization', e.target.value)}
-                                                        />
-                                                        {errors?.organization && (
-                                                            <p className="text-sm text-red-600">{errors.organization}</p>
-                                                        )}
-                                                    </div>
+                                    <Label htmlFor="organization">Organization </Label>
+                                    <Input
+                                        id="organization"
+                                        placeholder="Your organization name"
+                                        value={organization}
+                                        onChange={(e) => setOrganization(e.target.value)}
+                                    />
+                                    {errors?.organization && (
+                                        <p className="text-sm text-red-600">{errors.organization}</p>
+                                    )}
+                                </div>
                             </div>
 
 
@@ -306,7 +311,7 @@ const ProfileSetup = () => {
                             {organization?.trim() && (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="employeeId">Employee ID *</Label>
+                                        <Label htmlFor="employeeId">Employee ID </Label>
                                         <Input
                                             id="employeeId"
                                             placeholder="Your employee ID"
@@ -319,7 +324,7 @@ const ProfileSetup = () => {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label htmlFor="designation">Designation *</Label>
+                                        <Label htmlFor="designation">Designation </Label>
                                         <Input
                                             id="designation"
                                             placeholder="Your job title"

@@ -130,7 +130,7 @@ const EmailHistory = () => {
         console.log("View email details:", email);
         // For now, just show the full message in a simple alert
         // In a real app, you'd want to show this in a proper modal or detail page
-        alert(`Subject: ${email.subject}\n\nRecipients: ${email.recipients.join(', ')}\n\nMessage: ${email.message.replace(/<[^>]*>/g, '')}`);
+        // alert(`Subject: ${email.subject}\n\nRecipients: ${email.recipients.join(', ')}\n\nMessage: ${email.message.replace(/<[^>]*>/g, '')}`);
     };
 
     return (
