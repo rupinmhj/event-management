@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { TabsContent } from "@/components/ui/tabs";
 import ViewSubmissionModal from './ViewSubmissionModal';
+import { toast, ToastContainer } from 'react-toastify'
 import {
     FileText,
     Eye,
@@ -18,7 +19,7 @@ import {
 import { useNavigate, useParams } from "react-router-dom";
 import AuthContext from "@/context/AuthContext";
 import useAxiosAuth from "@/hooks/useAxiosAuth";
-import { toast } from 'react-toastify';
+
 import SubmissionModal from './SubmissionModal';
 
 export function RequirementsView({ requirements = [] }) {
@@ -35,6 +36,7 @@ export function RequirementsView({ requirements = [] }) {
     const [isEditMode, setIsEditMode] = useState(false);
 
     const api = useAxiosAuth();
+    const has_profile = localStorage.getItem('has_profile')
     const navigate = useNavigate();
     const { id: eventId } = useParams();
     const { authTokens, authReady, hasProfile } = useContext(AuthContext);
@@ -167,7 +169,7 @@ export function RequirementsView({ requirements = [] }) {
 
     // Modal handler
     const handleRequirementModal = (requirement) => {
-        if (!hasProfile) {
+        if (has_profile == 'undefined' || has_profile==="false") {
             toast.info('Please complete your profile before submitting requirements.');
             setTimeout(() => {
                 navigate('/user/setup-profile');
@@ -336,7 +338,7 @@ export function RequirementsView({ requirements = [] }) {
                                                         {/* Name */}
                                                         <td className="px-3 py-2 whitespace-nowrap text-xs sm:text-sm md:text-base lg:text-[14px] font-medium">
                                                             <div className="flex items-center gap-2">
-                                                               
+
                                                                 <span className="truncate">{req.label || req.type}</span>
                                                             </div>
                                                         </td>
@@ -384,8 +386,8 @@ export function RequirementsView({ requirements = [] }) {
                                                                 <Button
                                                                     size="sm"
                                                                     className={`min-w-[86.6px] text-xs sm:text-sm ${!response
-                                                                            ? "bg-blue text-white hover:bg-blue/80"
-                                                                            : "bg-gray-200 text-gray-800 hover:bg-gray-300"
+                                                                        ? "bg-blue text-white hover:bg-blue/80"
+                                                                        : "bg-gray-200 text-gray-800 hover:bg-gray-300"
                                                                         }`}
                                                                     onClick={() => handleRequirementModal(req)}
                                                                     disabled={isOverdue || response?.is_verified}
@@ -446,6 +448,7 @@ export function RequirementsView({ requirements = [] }) {
                 requirement={selectedViewRequirement}
                 response={selectedViewResponse}
             />
+            <ToastContainer />
         </TabsContent>
     );
 }

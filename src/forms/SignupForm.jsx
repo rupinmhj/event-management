@@ -59,7 +59,7 @@ export const SignupForm = ({ switchToSignin }) => {
             setPasswordError("Password is required.");
             valid = false;
         } else if (
-            !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(password)
+            !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/.test(password)
         ) {
             setPasswordError(
                 "Password must be at least 8 characters and include uppercase, lowercase, number, and special character."
@@ -105,7 +105,7 @@ export const SignupForm = ({ switchToSignin }) => {
 
         } catch (error) {
             const msg =
-                 error.response?.data?.email || error.response?.data?.phone_number ||'Signup failed, try again';
+                error.response?.data?.email || error.response?.data?.phone_number || 'Signup failed, try again';
             toast.error(String(msg));
             console.error(msg);
             console.error(error);

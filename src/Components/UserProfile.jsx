@@ -89,8 +89,9 @@ const UserProfile = () => {
   const navigate = useNavigate();
   const auth = useContext(AuthContext) || {};
   const { authTokens, authReady, phone_number, fullName, email } = auth;
-   
-  const {hasProfile} = useContext(AuthContext);
+
+  const { hasProfile } = useContext(AuthContext);
+  const has_profile = localStorage.getItem('has_profile')
   const [formData, setFormData] = useState({
     user_detail: {
       full_name_en: "",
@@ -123,7 +124,7 @@ const UserProfile = () => {
     }
   }, [authReady, phone_number, fullName, email]);
 
- useEffect(() => {
+  useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [isEditing]);
 
@@ -133,7 +134,7 @@ const UserProfile = () => {
   const [previewUrl, setPreviewUrl] = useState("");
   const [supportDocument, setSupportDocument] = useState(null);
   const [supportDocumentName, setSupportDocumentName] = useState();
-  const {setProfilePicture}=useContext(AuthContext);
+  const { setProfilePicture } = useContext(AuthContext);
   const [errors, setErrors] = useState({});
   const imageRef = useRef(null);
 
@@ -152,9 +153,9 @@ const UserProfile = () => {
         },
       }));
       if (response.data?.profile_picture) {
-    setProfilePicture(response.data.profile_picture);
-    localStorage.setItem("profilePicture", response.data.profile_picture);
-  }
+        setProfilePicture(response.data.profile_picture);
+        localStorage.setItem("profilePicture", response.data.profile_picture);
+      }
     } catch (error) {
       const err = error?.response?.data?.code
       console.log(err)
@@ -168,7 +169,7 @@ const UserProfile = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [api, authReady, authTokens,setProfilePicture]);
+  }, [api, authReady, authTokens, setProfilePicture]);
 
   useEffect(() => {
     fetchUserData();
@@ -612,7 +613,7 @@ const UserProfile = () => {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3, delay: 0.15 }}
     >
-      <div className={`min-h-screen  px-4 sm:px-6 lg:px-8 py-12 ${!hasProfile?'hidden':''}`  }>
+      <div className={`min-h-screen  px-4 sm:px-6 lg:px-8 py-12 ${has_profile == "undefined" ? 'hidden' : ''}`}>
         <div className="max-w-6xl mx-auto space-y-6">
           <div className="relative overflow-hidden rounded-xl border text-gray-800 shadow-lg hover:shadow-xl transition-all duration-300">
             <div className="absolute inset-0 " />

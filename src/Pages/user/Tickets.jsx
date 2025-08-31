@@ -25,7 +25,7 @@ export const Tickets = () => {
   const [tid, setTid] = useState([]);
 
   useEffect(() => {
-    window.scrollTo(0, 0)
+    window.scrollTo(0, 0);
     fetchTicketsAndEvents();
   }, [api, eventId]);
 
@@ -34,21 +34,32 @@ export const Tickets = () => {
       setLoading(true);
 
       // Fetch tickets (with optional event filter)
-      const ticketUrl = eventId
-        ? `/api/event/ticket-list/?event=${eventId}`
-        : '/api/event/ticket-list';
-
+      let ticketUrl = '/api/event/ticket-list';
+      if (eventId) {
+        ticketUrl = `/api/event/${eventId}/ticket-list/`;
+      }
+      console.log('Fetching tickets from:', ticketUrl);
       const ticketsRes = await api.get(ticketUrl);
-      console.log('Tickets data:', ticketsRes.data);
-      setTickets(ticketsRes.data);
+      console.log('Raw tickets data:', ticketsRes.data);
 
       // Fetch events for display names and get paid/unpaid status for each event
       if (!eventId) {
         const eventsRes = await api.get("/api/event/active-events/");
         setEvents(eventsRes.data);
-        console.log('Events data:', eventsRes.data);
+        console.log('Active events data:', eventsRes.data);
 
-        // Get paid/unpaid status for all active events
+        // Get active event IDs for filtering
+        const activeEventIds = eventsRes.data.map(event => event.id);
+        console.log('Active event IDs:', activeEventIds);
+        
+        // Filter tickets to only include those from active events
+        const filteredTickets = ticketsRes.data.filter(ticket => 
+          activeEventIds.includes(ticket.event)
+        );
+        console.log('Filtered tickets (active events only):', filteredTickets);
+        setTickets(filteredTickets);
+
+        // Get paid/unpaid status for all active events only
         const allPaidTickets = [];
         const allUnpaidTickets = [];
 
@@ -67,10 +78,13 @@ export const Tickets = () => {
         setPaidTickets(allPaidTickets);
         setUnpaidTickets(allUnpaidTickets);
       } else {
+        // For specific event, just set the tickets without filtering
+        setTickets(ticketsRes.data);
+        
         // For specific event, fetch its paid/unpaid status
         try {
           const ticketData = await api.get(`/api/event/${eventId}/tickets/`);
-          console.log('Tickets with paid/unpaid', ticketData.data);
+          console.log('Tickets with paid/unpaid for specific event:', ticketData.data);
           setPaidTickets(ticketData.data.paid_tickets || []);
           setUnpaidTickets(ticketData.data.unpaid_tickets || []);
         } catch (eventError) {
@@ -82,7 +96,7 @@ export const Tickets = () => {
 
     } catch (error) {
       console.error('Error fetching tickets and events:', error);
-      toast.error('Failed to load tickets');
+      // toast.error('Failed to load tickets');
     } finally {
       setLoading(false);
     }
@@ -142,9 +156,8 @@ export const Tickets = () => {
       if (!pid) {
         toast.error("Fill the requirements first!!");
         setTimeout(() => {
-          navigate('/user')
-        }, 1000)
-
+          navigate('/user');
+        }, 1000);
         return;
       }
       console.log('Participation ID:', pid);
@@ -164,9 +177,7 @@ export const Tickets = () => {
         payload
       );
       console.log('Response:', res.data);
-      // const { total_amount } = res.data;
       const { total_amount, participant_ticket_ids } = res.data;
-
 
       setTid(participant_ticket_ids);
       console.log("Total amount:", total_amount);
@@ -220,8 +231,8 @@ export const Tickets = () => {
       if (!pid) {
         toast.error("Fill the requirements first!!");
         setTimeout(() => {
-          navigate('/user')
-        }, 1000)
+          navigate('/user');
+        }, 1000);
         return;
       }
 
@@ -512,7 +523,7 @@ export const Tickets = () => {
           <Tag className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-foreground mb-2">No tickets available</h3>
           <p className="text-muted-foreground">
-            There are currently no tickets available for purchase.
+            There are currently no tickets available for purchase from active events.
           </p>
         </div>
       )}

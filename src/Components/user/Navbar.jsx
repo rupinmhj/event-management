@@ -76,13 +76,14 @@ const NotificationMenu = () => (
 // User Menu Component
 const UserMenu = ({ mode, logout }) => {
   const navigate = useNavigate();
-   const {profilePicture}=useContext(AuthContext);
+  const { profilePicture } = useContext(AuthContext);
+  const has_profile = localStorage.getItem('has_profile')
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="size-8">
-          {profilePicture ? (
-            <img src={profilePicture}  alt="Profile" className="rounded-full size-8 object-cover" />
+          {profilePicture && has_profile == "true" ? (
+            <img src={profilePicture} alt="Profile" className="rounded-full size-8 object-cover" />
           ) : (
             <User className="size-4" />
           )}
@@ -137,7 +138,7 @@ const Navbar = ({ mode }) => {
   const { logout } = useContext(AuthContext);
   const location = useLocation();
   const isActiveLink = (linkPath) => location.pathname === linkPath;
- 
+
   return (
     <header className="border-b font-sans bg-white ">
       <div className="md:px-12 px-2 flex h-16 items-center justify-between gap-4">
@@ -228,7 +229,7 @@ const Navbar = ({ mode }) => {
             {/* <InfoMenu />
             <NotificationMenu /> */}
           </div>
-          <UserMenu mode={mode} logout={logout}  />
+          <UserMenu mode={mode} logout={logout} />
         </div>
       </div>
     </header>

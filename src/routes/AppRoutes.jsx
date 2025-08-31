@@ -11,6 +11,7 @@ import { EventView } from "@/Components/admin/EventView"
 import { SendEmail } from "@/Components/admin/SendEmail";
 import { ParticipantReview } from "@/Components/admin/ParticipantReview";
 import AdminUserProfileView from "@/Components/admin/AdminUserProfileView";
+import {EditTicket} from "@/Components/admin/EditTicket"
 // User pages
 import UserLayout from "../layouts/UserLayout";
 import { Dashboard } from "../pages/user/Dashboard";
@@ -69,9 +70,9 @@ const router = createBrowserRouter([
     {
         path: "/admin",
         element: (
-            // <ProtectedRoute allowedRole="ADMIN">
-            <AdminLayout />
-            // </ProtectedRoute >
+            <ProtectedRoute allowedRole="ADMIN">
+                <AdminLayout />
+            </ProtectedRoute >
         ),
         children: [
             { index: true, element: <DashboardAdmin /> },
@@ -86,7 +87,8 @@ const router = createBrowserRouter([
             { path: "send-email", element: <SendEmail /> },
             { path: "email-history", element: <EmailHistory /> },
             { path: 'participant-review/:id', element: <ParticipantReview /> },
-            { path: 'user-profile/:userId', element: <AdminUserProfileView /> }
+            { path: 'user-profile/:userId', element: <AdminUserProfileView /> },
+            { path: 'ticket-update/:id', element: <EditTicket/>}
         ],
     },
 
@@ -94,9 +96,9 @@ const router = createBrowserRouter([
     {
         path: "/user",
         element: (
-            // <ProtectedRoute allowedRole="USER">
-            <UserLayout />
-            // </ProtectedRoute>
+            <ProtectedRoute allowedRole="USER">
+                <UserLayout />
+            </ProtectedRoute>
         ),
         children: [
             { index: true, element: <Dashboard /> }, // /user
@@ -110,9 +112,7 @@ const router = createBrowserRouter([
             { path: "change-password", element: <ChangePasswordForm user={'user'} /> },
             { path: "user-profile", element: <MyProfile /> },
             { path: 'payment/:pid', element: <Payment /> },
-            // Optional: Keep these routes if you want them within user layout as well
-            // {path: 'payment-success/:productdata', element:<PaymentSuccess/>},
-            // {path: 'payment-failed', element:<PaymentFailure/>}
+
         ],
     },
 ]);

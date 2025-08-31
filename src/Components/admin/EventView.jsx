@@ -38,6 +38,7 @@ import { RequirementsView } from "./RequirementsView";
 import GeneralContext from "@/context/GeneralContext";
 import { ParticipationList } from "./ParticipationList";
 import { PricingView } from "./PricingView";
+import { ParticipationPayment } from "./ParticipationPayment";
 // Delete Confirmation Modal Component
 const DeleteConfirmationModal = ({ isOpen, onClose, onConfirm, eventTitle, isDeleting = false }) => {
     if (!isOpen) return null;

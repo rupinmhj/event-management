@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { MyPayment } from "./MyPayment";
 import {
     Tabs,
     TabsContent,
@@ -217,8 +218,8 @@ export function EventDetail() {
                                     <div className="flex flex-wrap gap-2">
                                         <button
                                             className={`text-sm px-3 py-1 rounded font-medium ${event.is_payment_required
-                                                    ? "bg-yellow-200 text-yellow-800"
-                                                    : "bg-gray-100 text-gray-800"
+                                                ? "bg-yellow-200 text-yellow-800"
+                                                : "bg-gray-100 text-gray-800"
                                                 }`}
                                         >
                                             {event.is_payment_required ? "Paid Event" : "Free Event"}
@@ -271,6 +272,17 @@ export function EventDetail() {
                                         aria-hidden="true"
                                     />
                                     Ticket Price
+                                </TabsTrigger>
+                                 <TabsTrigger
+                                    value="my-payment"
+                                    className="text-gray-600 data-[state=active]:bg-muted data-[state=active]:after:bg-primary relative overflow-hidden rounded-none border py-2 after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 first:rounded-s last:rounded-e"
+                                >
+                                    <CreditCard
+                                        className="-ms-0.5 me-1.5 opacity-90"
+                                        size={16}
+                                        aria-hidden="true"
+                                    />
+                                    My payment
                                 </TabsTrigger>
                             </TabsList>
                             <ScrollBar orientation="horizontal" />
@@ -362,39 +374,7 @@ export function EventDetail() {
                                 {/* Sidebar */}
                                 <div className="space-y-6">
                                     {/* Registration Action */}
-                                    {/* <Card>
-                                        <CardHeader>
-                                            <h3 className="font-semibold">Registration</h3>
-                                        </CardHeader>
-                                        <CardContent className="space-y-3">
-                                            <Button
-                                                onClick={handleRegister}
-                                                className="w-full bg-blue-600 hover:bg-blue-700"
-                                            >
-                                                Register Now
-                                            </Button>
-                                            <div className="flex gap-2">
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    onClick={toggleBookmark}
-                                                    className="flex-1"
-                                                >
-                                                    <Bookmark className={`w-4 h-4 mr-2 ${isBookmarked ? 'fill-current' : ''}`} />
-                                                    Bookmark
-                                                </Button>
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    onClick={handleShare}
-                                                    className="flex-1"
-                                                >
-                                                    <Share2 className="w-4 h-4 mr-2" />
-                                                    Share
-                                                </Button>
-                                            </div>
-                                        </CardContent>
-                                    </Card> */}
+
 
                                     {/* Event Highlights */}
                                     <Card>
@@ -441,6 +421,10 @@ export function EventDetail() {
 
                         <TabsContent value="ticket-price">
                             <TicketPriceView />
+                        </TabsContent>
+
+                        <TabsContent value='my-payment'>
+                            <MyPayment />
                         </TabsContent>
 
                     </Tabs>

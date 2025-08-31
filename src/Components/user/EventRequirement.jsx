@@ -24,6 +24,7 @@ const RequirementCard = () => {
     const [isEditMode, setIsEditMode] = useState(false);
     const [submitAllModalOpen, setSubmitAllModalOpen] = useState(false);
     const { hasProfile } = useContext(AuthContext);
+    const has_profile = localStorage.getItem("has_profile");
     const api = useAxiosAuth();
     const navigate = useNavigate();
 
@@ -144,7 +145,8 @@ const RequirementCard = () => {
     };
 
     const handleSubmitClick = (event, requirement) => {
-        if (!hasProfile) {
+        console.log('hasProfile event', has_profile)
+        if (has_profile == 'undefined' || has_profile==="false") {
             toast.info('Please complete your profile before submitting requirements.');
             setTimeout(() => {
                 navigate('/user/setup-profile');
@@ -200,6 +202,14 @@ const RequirementCard = () => {
     };
 
     const handleSubmitAll = async () => {
+        alert(has_profile)
+        if (has_profile == 'undefined' || has_profile === 'false') {
+            toast.info('Please complete your profile before submitting requirements.');
+            setTimeout(() => {
+                navigate('/user/setup-profile');
+            }, 1000)
+            return;
+        }
         setSubmitAllModalOpen(true);
     };
 
@@ -213,6 +223,7 @@ const RequirementCard = () => {
 
     return (
         <div className="max-w-6xl mx-auto px-4 py-8">
+            {console.log('eventrequirements-hasProfile', hasProfile)}
             <div className="flex justify-end items-center mb-8">
                 <Button
                     onClick={handleSubmitAll}
@@ -226,17 +237,17 @@ const RequirementCard = () => {
                 {events.map((event) =>
                     event.requirements?.map((requirement) => {
                         const isOverdue = isDeadlinePassed(requirement.deadline);
-                        
+
                         const isNearDeadline = isDeadlineNear(requirement.deadline);
                         const isSubmittingThis = submitting[`${event.id}-${requirement.id}`];
                         const response = getResponseForRequirement(event.id, requirement.id);
-                        {console.log('response-sub',response)}
+                        { console.log('response-sub', response) }
                         const ownParticipation = getOwnParticipationForRequirement(event.id, requirement.id);
                         const isSubmitted = response && response.is_submitted;
                         const canEdit = isSubmitted && !isOverdue && !(response && response.is_verified);
 
                         return (
-                           !response?.is_submitted && !isOverdue && <Card
+                            !response?.is_submitted && !isOverdue && <Card
                                 key={`${event.id}-${requirement.id}`}
                                 className={`${isNearDeadline ? 'bg-red-50' : 'bg-blue/5'} border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 `}
                             >

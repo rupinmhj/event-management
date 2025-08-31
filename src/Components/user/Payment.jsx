@@ -13,7 +13,7 @@ const ESEWA_CONFIG = {
   },
   production: {
     url: "https://epay.esewa.com.np/api/epay/main/v2/form",
-    product_code: "EPAYTEST" // Replace with your production code
+    product_code: "EPAYTEST"
   }
 };
 
@@ -23,7 +23,7 @@ const esewaConfig = ESEWA_CONFIG[isProduction ? 'production' : 'development'];
 export const Payment = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { pid } = useParams(); // Get participation ID from URL params
+  const { pid } = useParams(); // to be removed&&&
   const totalAmount = location.state?.totalAmount || 0;
   const tid = location.state?.tid;
 
@@ -173,13 +173,13 @@ export const Payment = () => {
           {/* Header */}
           <div className="text-center mb-8">
             <div className="flex items-center justify-between mb-4">
-              <button
+              {/* <button
                 onClick={handleGoBack}
                 className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
                 <span className="text-sm">Back</span>
-              </button>
+              </button> */}
               <div className="flex items-center gap-2 text-green-600">
                 <Shield className="w-5 h-5" />
                 <span className="text-sm font-medium">Secure Payment</span>

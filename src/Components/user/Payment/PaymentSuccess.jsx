@@ -229,10 +229,10 @@ export const PaymentSuccess = () => {
           <div className="bg-gray-50 p-4 rounded-lg mb-4 text-left">
             <h3 className="font-semibold mb-2">Transaction Details:</h3>
             <p className="text-sm"><strong>Transaction ID:</strong> {paymentData.transaction_code}</p>
+            <p className="text-sm"><strong>Transaction UUID:</strong> {paymentData.transaction_uuid}</p>
             <p className="text-sm"><strong>Amount:</strong> Rs. {paymentData.total_amount}</p>
             <p className="text-sm"><strong>Status:</strong> {paymentData.status}</p>
-            {/* <p className="text-sm"><strong>UUID:</strong> {paymentData.transaction_uuid}</p> */}
-            {/* <p className="text-sm"><strong>Participation ID:</strong> {participationId}</p> */}
+        
           </div>
         )}
 

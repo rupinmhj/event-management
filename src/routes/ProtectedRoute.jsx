@@ -18,20 +18,16 @@ const ProtectedRoute = ({ children, allowedRole }) => {
   }
 
   // If not logged in
-  if (!authTokens) {
+  if (!authTokens || !role) {
+    // alert("no authtokens ");
     return <Navigate to="/" replace />;
   }
 
-  // If role does not match allowedRole
-  if (allowedRole && role !== allowedRole) {
-    if (role === "ADMIN") {
-      return <Navigate to="/admin" replace />;
-    }
-    if (role === "USER") {
-      return <Navigate to="/user" replace />;
-    }
-    return <Navigate to="/" replace />; // fallback
-  }
+  // if(!allowedRole.includes(role)){
+  //   return <Navigate to='/' replace/>;
+  // }
+
+  
 
   // Otherwise, allow access
   return children;

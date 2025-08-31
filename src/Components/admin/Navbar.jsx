@@ -80,48 +80,48 @@ const UserMenu = ({ mode, logout }) => {
 
     return (
         <div className="">
-                <DropdownMenu modal={false} >
-            <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="size-8">
-                    <User className="size-4" />
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" portalled={false} className='mt-3 '>
-                <DropdownMenuItem>
-                    <Link to="/profile" className="w-full block">
-                        Profile
-                    </Link>
-                </DropdownMenuItem>
-                {/* <DropdownMenuItem>
+            <DropdownMenu modal={false} >
+                <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="size-8">
+                        <User className="size-4" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" portalled={false} className='mt-3 '>
+                    {/* <DropdownMenuItem>
+                        <Link to="/profile" className="w-full block">
+                            Profile
+                        </Link>
+                    </DropdownMenuItem> */}
+                    {/* <DropdownMenuItem>
                     <Link to="/settings" className="w-full block">
                         Settings
                     </Link>
                 </DropdownMenuItem> */}
-                <DropdownMenuItem>
-                    <Link to="/admin/change-password" className="w-full block">
-                        Change Password
-                    </Link>
-                </DropdownMenuItem>
-                {mode === "login" ? (
-                    <DropdownMenuItem className=" cursor-pointer"
-                        onClick={() => {
-                            logout();
-                            navigate("/");
-                        }}
-                    >
-                        Log out
-                    </DropdownMenuItem>
-                ) : (
                     <DropdownMenuItem>
-                        <Link to="/signin" className="w-full block">
-                            Sign in
+                        <Link to="/admin/change-password" className="w-full block">
+                            Change Password
                         </Link>
                     </DropdownMenuItem>
-                )}
-            </DropdownMenuContent>
-        </DropdownMenu>
+                    {mode === "login" ? (
+                        <DropdownMenuItem className=" cursor-pointer"
+                            onClick={() => {
+                                logout();
+                                navigate("/");
+                            }}
+                        >
+                            Log out
+                        </DropdownMenuItem>
+                    ) : (
+                        <DropdownMenuItem>
+                            <Link to="/signin" className="w-full block">
+                                Sign in
+                            </Link>
+                        </DropdownMenuItem>
+                    )}
+                </DropdownMenuContent>
+            </DropdownMenu>
         </div>
-    
+
     );
 };
 
@@ -192,8 +192,8 @@ const Navbar = ({ mode }) => {
                                                 <Link
                                                     to={link.to}
                                                     className={`block w-full py-1.5 font-medium transition-colors ${isActiveLink(link.to)
-                                                            ? "text-blue border-b-2 border-blue"
-                                                            : "text-muted-foreground hover:text-blue"
+                                                        ? "text-blue border-b-2 border-blue"
+                                                        : "text-muted-foreground hover:text-blue"
                                                         }`}
                                                 >
                                                     {link.label}
@@ -219,8 +219,8 @@ const Navbar = ({ mode }) => {
                                             <Link
                                                 to={link.to}
                                                 className={`relative py-1.5 font-medium transition-all duration-200 ease-in-out ${isActiveLink(link.to)
-                                                        ? "text-blue after:w-full"
-                                                        : "text-muted-foreground hover after:w-0 hover:after:w-full"
+                                                    ? "text-blue after:w-full"
+                                                    : "text-muted-foreground hover after:w-0 hover:after:w-full"
                                                     } `}
                                             >
                                                 {link.label}
@@ -241,7 +241,7 @@ const Navbar = ({ mode }) => {
                         {/* <NotificationMenu /> */}
                     </div>
                     {/* User menu */}
-                    <UserMenu mode={mode} logout={logout}  />
+                    <UserMenu mode={mode} logout={logout} />
                 </div>
             </div>
         </header>

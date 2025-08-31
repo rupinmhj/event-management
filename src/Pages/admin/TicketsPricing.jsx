@@ -309,7 +309,7 @@ export const TicketsPricing = () => {
 
                 {/* Amount Field */}
                 <div className="space-y-2 max-w-sm">
-                  <Label>Amount ($)</Label>
+                  <Label>Amount (Rs.)</Label>
                   <Input
                     type="number"
                     placeholder="Enter ticket price..."

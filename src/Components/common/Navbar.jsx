@@ -185,14 +185,12 @@ const Navbar = ({ mode }) => {
                     </div>
                 </div>
                 {/* Right side */}
-                <div className="flex items-center gap-4">
+                {/* <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
-                        {/* Info menu */}
                         <InfoMenu />
                     </div>
-                    {/* User menu */}
                     <UserMenu mode={mode} logout={logout} /> 
-                </div>
+                </div> */}
             </div>
         </header>
     );

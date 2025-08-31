@@ -11,6 +11,7 @@ import useAxiosAuth from '@/hooks/useAxiosAuth';
 import { toast, ToastContainer } from 'react-toastify'
 import JoditEditor from 'jodit-react';
 import 'jodit/es2021/jodit.min.css';
+import { useNavigate } from 'react-router-dom';
 
 const SubmitAllModal = ({ isOpen, onClose, events, onRefresh }) => {
     const [selectedEventId, setSelectedEventId] = useState(null);
@@ -20,7 +21,8 @@ const SubmitAllModal = ({ isOpen, onClose, events, onRefresh }) => {
     const [ownParticipations, setOwnParticipations] = useState({});
     const [loading, setLoading] = useState(false);
     const api = useAxiosAuth();
-
+    const has_profile = localStorage.getItem("has_profile");
+    const navigate = useNavigate();
     // Preselect first event when modal opens
     useEffect(() => {
         if (isOpen && events?.length && !selectedEventId) {
@@ -159,7 +161,14 @@ const SubmitAllModal = ({ isOpen, onClose, events, onRefresh }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
+        console.log('submitAll', has_profile)
+        if (has_profile == "undefined" || has_profile==="false") {
+            toast.info('Please complete your profile before submitting requirements.');
+            setTimeout(() => {
+                navigate('/user/setup-profile');
+            }, 1000)
+            return;
+        }
         if (!selectedEventId) {
             toast.success('Please select an event.');
             return;

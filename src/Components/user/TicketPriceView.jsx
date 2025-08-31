@@ -7,7 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import useAxiosAuth from '@/hooks/useAxiosAuth';
 import AuthContext from '@/context/AuthContext';
 import { useNavigate, useParams } from "react-router-dom";
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import {
     Ticket,
     CreditCard,
@@ -32,6 +32,7 @@ export function TicketPriceView() {
     const api = useAxiosAuth();
     const navigate = useNavigate();
     const { id: eventId } = useParams();
+    const has_profile = localStorage.getItem('has_profile')
 
     useEffect(() => {
         const fetchTickets = async () => {
@@ -41,6 +42,9 @@ export function TicketPriceView() {
                 const res = await api.get(`/api/event/ticket-list/?event=${eventId}`);
                 setTicketsData(res.data || []);
 
+                const res2 = await api.get(`/api/event/payment-list/`)
+                console.log('Ticket Pricing View', res2.data);
+
                 // Fetch paid/unpaid ticket status for this event
                 const ticketStatusRes = await api.get(`/api/event/${eventId}/tickets/`);
                 console.log('Tickets with paid/unpaid status:', ticketStatusRes.data);
@@ -48,7 +52,7 @@ export function TicketPriceView() {
                 setUnpaidTickets(ticketStatusRes.data.unpaid_tickets || []);
             } catch (error) {
                 console.error("Error fetching tickets:", error);
-                toast.error('Failed to load tickets. Please try again.');
+                // toast.error('Failed to load tickets. Please try again.');
             } finally {
                 setIsLoading(false);
             }
@@ -66,7 +70,7 @@ export function TicketPriceView() {
     const handleTicketSelection = (ticketId, checked) => {
         // Only allow selection of unpaid tickets
         if (isTicketPaid(ticketId)) return;
-        
+
         const newSelection = new Set(selectedTickets);
         if (checked) newSelection.add(ticketId);
         else newSelection.delete(ticketId);
@@ -116,7 +120,7 @@ export function TicketPriceView() {
     };
 
     const handleSingleTicketPurchase = async (ticket) => {
-        if (!hasProfile) {
+        if (has_profile == 'undefined' || has_profile === 'false') {
             toast.info('Please complete your profile before purchasing tickets.');
             setTimeout(() => {
                 navigate('/user/setup-profile');
@@ -136,12 +140,12 @@ export function TicketPriceView() {
 
         try {
             setProcessingTicketId(ticket.id);
-            
+
             // Get participation ID for this event
             const participationRes = await api.get(`/api/event/own-participation-list/?event=${eventId}`);
             console.log('Participation data:', participationRes.data);
             const pid = participationRes.data[0]?.id;
-            
+
             if (!pid) {
                 toast.error("Fill the requirements first!!");
                 setTimeout(() => {
@@ -149,9 +153,9 @@ export function TicketPriceView() {
                 }, 1000);
                 return;
             }
-            
+
             console.log('Participation ID:', pid);
-            
+
             // Create payload with selected ticket
             const payload = {
                 tickets: [{ ticket_id: ticket.id }]
@@ -164,15 +168,16 @@ export function TicketPriceView() {
                 payload
             );
             console.log('Order response:', orderRes.data);
-            const { total_amount } = orderRes.data;
+            const { total_amount, participant_ticket_ids } = orderRes.data;
             console.log("Total amount:", total_amount);
 
             // Navigate to payment page
-            navigate(`/user/payment/${pid}`, { 
-                state: { 
+            navigate(`/user/payment/${pid}`, {
+                state: {
+                    tid: participant_ticket_ids,
                     totalAmount: total_amount,
-                    pid: pid 
-                } 
+                    pid: pid
+                }
             });
 
         } catch (error) {
@@ -212,12 +217,12 @@ export function TicketPriceView() {
 
         try {
             setIsProcessingPayment(true);
-            
+
             // Get participation ID for this event
             const participationRes = await api.get(`/api/event/own-participation-list/?event=${eventId}`);
             console.log('Participation data:', participationRes.data);
             const pid = participationRes.data[0]?.id;
-            
+
             if (!pid) {
                 toast.error("Fill the requirements first!!");
                 setTimeout(() => {
@@ -225,7 +230,7 @@ export function TicketPriceView() {
                 }, 1000);
                 return;
             }
-            
+
             console.log('Participation ID:', pid);
 
             // Create payload with selected tickets
@@ -240,15 +245,16 @@ export function TicketPriceView() {
                 payload
             );
             console.log('Bulk order response:', orderRes.data);
-            const { total_amount } = orderRes.data;
+            const { total_amount, participant_ticket_ids } = orderRes.data;
             console.log("Total amount:", total_amount);
 
             // Navigate to payment page
-            navigate(`/user/payment/${pid}`, { 
-                state: { 
+            navigate(`/user/payment/${pid}`, {
+                state: {
+                    tid: participant_ticket_ids,
                     totalAmount: total_amount,
-                    pid: pid 
-                } 
+                    pid: pid
+                }
             });
 
             // Clear selections after successful initiation
@@ -424,11 +430,10 @@ export function TicketPriceView() {
                                         return (
                                             <tr
                                                 key={ticket.id}
-                                                className={`hover:bg-gray-50 ${
-                                                    isPaid ? "bg-green-50" :
-                                                    isExpired ? "bg-red-50 text-gray-400" : 
-                                                    isSelected ? "bg-blue-50" : ""
-                                                }`}
+                                                className={`hover:bg-gray-50 ${isPaid ? "bg-green-50" :
+                                                    isExpired ? "bg-red-50 text-gray-400" :
+                                                        isSelected ? "bg-blue-50" : ""
+                                                    }`}
                                             >
                                                 {/* Select Checkbox */}
                                                 {availableTickets > 1 && (
@@ -540,6 +545,7 @@ export function TicketPriceView() {
                     </>
                 )}
             </CardContent>
+            <ToastContainer />
         </Card>
     );
 }
