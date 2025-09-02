@@ -144,6 +144,18 @@ const RequirementCard = () => {
         return eventParticipationList[0].id; // Get the first participation ID
     };
 
+    // Check if there are any visible requirements to display
+    const hasVisibleRequirements = () => {
+        return events.some(event =>
+            event.requirements?.some(requirement => {
+                const isOverdue = isDeadlinePassed(requirement.deadline);
+                const response = getResponseForRequirement(event.id, requirement.id);
+                // Only show requirements that are not submitted and not overdue
+                return !response?.is_submitted && !isOverdue;
+            })
+        );
+    };
+
     const handleSubmitClick = (event, requirement) => {
         console.log('hasProfile event', has_profile)
         if (has_profile == 'undefined' || has_profile==="false") {
@@ -193,8 +205,6 @@ const RequirementCard = () => {
                 window.scrollTo(0, 0);
             }, 1000);
 
-
-
         } catch (error) {
             console.error('Error submitting:', error);
             throw error; // Re-throw to let modal handle the error
@@ -202,7 +212,6 @@ const RequirementCard = () => {
     };
 
     const handleSubmitAll = async () => {
-        alert(has_profile)
         if (has_profile == 'undefined' || has_profile === 'false') {
             toast.info('Please complete your profile before submitting requirements.');
             setTimeout(() => {
@@ -224,14 +233,18 @@ const RequirementCard = () => {
     return (
         <div className="max-w-6xl mx-auto px-4 py-8">
             {console.log('eventrequirements-hasProfile', hasProfile)}
-            <div className="flex justify-end items-center mb-8">
-                <Button
-                    onClick={handleSubmitAll}
-                    className="bg-blue hover:bg-blue/80 text-white py-2 px-4 rounded-lg"
-                >
-                    Submit All Requirements
-                </Button>
-            </div>
+            
+            {/* Only show Submit All Requirements button if there are visible requirements */}
+            {hasVisibleRequirements() && (
+                <div className="flex justify-end items-center mb-8">
+                    <Button
+                        onClick={handleSubmitAll}
+                        className="bg-blue hover:bg-blue/80 text-white py-2 px-4 rounded-lg"
+                    >
+                        Submit All Requirements
+                    </Button>
+                </div>
+            )}
 
             <div className="flex flex-col gap-6">
                 {events.map((event) =>
@@ -344,9 +357,6 @@ const RequirementCard = () => {
                                         <p className="text-xs text-green-600 mt-1">✔ Verified </p>
                                     )}
 
-
-
-
                                     {isOverdue && !isSubmitted && (
                                         <div className=" rounded-md p-3 ">
                                             <p className="text-red-600 text-sm font-medium">
@@ -354,7 +364,6 @@ const RequirementCard = () => {
                                             </p>
                                         </div>
                                     )}
-
 
                                 </CardContent>
                             </Card>
@@ -389,4 +398,3 @@ const RequirementCard = () => {
 };
 
 export default RequirementCard;
-

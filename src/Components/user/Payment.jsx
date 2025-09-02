@@ -20,15 +20,39 @@ const ESEWA_CONFIG = {
 const isProduction = process.env.NODE_ENV === 'production';
 const esewaConfig = ESEWA_CONFIG[isProduction ? 'production' : 'development'];
 
+// Helper function to encode participation and ticket data
+const encodeTransactionData = (participationId, ticketIds) => {
+  const data = {
+    p: participationId, // participation ID
+    t: ticketIds,      // ticket IDs array
+    u: uuidv4()        // unique UUID
+  };
+  
+  // Convert to base64 for URL safety
+  return btoa(JSON.stringify(data));
+};
+
+// Helper function to decode transaction data
+const decodeTransactionData = (encodedData) => {
+  try {
+    if (!encodedData) return null;
+    
+    const decodedString = atob(encodedData);
+    return JSON.parse(decodedString);
+  } catch (error) {
+    console.error("Error decoding transaction data:", error);
+    return null;
+  }
+};
+
 export const Payment = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { pid } = useParams(); // to be removed&&&
+  const { pid } = useParams();
   const totalAmount = location.state?.totalAmount || 0;
   const tid = location.state?.tid;
+  const participationId = location.state?.pid || pid;
 
-
-  const participationId = location.state?.pid || pid; // Use from state or params
   const { user_full_name } = useContext(AuthContext);
   const currentDomain = window.location.origin;
 
@@ -37,20 +61,16 @@ export const Payment = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
 
-  // Create a transaction UUID that includes the participation_id
-  // Format: participationId-uuid (e.g., "123-c58caf1b-7aba-4983-bb5d-46ef777363bf")
-  const generateTransactionUUID = (participationId) => {
-    const uuid = uuidv4();
-    return participationId ? `${participationId}-${uuid}` : uuid;
+  // Create a structured transaction UUID
+  const generateTransactionUUID = (participationId, ticketIds) => {
+    return encodeTransactionData(participationId, ticketIds);
   };
-
 
   const [formData, setFormData] = useState({
     amount: totalAmount.toString(),
     tax_amount: "0",
     total_amount: totalAmount.toString(),
-    // participant_ticket_ids: tid.join,
-    transaction_uuid: `${generateTransactionUUID(participationId)}___${tid.join("__")}`,
+    transaction_uuid: generateTransactionUUID(participationId, tid),
     product_service_charge: "0",
     product_delivery_charge: "0",
     product_code: esewaConfig.product_code,
@@ -61,8 +81,9 @@ export const Payment = () => {
     secret: "8gBm/:&EnhH.1/q",
   });
 
-  console.log("Transaction UUID with participation_id:", formData.transaction_uuid);
+  console.log("Transaction UUID with encoded data:", formData.transaction_uuid);
   console.log("Participation ID:", participationId);
+  console.log("Ticket IDs:", tid);
   console.log("Total Amount:", totalAmount);
 
   // Validation function
@@ -77,9 +98,9 @@ export const Payment = () => {
       newErrors.participation = 'Participation ID is required';
     }
 
-    // if (!formData.participant_ticket_ids || formData.participant_ticket_ids.length === 0) {
-    //   newErrors.tickets = 'Ticket information is required';
-    // }
+    if (!tid || tid.length === 0) {
+      newErrors.tickets = 'Ticket information is required';
+    }
 
     if (parseFloat(formData.amount) > 100000) {
       newErrors.amount = 'Amount cannot exceed Rs. 100,000';
@@ -99,10 +120,7 @@ export const Payment = () => {
     secret,
   ) => {
     const hashString = `total_amount=${total_amount},transaction_uuid=${transaction_uuid},product_code=${product_code}`;
-
     console.log('hashString', hashString);
-
-
 
     const hash = CryptoJS.HmacSHA256(hashString, secret);
     const hashedSignature = CryptoJS.enc.Base64.stringify(hash);
@@ -120,7 +138,6 @@ export const Payment = () => {
     );
 
     console.log('hashedSignature', hashedSignature);
-
 
     setFormData(prev => ({ ...prev, signature: hashedSignature }));
     validateForm();
@@ -173,13 +190,6 @@ export const Payment = () => {
           {/* Header */}
           <div className="text-center mb-8">
             <div className="flex items-center justify-between mb-4">
-              {/* <button
-                onClick={handleGoBack}
-                className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                <span className="text-sm">Back</span>
-              </button> */}
               <div className="flex items-center gap-2 text-green-600">
                 <Shield className="w-5 h-5" />
                 <span className="text-sm font-medium">Secure Payment</span>
@@ -284,8 +294,6 @@ export const Payment = () => {
               <h4 className="text-sm font-medium text-blue-800 mb-2">Transaction Information</h4>
               <div className="text-xs text-blue-700 space-y-1">
                 <p><strong>Payment Gateway:</strong> eSewa</p>
-                {/* <p><strong>Environment:</strong> {isProduction ? 'Production' : 'Test Mode'}</p> */}
-                {/* <p><strong>Transaction ID:</strong> {formData.transaction_uuid.substring(0, 20)}...</p> */}
               </div>
             </div>
 
@@ -300,9 +308,6 @@ export const Payment = () => {
             <input type="hidden" id="failure_url" name="failure_url" value={formData.failure_url} required />
             <input type="hidden" id="signed_field_names" name="signed_field_names" value={formData.signed_field_names} required />
             <input type="hidden" id="signature" name="signature" value={formData.signature} required />
-
-            {/* Add participant ticket IDs */}
-            <input type="hidden" id="participant_ticket_ids" name="participant_ticket_ids" value={formData.participant_ticket_ids} />
 
             {/* Submit Button */}
             <div>
@@ -342,6 +347,228 @@ export const Payment = () => {
             </div>
           </form>
         </div>
+      </div>
+    </div>
+  );
+};
+
+// Payment Success Component
+export const PaymentSuccess = () => {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [paymentData, setPaymentData] = useState(null);
+  const api = useAxiosAuth();
+  const { authTokens, authReady } = useContext(AuthContext);
+
+  // Function to extract participation_id and ticket_ids from transaction_uuid
+  const extractTransactionData = (transactionUuid) => {
+    if (!transactionUuid) return { participationId: null, ticketIds: [] };
+    
+    const decodedData = decodeTransactionData(transactionUuid);
+    
+    if (!decodedData) {
+      console.error("Failed to decode transaction data");
+      return { participationId: null, ticketIds: [] };
+    }
+    
+    return {
+      participationId: decodedData.p,
+      ticketIds: decodedData.t || []
+    };
+  };
+
+  useEffect(() => {
+    if (!authReady) return; // Wait for auth to be ready
+
+    const processPayment = async () => {
+      try {
+        // Get the base64 encoded data from URL query params
+        const base64Response = searchParams.get("data");
+        console.log("Base64 Response:", base64Response);
+
+        if (!base64Response) {
+          setError("No payment data found");
+          setLoading(false);
+          return;
+        }
+
+        // Decode the base64 data
+        const decodedData = JSON.parse(atob(base64Response));
+        console.log("Payment Response:", decodedData);
+
+        // Extract participation_id and ticket_ids from transaction_uuid
+        const { participationId, ticketIds } = extractTransactionData(decodedData?.transaction_uuid);
+        console.log("Extracted Participation ID:", participationId);
+        console.log("Extracted Ticket IDs:", ticketIds);
+
+        if (!participationId) {
+          setError("No participation ID found in transaction");
+          setLoading(false);
+          return;
+        }
+
+        if (!ticketIds || ticketIds.length === 0) {
+          setError("No ticket information found in transaction");
+          setLoading(false);
+          return;
+        }
+
+        setPaymentData(decodedData);
+
+        // Check if payment was successful
+        if (decodedData.status !== 'COMPLETE') {
+          setError(`Payment ${decodedData.status.toLowerCase()}. Please try again.`);
+          setLoading(false);
+          return;
+        }
+
+        // Verify the payment with your backend
+        const verificationResult = await verifyPayment(decodedData, participationId, ticketIds);
+
+        if (verificationResult.success) {
+          // Payment verified successfully
+          toast.success('Payment completed successfully!');
+          setTimeout(() => {
+            // Navigate back to user dashboard
+            navigate('/user', {
+              state: {
+                paymentSuccess: true,
+                transactionCode: decodedData.transaction_code
+              }
+            });
+          }, 3000);
+        } else {
+          setError(verificationResult.error || "Payment verification failed");
+        }
+      } catch (error) {
+        console.error("Error processing payment:", error);
+        setError("Failed to process payment data");
+        toast.error('Payment processing failed');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    processPayment();
+  }, [searchParams, navigate, authTokens, authReady, api]);
+
+  // Function to verify payment with backend
+  const verifyPayment = async (paymentData, participationId, ticketIds) => {
+    try {
+      console.log("Verifying payment with backend...");
+
+      const response = await api.post(
+        '/api/event/payment/',
+        {
+          participation_id: participationId,
+          participant_ticket_ids: ticketIds,
+          transaction_uuid: paymentData.transaction_uuid,
+          transaction_code: paymentData.transaction_code,
+          total_amount: paymentData.total_amount,
+          product_code: paymentData.product_code,
+          signature: paymentData.signature
+        }
+      );
+
+      console.log("Payment verification response:", response.data);
+
+      // Axios automatically throws for HTTP error status codes
+      return { success: true, data: response.data };
+
+    } catch (error) {
+      console.error("Payment verification error:", error);
+
+      // Handle different types of errors
+      if (error.response) {
+        // Server responded with error status
+        const errorMessage = error.response.data?.message || error.response.data?.error || 'Verification failed';
+        return { success: false, error: errorMessage };
+      } else if (error.request) {
+        // Request was made but no response received
+        return { success: false, error: "Network error - please check your connection" };
+      } else {
+        // Something else happened
+        return { success: false, error: "Unexpected error during verification" };
+      }
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-white p-8 rounded-lg shadow-md text-center max-w-md">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <h2 className="text-xl font-semibold text-gray-700 mb-2">Processing Payment</h2>
+          <p className="text-gray-500">Please wait while we verify your payment...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-white p-8 rounded-lg shadow-md text-center max-w-md">
+          <div className="h-16 w-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="h-8 w-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-semibold text-gray-800 mb-2">Payment Error</h2>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <div className="space-y-2">
+            <button
+              onClick={() => navigate('/user/tickets')}
+              className="w-full bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-md transition-colors"
+            >
+              Try Again
+            </button>
+            <button
+              onClick={() => navigate('/user')}
+              className="w-full bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-md transition-colors"
+            >
+              Back to Dashboard
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const { participationId, ticketIds } = extractTransactionData(paymentData?.transaction_uuid);
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="bg-white p-8 rounded-lg shadow-md text-center max-w-md">
+        <div className="h-16 w-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <h2 className="text-2xl font-semibold text-gray-800 mb-2">Payment Successful!</h2>
+        <p className="text-gray-600 mb-4">Your payment has been processed successfully.</p>
+
+        {paymentData && (
+          <div className="bg-gray-50 p-4 rounded-lg mb-4 text-left">
+            <h3 className="font-semibold mb-2">Transaction Details:</h3>
+            <p className="text-sm"><strong>Transaction ID:</strong> {paymentData.transaction_code}</p>
+            <p className="text-sm"><strong>Participation ID:</strong> {participationId}</p>
+            <p className="text-sm"><strong>Ticket IDs:</strong> {ticketIds.join(', ')}</p>
+            <p className="text-sm"><strong>Amount:</strong> Rs. {paymentData.total_amount}</p>
+            <p className="text-sm"><strong>Status:</strong> {paymentData.status}</p>
+          </div>
+        )}
+
+        <p className="text-sm text-gray-500 mb-4">Redirecting to dashboard in a moment...</p>
+
+        <button
+          onClick={() => navigate('/user')}
+          className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-md transition-colors"
+        >
+          Go to Dashboard
+        </button>
       </div>
     </div>
   );

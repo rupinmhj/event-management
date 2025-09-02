@@ -4,10 +4,24 @@ import Footer from "../../components/Footer";
 import OTPVerification from "../../components/OtpVerification";
 import { SignupForm } from "../../forms/SignupForm";
 import { SigninForm } from "../../forms/SigninForm";
-
+import { useContext, useEffect } from "react";
+import AuthContext from "@/context/AuthContext";
+import { useNavigate } from "react-router-dom";
 export function AuthPage() {
   const [authView, setAuthView] = useState("signin"); // signup | signin
   const [showOtp, setShowOtp] = useState(false);
+  const navigate = useNavigate();
+  const { role, authTokens } = useContext(AuthContext);
+  useEffect(() => {
+    console.log("____", role)
+    console.log("____", authTokens)
+    if (authTokens && role === 'ADMIN') {
+      navigate('/admin')
+    }
+    if (authTokens && role === 'USER') {
+      navigate('/user')
+    }
+  }, [navigate, authTokens, role])
 
   return (
     <div className="min-h-screen flex flex-col ">

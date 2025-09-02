@@ -34,7 +34,8 @@ import {
     FileText,
     Tag,
     Copy,
-    RefreshCw
+    RefreshCw,
+
 } from "lucide-react";
 import AuthContext from "@/context/AuthContext";
 import useAxiosAuth from "@/hooks/useAxiosAuth";
@@ -48,15 +49,15 @@ export const SendEmail = () => {
     const { authReady, authTokens } = useContext(AuthContext);
 
     // Navigation state
-    const [currentView, setCurrentView] = useState('compose'); // 'inbox', 'compose', 'sent'
+    const [currentView, setCurrentView] = useState('compose'); // 'inbox', 'compose', 'sent', 'draft'
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [selectedEmail, setSelectedEmail] = useState(null);
 
     // Email history states
     const [emails, setEmails] = useState([]);
+    const [drafts, setDrafts] = useState([]);
     const [filteredEmails, setFilteredEmails] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
-    const [selectedStatus, setSelectedStatus] = useState("ALL");
     const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
 
     // Compose email states
@@ -69,6 +70,9 @@ export const SendEmail = () => {
     const [eventParticipants, setEventParticipants] = useState([]);
     const [allUsers, setAllUsers] = useState([]);
 
+    // Draft editing state
+    const [editingDraftId, setEditingDraftId] = useState(null);
+
     // Loading states
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingEvents, setIsLoadingEvents] = useState(false);
@@ -76,6 +80,7 @@ export const SendEmail = () => {
     const [isLoadingUsers, setIsLoadingUsers] = useState(false);
     const [errors, setErrors] = useState({});
     const [messageError, setMessageError] = useState("")
+
     // handleViewEmail function
     const handleViewEmail = (email) => {
         setSelectedEmail(email);
@@ -88,6 +93,106 @@ export const SendEmail = () => {
         setIsEmailModalOpen(false);
     };
 
+    // FIXED: Handle draft editing with proper recipient restoration
+    const handleEditDraft = async (draft) => {
+        try {
+            setIsLoading(true);
+            
+            // Clear all existing state first
+            setSelectedUserIds([]);
+            setEditingDraftId(null);
+            setErrors({});
+
+            // Fetch detailed draft data
+            const response = await api.get(`/api/event/email-detail/${draft.id}/`);
+            const draftData = response.data;
+            console.log("Draft data loaded:", draftData);
+
+            // Set basic form data first
+            setSubject(draftData.subject || "");
+            setHtmlMessage(draftData.html_message || "");
+            setIsEventBased(!!draftData.event);
+            
+            // Set editing state
+            setEditingDraftId(draftData.id);
+
+            if (draftData.event) {
+                // For event-based emails
+                setSelectedEvent(draftData.event.toString());
+                // Load participants and set recipients
+                await loadEventParticipantsForDraft(draftData.event.toString(), draftData.recipients || []);
+            } else {
+                // For independent emails
+                setSelectedEvent("");
+                setEventParticipants([]); // Clear event participants
+                // Load users and set recipients
+                await loadAllUsersForDraft(draftData.recipients || []);
+            }
+
+            // Switch to compose view
+            setCurrentView('compose');
+
+        } catch (error) {
+            console.error("Error loading draft:", error);
+            toast.error("Failed to load draft");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // NEW: Dedicated functions for loading data when editing drafts
+    const loadEventParticipantsForDraft = async (eventId, recipientIds) => {
+        setIsLoadingParticipants(true);
+        try {
+            const response = await api.get(`/api/event/${eventId}/participation-list/`);
+            const participants = response.data || [];
+            
+            // Set participants first
+            setEventParticipants(participants);
+            
+            // Use requestAnimationFrame to ensure DOM is updated before setting recipients
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    console.log("Setting recipients for draft (event-based):", recipientIds);
+                    setSelectedUserIds([...recipientIds]);
+                }, 50);
+            });
+            
+        } catch (error) {
+            console.error("Error fetching event participants for draft:", error);
+            toast.error("Failed to load event participants");
+            setEventParticipants([]);
+        } finally {
+            setIsLoadingParticipants(false);
+        }
+    };
+
+    const loadAllUsersForDraft = async (recipientIds) => {
+        setIsLoadingUsers(true);
+        try {
+            const response = await api.get('/api/account/user-list/');
+            const users = response.data || [];
+            
+            // Set users first
+            setAllUsers(users);
+            
+            // Use requestAnimationFrame to ensure DOM is updated before setting recipients
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    console.log("Setting recipients for draft (independent):", recipientIds);
+                    setSelectedUserIds([...recipientIds]);
+                }, 50);
+            });
+            
+        } catch (error) {
+            console.error("Error fetching all users for draft:", error);
+            toast.error("Failed to load users");
+            setAllUsers([]);
+        } finally {
+            setIsLoadingUsers(false);
+        }
+    };
+
     const EmailDetailModal = ({ email, isOpen, onClose }) => {
         if (!isOpen || !email) return null;
 
@@ -97,6 +202,8 @@ export const SendEmail = () => {
                     return 'bg-green-100 text-green-800';
                 case 'FAILED':
                     return 'bg-red-100 text-red-800';
+                case 'DRAFT':
+                    return 'bg-blue-100 text-blue-800';
                 default:
                     return 'bg-gray-100 text-gray-800';
             }
@@ -138,9 +245,10 @@ export const SendEmail = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                                 <div className="flex items-center gap-2">
                                     <Calendar className="w-4 h-4 text-gray-400" />
-                                    <span className="text-gray-600">Sent:</span>
+                                    <span className="text-gray-600">{email.status === 'DRAFT' ? 'Created:' : 'Sent:'}</span>
                                     <span className="font-medium">
-                                        {new Date(email.created_at).toLocaleString('en-US', {
+
+                                        {new Date(email.updated_at).toLocaleString('en-US', {
                                             year: 'numeric',
                                             month: 'short',
                                             day: 'numeric',
@@ -154,7 +262,7 @@ export const SendEmail = () => {
                                     <Users className="w-4 h-4 text-gray-400" />
                                     <span className="text-gray-600">Recipients:</span>
                                     <span className="font-medium">
-                                        {email.recipients.length} recipient{email.recipients.length !== 1 ? 's' : ''}
+                                        {email.recipients_name ? email.recipients_name.length : email.recipients.length} recipient{(email.recipients_name ? email.recipients_name.length : email.recipients.length) !== 1 ? 's' : ''}
                                     </span>
                                 </div>
                                 {email.event_name && (
@@ -170,13 +278,13 @@ export const SendEmail = () => {
                         {/* Recipients list */}
                         <div className="px-6 py-4 border-b border-gray-100">
                             <h3 className="text-sm font-medium text-gray-900 mb-3">
-                                Recipients ({email.recipients.length})
+                                Recipients ({email.recipients_name ? email.recipients_name.length : email.recipients.length})
                             </h3>
                             <div className="max-h-32 overflow-y-auto">
-                                {email.recipients.length <= 10 ? (
-                                    // Show all recipients if 20 or fewer
+                                {email.recipients_name && email.recipients_name.length <= 10 ? (
+                                    // Show all recipients if 10 or fewer
                                     <div className="flex flex-wrap gap-2">
-                                        {email.recipients.map((recipient, index) => (
+                                        {email.recipients_name.map((recipient, index) => (
                                             <span
                                                 key={index}
                                                 className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800"
@@ -186,11 +294,11 @@ export const SendEmail = () => {
                                             </span>
                                         ))}
                                     </div>
-                                ) : (
+                                ) : email.recipients_name && email.recipients_name.length > 10 ? (
                                     // Show condensed view for large lists
                                     <div className="space-y-2">
                                         <div className="flex flex-wrap gap-2">
-                                            {email.recipients.slice(0, 10).map((recipient, index) => (
+                                            {email.recipients_name.slice(0, 10).map((recipient, index) => (
                                                 <span
                                                     key={index}
                                                     className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800"
@@ -200,27 +308,27 @@ export const SendEmail = () => {
                                                 </span>
                                             ))}
                                         </div>
-                                        {email.recipients.length > 10 && (
-                                            <details className="group">
-                                                <summary className="cursor-pointer text-sm text-blue-600 hover:text-blue-800 font-medium">
-                                                    Show {email.recipients.length - 10} more recipients
-                                                </summary>
-                                                <div className="mt-2 pt-2 border-t border-gray-100">
-                                                    <div className="flex flex-wrap gap-2">
-                                                        {email.recipients.slice(10).map((recipient, index) => (
-                                                            <span
-                                                                key={index + 10}
-                                                                className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800"
-                                                            >
-                                                                <Mail className="w-3 h-3 mr-1" />
-                                                                {recipient}
-                                                            </span>
-                                                        ))}
-                                                    </div>
+                                        <details className="group">
+                                            <summary className="cursor-pointer text-sm text-blue-600 hover:text-blue-800 font-medium">
+                                                Show {email.recipients_name.length - 10} more recipients
+                                            </summary>
+                                            <div className="mt-2 pt-2 border-t border-gray-100">
+                                                <div className="flex flex-wrap gap-2">
+                                                    {email.recipients_name.slice(10).map((recipient, index) => (
+                                                        <span
+                                                            key={index + 10}
+                                                            className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800"
+                                                        >
+                                                            <Mail className="w-3 h-3 mr-1" />
+                                                            {recipient}
+                                                        </span>
+                                                    ))}
                                                 </div>
-                                            </details>
-                                        )}
+                                            </div>
+                                        </details>
                                     </div>
+                                ) : (
+                                    <div className="text-sm text-gray-500">No recipient names available</div>
                                 )}
                             </div>
                         </div>
@@ -228,7 +336,6 @@ export const SendEmail = () => {
                         {/* Email content */}
                         <div className="flex-1 overflow-y-auto  ">
                             <div className="px-6 py-4  pb-8 ">
-                                {/* <h3 className="text-sm font-medium text-gray-900 mb-3">Message Content</h3> */}
                                 <div className="max-h-80  pb-4 pt-2 px-2 overflow-y-auto border border-gray-200 rounded-md">
                                     {email.html_message ? (
                                         <div
@@ -248,14 +355,18 @@ export const SendEmail = () => {
                         <div className="border-t border-gray-200 px-6 py-4 bg-gray-50">
                             <div className="flex items-center justify-between">
                                 <div className="flex gap-2">
-                                    {email.status === 'FAILED' && (
+                                    {email.status === 'DRAFT' && (
                                         <Button
+                                            onClick={() => {
+                                                handleEditDraft(email);
+                                                onClose();
+                                            }}
                                             variant="outline"
                                             size="sm"
-                                            className="text-orange-600 border-orange-200 hover:bg-orange-50"
+                                            className="text-blue-600 border-blue-200 hover:bg-blue-50"
                                         >
-                                            <RefreshCw className="w-4 h-4 mr-1" />
-                                            Retry Send
+                                            <Edit3 className="w-4 h-4 mr-1" />
+                                            Edit Draft
                                         </Button>
                                     )}
                                     <Button
@@ -281,13 +392,14 @@ export const SendEmail = () => {
         );
     };
 
-
-    // Fetch sent emails when auth is ready and viewing inbox/sent
+    // Fetch sent emails when auth is ready and viewing sent
     useEffect(() => {
         if (!authReady || !authTokens) return;
 
-        if (currentView === 'inbox' || currentView === 'sent') {
+        if (currentView === 'sent') {
             fetchSentEmails();
+        } else if (currentView === 'draft') {
+            fetchDraftEmails();
         }
     }, [authReady, authTokens, currentView]);
 
@@ -297,36 +409,54 @@ export const SendEmail = () => {
 
         if (currentView === 'compose') {
             fetchActiveEvents();
-            if (!isEventBased) {
-                fetchAllUsers();
+            // Only fetch users/participants if not editing a draft
+            if (!editingDraftId) {
+                if (!isEventBased) {
+                    fetchAllUsers();
+                }
             }
         }
     }, [authReady, authTokens, currentView, isEventBased]);
 
-    // Fetch participants when event is selected
+    // Fetch participants when event is selected (but not when editing draft)
     useEffect(() => {
         if (!authReady || !authTokens) return;
 
-        if (selectedEvent && isEventBased && currentView === 'compose') {
+        if (selectedEvent && isEventBased && currentView === 'compose' && !editingDraftId) {
             fetchEventParticipants(selectedEvent);
         }
-    }, [selectedEvent, isEventBased, currentView, authReady, authTokens]);
+    }, [selectedEvent, isEventBased, currentView, authReady, authTokens, editingDraftId]);
 
     // Filter emails
     useEffect(() => {
         filterEmails();
-    }, [emails, searchTerm, selectedStatus]);
+    }, [emails, drafts, searchTerm, currentView]);
 
     const fetchSentEmails = async () => {
         setIsLoading(true);
         try {
-            const response = await api.get('/api/event/sent-mail-list/');
+            const response = await api.get('/api/event/sent-mail-list/?status=SENT');
             console.log("Fetched sent emails:", response.data);
             setEmails(response.data || []);
         } catch (error) {
             console.error("Error fetching sent emails:", error);
-            toast.error("Failed to load email history");
+            toast.error("Failed to load sent emails");
             setEmails([]);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const fetchDraftEmails = async () => {
+        setIsLoading(true);
+        try {
+            const response = await api.get('/api/event/sent-mail-list/?status=DRAFT');
+            console.log("Fetched draft emails:", response.data);
+            setDrafts(response.data || []);
+        } catch (error) {
+            console.error("Error fetching draft emails:", error);
+            toast.error("Failed to load draft emails");
+            setDrafts([]);
         } finally {
             setIsLoading(false);
         }
@@ -346,11 +476,16 @@ export const SendEmail = () => {
         }
     };
 
+    // MODIFIED: Regular fetch functions that don't interfere with draft editing
     const fetchEventParticipants = async (eventId) => {
+        // Don't fetch if we're editing a draft - that's handled separately
+        if (editingDraftId) return;
+        
         setIsLoadingParticipants(true);
         try {
             const response = await api.get(`/api/event/${eventId}/participation-list/`);
             setEventParticipants(response.data || []);
+            // Reset selected users when changing events (but not when editing draft)
             setSelectedUserIds([]);
         } catch (error) {
             console.error("Error fetching event participants:", error);
@@ -362,6 +497,9 @@ export const SendEmail = () => {
     };
 
     const fetchAllUsers = async () => {
+        // Don't fetch if we're editing a draft - that's handled separately
+        if (editingDraftId) return;
+        
         setIsLoadingUsers(true);
         try {
             const response = await api.get('/api/account/user-list/');
@@ -376,7 +514,13 @@ export const SendEmail = () => {
     };
 
     const filterEmails = () => {
-        let filtered = [...emails];
+        let filtered = [];
+
+        if (currentView === 'sent') {
+            filtered = [...emails];
+        } else if (currentView === 'draft') {
+            filtered = [...drafts];
+        }
 
         if (searchTerm.trim()) {
             filtered = filtered.filter(email =>
@@ -384,11 +528,7 @@ export const SendEmail = () => {
             );
         }
 
-        if (selectedStatus !== "ALL") {
-            filtered = filtered.filter(email => email.status === selectedStatus);
-        }
-
-        filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        filtered.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
         setFilteredEmails(filtered);
     };
 
@@ -396,8 +536,8 @@ export const SendEmail = () => {
         switch (status) {
             case 'SENT':
                 return <CheckCircle className="w-4 h-4 text-green-600" />;
-            case 'FAILED':
-                return <XCircle className="w-4 h-4 text-red-600" />;
+            case 'DRAFT':
+                return <FileText className="w-4 h-4 text-blue-600" />;
             default:
                 return <AlertTriangle className="w-4 h-4 text-gray-600" />;
         }
@@ -406,8 +546,7 @@ export const SendEmail = () => {
     const getStatusBadge = (status) => {
         const variants = {
             'SENT': 'bg-green-100 text-green-800 border-green-200',
-            'FAILED': 'bg-red-100 text-red-800 border-red-200',
-            // 'PENDING': 'bg-yellow-100 text-yellow-800 border-yellow-200'
+            'DRAFT': 'bg-blue-100 text-blue-800 border-blue-200',
         };
 
         return (
@@ -447,7 +586,10 @@ export const SendEmail = () => {
     const handleModeChange = (eventBased) => {
         setIsEventBased(eventBased);
         setSelectedEvent("");
-        setSelectedUserIds([]);
+        // Don't reset selected users if editing a draft
+        if (!editingDraftId) {
+            setSelectedUserIds([]);
+        }
         setEventParticipants([]);
         setErrors({});
     };
@@ -478,7 +620,6 @@ export const SendEmail = () => {
         const newErrors = {};
 
         if (!subject.trim()) newErrors.subject = "Email subject is required";
-        console.log(htmlMessage);
         if (!htmlMessage.trim()) newErrors.htmlMessage = "Email message is required";
 
         if (isEventBased && !selectedEvent) {
@@ -501,53 +642,102 @@ export const SendEmail = () => {
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const handleSubmit = async (mode = 'send') => {
         setIsLoading(true);
 
         try {
             setErrors({});
-            const payload = {
-                subject: subject.trim(),
-                html_message: htmlMessage.trim(),
-                message: " ",
-                event: isEventBased ? selectedEvent : null,
-                recipient_ids: selectedUserIds
-            };
 
-            console.log("Sending email with payload:", payload);
-            const response = await api.post('/api/event/send-email/', payload);
-            console.log("Email sent response:", response.data);
-            toast.success(`Email sent successfully to ${selectedUserIds.length} recipient(s)!`);
+            if (editingDraftId) {
+                // Update existing draft
+                const payload = {
+                    subject: subject.trim(),
+                    html_message: htmlMessage.trim(),
+                    message: " ",
+                    event: isEventBased ? selectedEvent : null,
+                    recipient_ids: selectedUserIds,
+                    action: mode === 'draft' ? 'save' : 'send'
+                };
+
+                console.log("Updating draft with payload:", payload);
+                const response = await api.put(`/api/event/update-draft/${editingDraftId}/`, payload);
+                console.log("Draft updated response:", response.data);
+
+                toast.success(
+                    mode === 'draft'
+                        ? "Draft updated successfully!"
+                        : `Email sent successfully to ${selectedUserIds.length} recipient(s)!`
+                );
+
+                // Reset editing state
+                setEditingDraftId(null);
+
+            } else {
+                // Create new email/draft
+                const payload = {
+                    subject: subject.trim(),
+                    html_message: htmlMessage.trim(),
+                    message: " ",
+                    event: isEventBased ? selectedEvent : null,
+                    recipient_ids: selectedUserIds
+                };
+
+                let apiUrl = '/api/event/send-email/';
+                if (mode === 'draft') {
+                    apiUrl = '/api/event/save-draft/';
+                }
+
+                console.log("Creating email with payload:", payload);
+                const response = await api.post(apiUrl, payload);
+                console.log("Email created response:", response.data);
+
+                toast.success(
+                    mode === 'draft'
+                        ? "Draft saved successfully!"
+                        : `Email sent successfully to ${selectedUserIds.length} recipient(s)!`
+                );
+            }
 
             // Reset form
-            setSubject("");
-            setHtmlMessage("");
-            setSelectedEvent("");
-            setSelectedUserIds([]);
-            setErrors({});
+            clearForm();
 
-            // Switch to sent view
-            setTimeout(() => {
-                setCurrentView('sent');
-            }, 1000);
+            // Switch to appropriate view
+            if (mode === 'draft') {
+                setTimeout(() => {
+                    setCurrentView('draft');
+                }, 1000);
+            } else {
+                setTimeout(() => {
+                    setCurrentView('sent');
+                }, 1000);
+            }
 
         } catch (error) {
-            console.error("Error sending email:", error);
+            console.error("Error processing email:", error);
             const errorMessage = error.response?.data?.detail ||
                 error.response?.data?.message ||
-                "Failed to send email. Please try again.";
+                "Failed to process email. Please try again.";
             toast.error(errorMessage);
         } finally {
             setIsLoading(false);
         }
     };
 
+    // Clear form function
+    const clearForm = () => {
+        setSubject("");
+        setHtmlMessage("");
+        setSelectedEvent("");
+        setSelectedUserIds([]);
+        setErrors({});
+        setEditingDraftId(null);
+    };
+
     // Sidebar navigation items
     const sidebarItems = [
-        // { id: 'inbox', icon: Inbox, label: 'Inbox', count: filteredEmails.length },
         { id: 'compose', icon: Edit3, label: 'Compose' },
-        { id: 'sent', icon: Send, label: 'Sent',  }
+        { id: 'sent', icon: Send, label: 'Sent' },
+        { id: 'draft', icon: FileText, label: 'Draft' }
     ];
 
     const currentUserList = isEventBased ? eventParticipants : allUsers;
@@ -559,7 +749,6 @@ export const SendEmail = () => {
         <div className={`${sidebarOpen ? 'w-64' : 'w-[78px]'} bg-white border-r border-gray-200 flex flex-col transition-all duration-300 h-full`}>
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-gray-200">
-
                 <Button
                     variant="ghost"
                     size="sm"
@@ -577,17 +766,18 @@ export const SendEmail = () => {
                             <Button
                                 variant={currentView === item.id ? "default" : "ghost"}
                                 className={`w-full justify-start ${!sidebarOpen && 'px-3'}`}
-                                onClick={() => setCurrentView(item.id)}
+                                onClick={() => {
+                                    setCurrentView(item.id);
+                                    // Clear editing state when switching views
+                                    if (item.id !== 'compose') {
+                                        setEditingDraftId(null);
+                                    }
+                                }}
                             >
                                 <item.icon className="w-5 h-5 mr-2 " />
                                 {sidebarOpen && (
                                     <>
                                         <span>{item.label}</span>
-                                        {item.count !== undefined && (
-                                            <Badge variant="secondary" className="ml-auto">
-                                                {item.count}
-                                            </Badge>
-                                        )}
                                     </>
                                 )}
                             </Button>
@@ -598,17 +788,13 @@ export const SendEmail = () => {
         </div>
     );
 
-    // Render inbox/sent view
+    // Render email list view (sent/draft)
     const renderEmailList = () => (
         <div className="flex w-full justify-center  ">
             <div className="flex-1 flex flex-col  max-w-6xl">
                 {/* Header */}
                 <div className="border-b border-gray-200 p-4">
-                    {/* <div className="flex items-center justify-between mb-4">
-                <h1 className="text-2xl font-bold capitalize">{currentView}</h1>
-            </div> */}
-
-                    {/* Search and filters */}
+                    {/* Search */}
                     <div className="flex gap-4">
                         <div className="flex-1 relative">
                             <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
@@ -618,19 +804,6 @@ export const SendEmail = () => {
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="pl-10"
                             />
-                        </div>
-                        <div className="flex gap-2">
-                            {['ALL', 'SENT', 'FAILED'].map((status) => (
-                                <Button
-                                    key={status}
-                                    variant={selectedStatus === status ? "default" : "outline"}
-                                    size="sm"
-                                    onClick={() => setSelectedStatus(status)}
-                                    className="whitespace-nowrap"
-                                >
-                                    {status === 'ALL' ? 'All' : status}
-                                </Button>
-                            ))}
                         </div>
                     </div>
                 </div>
@@ -644,11 +817,13 @@ export const SendEmail = () => {
                     ) : filteredEmails.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-64 text-gray-500 ">
                             <Mail className="w-16 h-16 mb-4 opacity-50" />
-                            <h3 className="text-lg font-medium mb-2">No emails found</h3>
+                            <h3 className="text-lg font-medium mb-2">
+                                {currentView === 'draft' ? 'No drafts found' : 'No emails found'}
+                            </h3>
                             <p className="text-sm">
-                                {searchTerm || selectedStatus !== 'ALL'
-                                    ? "No emails match your current filters."
-                                    : "You haven't sent any emails yet."
+                                {searchTerm
+                                    ? `No ${currentView === 'draft' ? 'drafts' : 'emails'} match your search.`
+                                    : `You haven't ${currentView === 'draft' ? 'saved any drafts' : 'sent any emails'} yet.`
                                 }
                             </p>
                         </div>
@@ -658,7 +833,13 @@ export const SendEmail = () => {
                                 <div
                                     key={email.id}
                                     className="p-4 hover:bg-gray-50 cursor-pointer transition-colors border-l-4  hover:border-blue-200 "
-                                    onClick={() => handleViewEmail(email)}
+                                    onClick={() => {
+                                        if (currentView === 'draft') {
+                                            handleEditDraft(email);
+                                        } else {
+                                            handleViewEmail(email);
+                                        }
+                                    }}
                                 >
                                     <div className="flex items-start justify-between ">
                                         <div className="flex-1 min-w-0">
@@ -676,11 +857,11 @@ export const SendEmail = () => {
                                             <div className="flex items-center gap-4 text-xs text-gray-500">
                                                 <div className="flex items-center gap-1">
                                                     <Calendar className="w-3 h-3" />
-                                                    {formatDate(email.created_at)}
+                                                    {formatDate(email.updated_at)}
                                                 </div>
                                                 <div className="flex items-center gap-1">
                                                     <Users className="w-3 h-3" />
-                                                    {email.recipients.length} recipient{email.recipients.length !== 1 ? 's' : ''}
+                                                    {email.recipients_name ? email.recipients_name.length : email.recipients.length} recipient{(email.recipients_name ? email.recipients_name.length : email.recipients.length) !== 1 ? 's' : ''}
                                                 </div>
                                                 {email.event_name && (
                                                     <Badge variant="outline" className="text-xs px-2 py-0.5">
@@ -691,19 +872,33 @@ export const SendEmail = () => {
                                         </div>
 
                                         <div className="ml-4 flex items-center gap-2">
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleViewEmail(email);
-                                                }}
-                                                className="opacity-0 group-hover:opacity-100 hover:bg-blue-100 transition-all"
-                                            >
-                                                <Eye className="w-4 h-4" />
-                                            </Button>
+                                            {currentView === 'draft' ? (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleEditDraft(email);
+                                                    }}
+                                                    className="opacity-0 group-hover:opacity-100 hover:bg-blue-100 transition-all"
+                                                >
+                                                    <Edit3 className="w-4 h-4" />
+                                                </Button>
+                                            ) : (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleViewEmail(email);
+                                                    }}
+                                                    className="opacity-0 group-hover:opacity-100 hover:bg-blue-100 transition-all"
+                                                >
+                                                    <Eye className="w-4 h-4" />
+                                                </Button>
+                                            )}
                                             <div className="text-xs text-gray-400 min-w-fit">
-                                                {new Date(email.sent_at).toLocaleTimeString('en-US', {
+                                                {new Date(email.updated_at).toLocaleTimeString('en-US', {
                                                     hour: 'numeric',
                                                     minute: '2-digit',
                                                     hour12: true
@@ -718,19 +913,39 @@ export const SendEmail = () => {
                 </div>
             </div>
         </div>
-
     );
 
     // Render compose view
     const renderCompose = () => (
         <div className="flex justify-center">
             <div className="flex-1 flex flex-col ">
-
+                {editingDraftId && (
+                    <div className="bg-blue-50 border-b border-blue-200 px-6 py-3">
+                        <div className="flex items-center justify-between max-w-6xl mx-auto">
+                            <div className="flex items-center gap-2 text-blue-800">
+                                <FileText className="w-4 h-4" />
+                                <span className="text-sm font-medium">Editing Draft</span>
+                            </div>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                    setEditingDraftId(null);
+                                    clearForm();
+                                }}
+                                className="text-blue-600 hover:text-blue-800"
+                            >
+                                <X className="w-4 h-4 mr-1" />
+                                Cancel Edit
+                            </Button>
+                        </div>
+                    </div>
+                )}
 
                 <div className="flex-1 overflow-auto p-6">
                     <Card className="max-w-6xl mx-auto">
                         <CardContent className="p-6">
-                            <form onSubmit={handleSubmit} className="space-y-6">
+                            <form className="space-y-6">
                                 {/* Email Mode Selection */}
                                 <div className="space-y-4">
                                     <Label className="text-base font-semibold">Email Mode</Label>
@@ -814,7 +1029,7 @@ export const SendEmail = () => {
                                                 </Button>
                                             </div>
 
-                                            <div className="border rounded-lg max-h-64 overflow-y-auto">
+                                            <div className="border rounded-lg max-h-64 overflow-y-auto bb">
                                                 {(isLoadingParticipants || isLoadingUsers) ? (
                                                     <div className="p-4 text-center text-gray-500">
                                                         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto mb-2"></div>
@@ -822,6 +1037,7 @@ export const SendEmail = () => {
                                                     </div>
                                                 ) : (
                                                     currentUserList.map((user) => {
+                                                        console.log('__user___', user)
                                                         const userId = isEventBased ? user.user : user.id;
                                                         const displayName = isEventBased ? user.participant_name : user.full_name_en;
                                                         const isSelected = selectedUserIds.includes(userId);
@@ -918,34 +1134,46 @@ export const SendEmail = () => {
 
                                 {/* Submit Buttons */}
                                 <div className="flex justify-center gap-4 pt-6">
-                                    <Button
-                                        type="submit"
-                                        disabled={isLoading}
-                                        className="flex-1 bg-blue transition-all duration-300 hover:scale-[1.02] text-primary-foreground hover:bg-blue/90"
-                                        size="lg"
-                                    >
-                                        {isLoading ? (
+                                    <div className="flex gap-3">
+                                        {/* Send Button */}
+                                        <Button
+                                            type="button"
+                                            onClick={() => handleSubmit('send')}
+                                            disabled={isLoading}
+                                            className="flex-1 bg-blue transition-all duration-300 hover:scale-[1.02] text-primary-foreground hover:bg-blue/90"
+                                            size="lg"
+                                        >
+                                            {isLoading ? (
+                                                <div className="flex items-center">
+                                                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                                                    {editingDraftId ? 'Sending...' : 'Sending...'}
+                                                </div>
+                                            ) : (
+                                                <div className="flex items-center">
+                                                    <Send className="w-5 h-5 mr-2" />
+                                                    {editingDraftId ? 'Send Email' : 'Send Email'} ({selectedUserIds.length})
+                                                </div>
+                                            )}
+                                        </Button>
+
+                                        {/* Save Draft Button */}
+                                        <Button
+                                            type="button"
+                                            onClick={() => handleSubmit('draft')}
+                                            className="flex-1 bg-gray-500 transition-all duration-300 hover:scale-[1.02] text-white hover:bg-gray-600"
+                                            size="lg"
+                                        >
                                             <div className="flex items-center">
-                                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                                                Sending...
+                                                <FileText className="w-5 h-5 mr-2" />
+                                                {editingDraftId ? 'Update Draft' : 'Save Draft'}
                                             </div>
-                                        ) : (
-                                            <div className="flex items-center">
-                                                <Send className="w-5 h-5 mr-2" />
-                                                Send Email ({selectedUserIds.length})
-                                            </div>
-                                        )}
-                                    </Button>
+                                        </Button>
+                                    </div>
+
                                     <Button
                                         type="button"
                                         variant="outline"
-                                        onClick={() => {
-                                            setSubject("");
-                                            setHtmlMessage("");
-                                            setSelectedEvent("");
-                                            setSelectedUserIds([]);
-                                            setErrors({});
-                                        }}
+                                        onClick={clearForm}
                                         disabled={isLoading}
                                         size="lg"
                                         className="hover:bg-destructive text-white hover:text-destructive-foreground transition-all duration-300 hover:scale-[1.02] bg-red-800"
@@ -959,7 +1187,6 @@ export const SendEmail = () => {
                 </div>
             </div>
         </div>
-
     );
 
     if (!authReady || !authTokens) {
@@ -1006,4 +1233,3 @@ export const SendEmail = () => {
         </div>
     );
 };
-

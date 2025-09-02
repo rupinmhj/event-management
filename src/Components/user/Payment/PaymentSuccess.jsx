@@ -4,44 +4,47 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
+// Helper function to decode transaction data
+const decodeTransactionData = (encodedData) => {
+  try {
+    if (!encodedData) return null;
+    
+    const decodedString = atob(encodedData);
+    return JSON.parse(decodedString);
+  } catch (error) {
+    console.error("Error decoding transaction data:", error);
+    return null;
+  }
+};
+
 export const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [paymentData, setPaymentData] = useState(null);
+  const [extractedData, setExtractedData] = useState({
+    participationId: null,
+    ticketIds: []
+  });
   const api = useAxiosAuth();
   const { authTokens, authReady } = useContext(AuthContext);
 
-  // Function to extract participation_id from transaction_uuid
-  const extractParticipationId = (transactionUuid) => {
-    if (!transactionUuid) return null;
-
-    // Check if the UUID contains a participation_id (format: participationId-uuid)
-    const parts = transactionUuid.split('-');
-    if (parts.length > 4) { // Standard UUID has 4 hyphens, so if more, first part is participation_id
-      return parts[0];
+  // Function to extract participation_id and ticket_ids from transaction_uuid
+  const extractTransactionData = (transactionUuid) => {
+    if (!transactionUuid) return { participationId: null, ticketIds: [] };
+    
+    const decodedData = decodeTransactionData(transactionUuid);
+    
+    if (!decodedData) {
+      console.error("Failed to decode transaction data");
+      return { participationId: null, ticketIds: [] };
     }
-
-
-
-    return null;
-  };
-
-  const extract_tids = (transactionUuid) => {
-    try {
-      if (!transactionUuid) return [];
-
-      const idsss = transactionUuid
-        ?.split("___")
-        ?.slice(1)?.[0]?.split("__")
-        ?.map(Number);
-
-      return idsss;
-    } catch (error) {
-      console.error("Error extracting tids:", error);
-      return [];
-    }
+    
+    return {
+      participationId: decodedData.p,
+      ticketIds: decodedData.t || []
+    };
   };
 
   useEffect(() => {
@@ -53,11 +56,6 @@ export const PaymentSuccess = () => {
         const base64Response = searchParams.get("data");
         console.log("Base64 Response:", base64Response);
 
-
-
-        const tid = searchParams.get("q");
-
-
         if (!base64Response) {
           setError("No payment data found");
           setLoading(false);
@@ -68,27 +66,25 @@ export const PaymentSuccess = () => {
         const decodedData = JSON.parse(atob(base64Response));
         console.log("Payment Response:", decodedData);
 
+        // Extract participation_id and ticket_ids from transaction_uuid
+        const transactionData = extractTransactionData(decodedData?.transaction_uuid);
+        console.log("Extracted Participation ID:", transactionData.participationId);
+        console.log("Extracted Ticket IDs:", transactionData.ticketIds);
 
-
-
-
-
-
-        // Extract participation_id from transaction_uuid
-        const participationId = extractParticipationId(decodedData?.transaction_uuid);
-        console.log("Extracted Participation ID:", participationId);
-
-        const participant_ticket_ids = extract_tids(decodedData?.transaction_uuid);
-
-
-
-        if (!participationId) {
+        if (!transactionData.participationId) {
           setError("No participation ID found in transaction");
           setLoading(false);
           return;
         }
 
+        if (!transactionData.ticketIds || transactionData.ticketIds.length === 0) {
+          setError("No ticket information found in transaction");
+          setLoading(false);
+          return;
+        }
+
         setPaymentData(decodedData);
+        setExtractedData(transactionData);
 
         // Check if payment was successful
         if (decodedData.status !== 'COMPLETE') {
@@ -98,7 +94,11 @@ export const PaymentSuccess = () => {
         }
 
         // Verify the payment with your backend
-        const verificationResult = await verifyPayment(decodedData, participationId, participant_ticket_ids);
+        const verificationResult = await verifyPayment(
+          decodedData, 
+          transactionData.participationId, 
+          transactionData.ticketIds
+        );
 
         if (verificationResult.success) {
           // Payment verified successfully
@@ -128,7 +128,7 @@ export const PaymentSuccess = () => {
   }, [searchParams, navigate, authTokens, authReady, api]);
 
   // Function to verify payment with backend
-  const verifyPayment = async (paymentData, participationId, participant_ticket_ids) => {
+  const verifyPayment = async (paymentData, participationId, ticketIds) => {
     try {
       console.log("Verifying payment with backend...");
 
@@ -136,11 +136,9 @@ export const PaymentSuccess = () => {
         '/api/event/payment/',
         {
           participation_id: participationId,
-          participant_ticket_ids: participant_ticket_ids,
+          participant_ticket_ids: ticketIds,
           transaction_uuid: paymentData.transaction_uuid,
           transaction_code: paymentData.transaction_code,
-          // status: paymentData.status,
-
           total_amount: paymentData.total_amount,
           product_code: paymentData.product_code,
           signature: paymentData.signature
@@ -212,8 +210,6 @@ export const PaymentSuccess = () => {
     );
   }
 
-  const participationId = extractParticipationId(paymentData?.transaction_uuid);
-
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
       <div className="bg-white p-8 rounded-lg shadow-md text-center max-w-md">
@@ -229,10 +225,10 @@ export const PaymentSuccess = () => {
           <div className="bg-gray-50 p-4 rounded-lg mb-4 text-left">
             <h3 className="font-semibold mb-2">Transaction Details:</h3>
             <p className="text-sm"><strong>Transaction ID:</strong> {paymentData.transaction_code}</p>
-            <p className="text-sm"><strong>Transaction UUID:</strong> {paymentData.transaction_uuid}</p>
+            {/* <p className="text-sm"><strong>Participation ID:</strong> {extractedData.participationId}</p> */}
+            {/* <p className="text-sm"><strong>Ticket IDs:</strong> {extractedData.ticketIds.join(', ')}</p> */}
             <p className="text-sm"><strong>Amount:</strong> Rs. {paymentData.total_amount}</p>
             <p className="text-sm"><strong>Status:</strong> {paymentData.status}</p>
-        
           </div>
         )}
 

@@ -29,6 +29,8 @@ const ProtectedRoute = ({ children, allowedRole }) => {
     return <Navigate to='/' replace />;
   }
 
+  
+
 
 
   // Otherwise, allow access
