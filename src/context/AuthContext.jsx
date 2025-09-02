@@ -14,7 +14,7 @@ export const AuthProvider = ({ children }) => {
     const [phone_number, setPhone_number] = useState(null);
     const [fullName, setFullName] = useState(null);
     const [hasProfile, setHasProfile] = useState(false);
-    const [profilePicture, setProfilePicture]=useState("");
+    const [profilePicture, setProfilePicture] = useState("");
 
 
     useEffect(() => {
@@ -26,8 +26,12 @@ export const AuthProvider = ({ children }) => {
         const storedFullname = localStorage.getItem('user_full_name');
         const storedPhoneno = localStorage.getItem('phone_number');
         const storedHasProfile = localStorage.getItem('has_profile') === 'true';
-        const storedProfilePicture=localStorage.getItem('profilePicture');
-        
+        const storedProfilePicture = localStorage.getItem('profilePicture');
+
+
+        console.log('storedRole', storedRole);
+
+
         const init = () => {
             if (encryptedAccess) {
                 try {
@@ -59,7 +63,7 @@ export const AuthProvider = ({ children }) => {
             if (storedHasProfile) {
                 setHasProfile(storedHasProfile);
             }
-            if(storedProfilePicture){
+            if (storedProfilePicture) {
                 setProfilePicture(storedProfilePicture)
             }
 
@@ -77,6 +81,10 @@ export const AuthProvider = ({ children }) => {
             Cookies.set('access_token', encryptedAccess, { expires: 1 });
             setAuthTokens({ access });
         }
+        console.log('role----------------', role);
+        setRole(role);
+        // setId(id);
+        setEmail(email);
         localStorage.setItem('id', id)
         localStorage.setItem('email', email);
         localStorage.setItem('role', role);
@@ -91,13 +99,8 @@ export const AuthProvider = ({ children }) => {
         setAuthTokens(null);
         setEmail(null);
         Cookies.remove('access_token');
-        localStorage.removeItem('email');
-        localStorage.removeItem('role');
-        localStorage.removeItem('user_full_name');
-        localStorage.removeItem('id');
-        localStorage.removeItem('phone_number');
-        localStorage.removeItem('has_profile');
-        localStorage.removeItem('profilePicture')
+
+        localStorage.clear();
 
     };
 

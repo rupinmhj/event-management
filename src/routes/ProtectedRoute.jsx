@@ -6,7 +6,7 @@ const ProtectedRoute = ({ children, allowedRole }) => {
   const { authTokens, role, authReady } = useContext(AuthContext);
 
   // Show loader while checking auth
-  if (!authReady) {
+  if (!authReady && !authTokens) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -18,16 +18,18 @@ const ProtectedRoute = ({ children, allowedRole }) => {
   }
 
   // If not logged in
+  { console.log('role', role); }
   if (!authTokens || !role) {
-    // alert("no authtokens ");
+    console.log("authTokens:", JSON.stringify(authTokens), "role:", JSON.stringify(role))
+    console.log("no authtokens ");
     return <Navigate to="/" replace />;
   }
 
-  // if(!allowedRole.includes(role)){
-  //   return <Navigate to='/' replace/>;
-  // }
+  if (!allowedRole.includes(role)) {
+    return <Navigate to='/' replace />;
+  }
 
-  
+
 
   // Otherwise, allow access
   return children;
