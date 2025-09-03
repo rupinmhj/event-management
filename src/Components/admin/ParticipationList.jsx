@@ -6,20 +6,24 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { TabsContent } from "@/components/ui/tabs";
 import { Users, Eye, ArrowRight } from "lucide-react";
 import useAxiosAuth from "@/hooks/useAxiosAuth";
+import { PaginationControls } from "@/utils/PaginationControls"
 export const ParticipationList = () => {
   const [participants, setParticipants] = useState([]);
   const [loading, setLoading] = useState(true);
   const { id } = useParams(); // eventId from route
   const api = useAxiosAuth();
   const navigate = useNavigate();
+  const [page,setPage]=useState(1);
+  const [totalPages,setTotalPages]=useState(1);
 
   useEffect(() => {
     const fetchParticipants = async () => {
       try {
         setLoading(true);
-        const res = await api.get(`/api/event/${id}/participation-list/`);
+        const res = await api.get(`/api/event/${id}/participation-list/?page=${page}&page_size=10`);
         console.log('participants', res.data);
-        setParticipants(res.data);
+        setParticipants(res.data.results);
+        setTotalPages(res.data.total_pages);
       } catch (error) {
         console.error("Error fetching participation list:", error);
       } finally {
@@ -28,7 +32,7 @@ export const ParticipationList = () => {
     };
 
     fetchParticipants();
-  }, [id, api]);
+  }, [id, api,page]);
 
   const exportParticipation = async (id) => {
     try {
@@ -107,7 +111,7 @@ export const ParticipationList = () => {
                 {participants.length > 0 ? (
                   participants.map((p, idx) => (
                     <tr key={p.id}>
-                      <td className="px-3 py-2 text-[13px] text-left">{idx + 1}</td>
+                      <td className="px-3 py-2 text-[13px] text-left">{(idx + 1)+(page-1)*10}</td>
                       <td className="px-3 py-2 text-[13px] text-left">{p.participant_name}</td>
                       <td className="px-3 py-2 text-center">
                         <button
@@ -133,7 +137,13 @@ export const ParticipationList = () => {
             </table>
           </ScrollArea>
         </CardContent>
+           <PaginationControls
+        currentPage={page}
+        totalPages={totalPages}
+        onPageChange={setPage}
+      />
       </Card>
+       
     </TabsContent>
   );
 };

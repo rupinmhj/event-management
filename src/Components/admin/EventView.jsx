@@ -146,13 +146,17 @@ export function EventView() {
     // Format date
     const formatDate = (dateString) => {
         const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
+        return date.toLocaleString("en-US", {
+            year: "numeric",
+            month: "short",  // e.g. Oct
+            day: "numeric",  // e.g. 15
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,    // 12-hour clock with AM/PM
+            timeZone: "UTC", // keep consistent with "Z" (UTC) in your string
         });
     };
+
 
     // Format time
     const formatTime = (dateString) => {
@@ -175,7 +179,7 @@ export function EventView() {
         setIsDeleting(true);
         try {
             const res = await api.delete(`/api/event/delete-event/${id}/`);
-            
+
             if (res.status === 200 || res.status === 204) {
                 console.log('Event deleted successfully');
                 setShowDeleteModal(false);
@@ -530,7 +534,7 @@ export function EventView() {
                         {/* Requirements Tab Content */}
                         <TabsContent value="requirements">
                             {event && event.requirements ? (
-                                <RequirementsView requirements={event.requirements}/>
+                                <RequirementsView requirements={event.requirements} />
                             ) : (
                                 <div className="text-center py-8">
                                     <p className="text-muted-foreground">No requirements data available</p>
@@ -543,7 +547,7 @@ export function EventView() {
                             {/* <div className="text-center py-8">
                                 <p className="text-muted-foreground">Ticket price information coming soon...</p>
                             </div> */}
-                            <PricingView eventId={id}  />
+                            <PricingView eventId={id} />
                         </TabsContent>
 
                         {/* Participants Tab Content */}

@@ -153,14 +153,19 @@ export default function EventCardList() {
     }
 
     // Format date
-    const formatDate = (dateString) => {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-        });
-    };
+  const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  return date.toLocaleString("en-US", {
+    year: "numeric",
+    month: "short",  // e.g. Oct
+    day: "numeric",  // e.g. 15
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,    // 12-hour clock with AM/PM
+    timeZone: "UTC", // keep consistent with "Z" (UTC) in your string
+  });
+};
+
 
     // Card variants for animation
     const cardVariants = {

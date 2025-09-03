@@ -47,7 +47,7 @@ import { FaCalendar, FaChevronLeft, FaChevronRight } from "react-icons/fa";
   };
 
   const handleDateSelect = (date) => {
-    const dateString = date.toLocaleDateString("en-CA"); // YYYY-MM-DD
+    const dateString = date.toLocaleDateString("en-US"); // YYYY-MM-DD
     onChange(dateString);
     setCurrentMonth(date);
     setIsOpen(false);
@@ -129,7 +129,7 @@ import { FaCalendar, FaChevronLeft, FaChevronRight } from "react-icons/fa";
                   type="button"
                   className={`p-2 rounded text-center hover:bg-accent ${
                     currentMonth.getFullYear() === year
-                      ? "bg-primary text-primary-foreground font-bold"
+                      ? "bg-blue/80 hover:text-blue text-primary-foreground font-bold"
                       : ""
                   }`}
                   onClick={() => {
@@ -172,7 +172,7 @@ import { FaCalendar, FaChevronLeft, FaChevronRight } from "react-icons/fa";
                         disabled={isDateDisabled(date)}
                         className={`w-full h-full text-xs rounded hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed ${
                           selectedDate && date.toDateString() === selectedDate.toDateString()
-                            ? "bg-primary text-primary-foreground"
+                            ? "bg-blue/80 text-white"
                             : "hover:bg-accent"
                         }`}
                       >

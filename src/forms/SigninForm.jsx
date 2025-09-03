@@ -81,10 +81,10 @@ export const SigninForm = ({ switchToSignup, setShowOtp }) => {
             // const msg = error.response?.data?.detail || error.response?.data?.message || 'Login failed, try again';
             // toast.error(msg);
             // console.log(error.response);
+            console.log("error",error)
             const msg = error.response.data.non_field_errors[0];
             // const msg = error.response;
             console.log(msg);
-            console.log("error",error)
             toast.error(msg);
         } finally {
             setLoading(false);

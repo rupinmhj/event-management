@@ -15,6 +15,7 @@ import GeneralContext from '@/context/GeneralContext';
 import { motion } from 'framer-motion'
 import DatePicker from '../../utils/DatePicker'
 import useAxiosAuth from '@/hooks/useAxiosAuth';
+import DateTimePicker from '@/utils/DateTimePicker';
 const CreateEvent = ({ onCancel, onSubmit }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [bannerPreview, setBannerPreview] = useState('');
@@ -147,7 +148,10 @@ const CreateEvent = ({ onCancel, onSubmit }) => {
 
             const res = await api.post('/api/event/create-event/', submitData)
             console.log(res.data);
-            submitCreate();
+            toast.success("Event created successfully");
+            setTimeout(() => submitCreate(), 1000);
+
+
         } catch (error) {
             console.error('Error creating event:', error);
         } finally {
@@ -227,11 +231,11 @@ const CreateEvent = ({ onCancel, onSubmit }) => {
                                                 control={control}
                                                 rules={{ required: "Start date is required" }}
                                                 render={({ field }) => (
-                                                    <DatePicker
+                                                    <DateTimePicker
                                                         value={field.value}       // string date from RHF state
                                                         onChange={field.onChange} // pass new date string back to RHF
                                                         minDate={new Date()}
-                                                        maxDate={new Date(2028, 1, 1)}
+                                                        maxDate={new Date(2040, 1, 1)}
                                                         placeholder={"Start Date"}
                                                     />
                                                 )}
@@ -368,7 +372,7 @@ const CreateEvent = ({ onCancel, onSubmit }) => {
                                     </div>
                                 </div>
 
-                               
+
 
 
                                 {/* Form Actions */}

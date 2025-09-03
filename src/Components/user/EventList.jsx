@@ -112,14 +112,19 @@ export default function ParticipantEventList() {
     }
 
     // Format date
-    const formatDate = (dateString) => {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-        });
-    };
+   const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  return date.toLocaleString("en-US", {
+    year: "numeric",
+    month: "short",  // e.g. Oct
+    day: "numeric",  // e.g. 15
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,    // 12-hour clock with AM/PM
+    timeZone: "UTC", // keep consistent with "Z" (UTC) in your string
+  });
+};
+
 
 
     // Check if event is upcoming
@@ -180,7 +185,8 @@ export default function ParticipantEventList() {
                                 exit="exit"
                                 transition={{ duration: 0.3, delay: index * 0.1 }}
                             >
-                                <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden ">
+                                <Card className={`group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden ${!isUpcoming(event.start_date) ? "hidden" : ""
+                                    }`}>
                                     {/* Event Status Badge */}
                                     <div className="absolute top-3 right-3 z-10">
                                         <Badge

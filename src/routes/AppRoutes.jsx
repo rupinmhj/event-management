@@ -76,6 +76,7 @@ const router = createBrowserRouter([
         ),
         children: [
             { index: true, element: <DashboardAdmin /> },
+            
             { path: "events", element: <Events /> },
             { path: "event/:id", element: <EventView /> },
             { path: "requirement-setup", element: <RequirementSetup /> },

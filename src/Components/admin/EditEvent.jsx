@@ -17,6 +17,7 @@ import DatePicker from '../../utils/DatePicker'
 import useAxiosAuth from '@/hooks/useAxiosAuth';
 import { useParams, useNavigate } from 'react-router-dom';
 import {toast,ToastContainer} from 'react-toastify'
+import DateTimePicker from '@/utils/DateTimePicker';
 const EditEvent = ({ eventId, onCancel, onSubmit }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingData, setIsLoadingData] = useState(true);
@@ -328,7 +329,7 @@ const EditEvent = ({ eventId, onCancel, onSubmit }) => {
                                                 control={control}
                                                 rules={{ required: "Start date is required" }}
                                                 render={({ field }) => (
-                                                    <DatePicker
+                                                    <DateTimePicker
                                                         value={field.value}
                                                         onChange={field.onChange}
                                                         minDate={new Date()}

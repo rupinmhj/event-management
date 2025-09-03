@@ -77,11 +77,14 @@ export function EventDetail() {
     // Format date
     const formatDate = (dateString) => {
         const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
+        return date.toLocaleString("en-US", {
+            year: "numeric",
+            month: "short",  // e.g. Oct
+            day: "numeric",  // e.g. 15
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,    // 12-hour clock with AM/PM
+            timeZone: "UTC", // keep consistent with "Z" (UTC) in your string
         });
     };
 
@@ -273,7 +276,7 @@ export function EventDetail() {
                                     />
                                     Ticket Price
                                 </TabsTrigger>
-                                 <TabsTrigger
+                                <TabsTrigger
                                     value="my-payment"
                                     className="text-gray-600 data-[state=active]:bg-muted data-[state=active]:after:bg-primary relative overflow-hidden rounded-none border py-2 after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 first:rounded-s last:rounded-e"
                                 >

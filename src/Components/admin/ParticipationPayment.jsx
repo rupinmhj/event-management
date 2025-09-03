@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { CreditCard, Eye, ArrowRight, Download, X, Calendar, User, Hash, Banknote } from "lucide-react";
 import useAxiosAuth from "@/hooks/useAxiosAuth";
+import { PaginationControls } from "@/utils/PaginationControls"
 
 export const ParticipationPayment = () => {
     const [payments, setPayments] = useState([]);
@@ -14,14 +15,18 @@ export const ParticipationPayment = () => {
     const { id } = useParams(); // eventId from route
     const api = useAxiosAuth();
     const navigate = useNavigate();
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+
 
     useEffect(() => {
         const fetchPayments = async () => {
             try {
                 setLoading(true);
-                const res = await api.get(`/api/event/payment-list/?event=${id}`);
+                const res = await api.get(`/api/event/payment-list/?event=${id}&page=${page}&page_size=10`);
                 console.log('payments', res.data);
-                setPayments(res.data);
+                setPayments(res.data.results);
+                setTotalPages(res.data.total_pages);
             } catch (error) {
                 console.error("Error fetching payment list:", error);
             } finally {
@@ -319,7 +324,7 @@ export const ParticipationPayment = () => {
                                                             <div>
                                                                 <p className="font-medium text-gray-900">{ticket.ticket_label}</p>
                                                                 <p className="text-xs text-gray-500 mt-1">
-                                                                    Ticket ID: {ticket.id} | 
+                                                                    Ticket ID: {ticket.id} |
                                                                     Created: {formatDate(ticket.created_at)}
                                                                 </p>
                                                                 <div className="flex items-center gap-2 mt-2">
@@ -334,7 +339,7 @@ export const ParticipationPayment = () => {
                                                         </div>
                                                     </div>
                                                 ))}
-                                                
+
                                                 {/* Total Summary */}
                                                 <div className="border-t pt-3 mt-3">
                                                     <div className="flex justify-between items-center">
@@ -373,6 +378,11 @@ export const ParticipationPayment = () => {
                             </Button>
                         </div>
                     </div>
+                    <PaginationControls
+                        currentPage={page}
+                        totalPages={totalPages}
+                        onPageChange={setPage}
+                    />
                 </div>
             )}
         </>

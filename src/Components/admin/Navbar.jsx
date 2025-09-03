@@ -149,62 +149,7 @@ const Navbar = ({ mode }) => {
                 {/* Left side */}
                 <div className="flex items-center gap-2 ">
                     {/* Mobile menu trigger */}
-                    <Popover modal={false}>
-                        <PopoverTrigger asChild>
-                            <Button
-                                className="group size-8 md:hidden"
-                                variant="ghost"
-                                size="icon"
-                            >
-                                <svg
-                                    className="pointer-events-none"
-                                    width={16}
-                                    height={16}
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                >
-                                    <path
-                                        d="M4 12L20 12"
-                                        className="origin-center -translate-y-[7px] transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-x-0 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[315deg]"
-                                    />
-                                    <path
-                                        d="M4 12H20"
-                                        className="origin-center transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.8)] group-aria-expanded:rotate-45"
-                                    />
-                                    <path
-                                        d="M4 12H20"
-                                        className="origin-center translate-y-[7px] transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[135deg]"
-                                    />
-                                </svg>
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent align="start" className="w-36 p-1 md:hidden " portalled={false}>
-                            <NavigationMenu className="max-w-none *:w-full">
-                                <NavigationMenuList className="flex-col items-start gap-0 md:gap-2">
-                                    {navigationLinks.map((link, index) => (
-                                        <NavigationMenuItem key={index} className="w-full">
-                                            <NavigationMenuLink asChild>
-                                                <Link
-                                                    to={link.to}
-                                                    className={`block w-full py-1.5 font-medium transition-colors ${isActiveLink(link.to)
-                                                        ? "text-blue border-b-2 border-blue"
-                                                        : "text-muted-foreground hover:text-blue"
-                                                        }`}
-                                                >
-                                                    {link.label}
-                                                </Link>
-                                            </NavigationMenuLink>
-                                        </NavigationMenuItem>
-                                    ))}
-                                </NavigationMenuList>
-                            </NavigationMenu>
-                        </PopoverContent>
-                    </Popover>
+                   
                     {/* Main nav */}
                     <div className="flex items-center gap-6">
                         <Link to="/admin" className="text-blue hover:text-blue/90">
@@ -242,6 +187,129 @@ const Navbar = ({ mode }) => {
                     </div>
                     {/* User menu */}
                     <UserMenu mode={mode} logout={logout} />
+                     <Popover modal={false}>
+                        <PopoverTrigger asChild>
+                            <Button
+                                className="group relative size-10 md:hidden bg-gradient-to-br from-slate-50 to-white border border-slate-200 shadow-sm hover:shadow-md hover:from-white hover:to-slate-50 transition-all duration-300"
+                                variant="ghost"
+                                size="icon"
+                            >
+                                <div className="relative">
+                                    <svg
+                                        className="pointer-events-none"
+                                        width={18}
+                                        height={18}
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <path
+                                            d="M4 12L20 12"
+                                            className="origin-center -translate-y-[7px] transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-x-0 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[315deg]"
+                                        />
+                                        <path
+                                            d="M4 12H20"
+                                            className="origin-center transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.8)] group-aria-expanded:rotate-45"
+                                        />
+                                        <path
+                                            d="M4 12H20"
+                                            className="origin-center translate-y-[7px] transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[135deg]"
+                                        />
+                                    </svg>
+                                    {/* Notification dot for active state */}
+                                    <span className="absolute -top-1 -right-1 size-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full opacity-0 group-aria-expanded:opacity-100 transition-opacity duration-300"></span>
+                                </div>
+                            </Button>
+                        </PopoverTrigger>
+
+                        <PopoverContent
+                            align="start"
+                            className="w-64 p-0 md:hidden bg-gradient-to-br from-white via-slate-50/50 to-white border border-slate-200/60 shadow-xl backdrop-blur-sm"
+                            portalled={false}
+                        >
+                           
+
+                            {/* Navigation Items */}
+                            <NavigationMenu className="max-w-none ">
+                                <NavigationMenuList className="flex-col items-start gap-0 p-2 ">
+                                    {navigationLinks.map((link, index) => (
+                                        <NavigationMenuItem key={index} className="w-full">
+                                            <NavigationMenuLink asChild>
+                                                <Link
+                                                    to={link.to}
+                                                    className={`
+                                    group relative w-full flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium text-sm transition-all duration-300
+                                    ${location.pathname === link.to
+                                                            ? "bg-gradient-to-r from-blue-500 to-purple-600 text-blue shadow-md transform scale-[1.02]"
+                                                            : "text-slate-600 hover:text-slate-900 hover:bg-gradient-to-r hover:from-slate-100 hover:to-slate-50"
+                                                        }
+                                `}
+                                                    onClick={() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))}
+                                                >
+                                                    {/* Icon based on link (you can customize these) */}
+                                                    <div className={`
+                                    size-4 rounded-full transition-all duration-300 flex items-center justify-center
+                                    ${location.pathname === link.to
+                                                            ? "bg-white/30"
+                                                            : "bg-slate-300 group-hover:bg-slate-400"
+                                                        }
+                                `}>
+                                                        {/* Add specific icons here based on link.label or link.to */}
+                                                        {link.label === 'Events' && (
+                                                            <svg className="size-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                            </svg>
+                                                        )}
+                                                        {link.label === 'Requirement Setup' && (
+                                                            <svg className="size-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                            </svg>
+                                                        )}
+                                                        {link.label === 'Tickets/Pricing' && (
+                                                            <svg className="size-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+                                                            </svg>
+                                                        )}
+                                                        {link.label === 'Email' && (
+                                                            <svg className="size-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                                            </svg>
+                                                        )}
+                                                    </div>
+
+                                                    <span className="flex-1">{link.label}</span>
+
+                                                    {/* Active indicator */}
+                                                    {location.pathname === link.to && (
+                                                        <div className="size-1.5 bg-white rounded-full animate-pulse"></div>
+                                                    )}
+
+                                                    {/* Arrow indicator for non-active items */}
+                                                    {location.pathname !== link.to && (
+                                                        <svg
+                                                            className="size-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-slate-400"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            viewBox="0 0 24 24"
+                                                        >
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                                        </svg>
+                                                    )}
+                                                </Link>
+                                            </NavigationMenuLink>
+                                        </NavigationMenuItem>
+                                    ))}
+                                </NavigationMenuList>
+                            </NavigationMenu>
+
+                           
+                        </PopoverContent>
+                    </Popover>
                 </div>
             </div>
         </header>

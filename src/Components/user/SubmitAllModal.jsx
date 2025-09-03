@@ -263,7 +263,7 @@ const SubmitAllModal = ({ isOpen, onClose, events, onRefresh }) => {
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="w-[95vw] sm:w-[90vw] md:w-[80vw] max-w-7xl max-h-[90vh] overflow-y-auto py-0 bb">
-                <div className="sticky top-0 bg-white border-b pb-3 sm:pb-4">
+                <div className="sticky top-0 bg-white border-b pb-3 sm:pb-4 z-40">
                     <DialogTitle className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 pt-3 sm:pt-4">
                         Submit Requirements
                     </DialogTitle>

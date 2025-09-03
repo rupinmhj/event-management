@@ -103,63 +103,11 @@ const Navbar = ({ mode }) => {
     const location = useLocation();
     return (
         <header className="border-b font-sans bg-white">
-            <div className="px-12 flex h-16 items-center justify-between gap-4">
+            <div className="md:px-12 px-4 flex h-16 items-center justify-between gap-4">
                 {/* Left side */}
                 <div className="flex items-center gap-2">
                     {/* Mobile menu trigger */}
-                    <Popover modal={false}>
-                        <PopoverTrigger asChild>
-                            <Button
-                                className="group size-8 md:hidden"
-                                variant="ghost"
-                                size="icon"
-                            >
-                                <svg
-                                    className="pointer-events-none"
-                                    width={16}
-                                    height={16}
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                >
-                                    <path
-                                        d="M4 12L20 12"
-                                        className="origin-center -translate-y-[7px] transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-x-0 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[315deg]"
-                                    />
-                                    <path
-                                        d="M4 12H20"
-                                        className="origin-center transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.8)] group-aria-expanded:rotate-45"
-                                    />
-                                    <path
-                                        d="M4 12H20"
-                                        className="origin-center translate-y-[7px] transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[135deg]"
-                                    />
-                                </svg>
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent align="start" className="w-36 p-1 md:hidden" portalled={false}>
-                            <NavigationMenu className="max-w-none *:w-full">
-                                <NavigationMenuList className="flex-col items-start gap-0 md:gap-2">
-                                    {navigationLinks.map((link, index) => (
-                                        <NavigationMenuItem key={index} className="w-full">
-                                            <NavigationMenuLink asChild>
-                                                <Link to={link.to} className={`py-1.5 font-medium ${location.pathname === link.to
-                                                        ? "text-blue border-b-2 border-blue"
-                                                        : "text-muted-foreground hover:text-blue"
-                                                    }`}>
-                                                    {link.label}
-                                                </Link>
-                                            </NavigationMenuLink>
-                                        </NavigationMenuItem>
-                                    ))}
-                                </NavigationMenuList>
-                            </NavigationMenu>
-                        </PopoverContent>
-                    </Popover>
+                   
                     {/* Main nav */}
                     <div className="flex items-center gap-6">
                         <Link to="/" className="text-blue hover:text-blue/90">
