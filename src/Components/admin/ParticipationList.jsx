@@ -77,7 +77,7 @@ export const ParticipationList = () => {
   return (
     <TabsContent value="participants">
 
-      <Card>
+      <Card className=" pb-4">
         <CardHeader>
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
@@ -137,7 +137,7 @@ export const ParticipationList = () => {
             </table>
           </ScrollArea>
         </CardContent>
-           <PaginationControls
+           <PaginationControls 
         currentPage={page}
         totalPages={totalPages}
         onPageChange={setPage}

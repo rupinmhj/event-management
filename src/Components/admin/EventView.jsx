@@ -294,14 +294,14 @@ export function EventView() {
                                         </span>
                                     </div>
                                 </div>
-                                <button
+                                {/* <button
                                     className={`text-sm px-3 py-1 rounded font-medium ${event.is_payment_required
                                         ? "bg-yellow-200 text-yellow-800"
                                         : "bg-gray-100 text-gray-800"
                                         }`}
                                 >
                                     {event.is_payment_required ? "Paid Event" : "Free Event"}
-                                </button>
+                                </button> */}
                             </div>
                         </CardHeader>
                     </Card>
@@ -444,7 +444,7 @@ export function EventView() {
                                                         </div>
                                                     </div>
 
-                                                    <div className="flex items-center gap-3">
+                                                    {/* <div className="flex items-center gap-3">
                                                         <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center">
                                                             <DollarSign className="w-5 h-5 text-primary" />
                                                         </div>
@@ -454,7 +454,7 @@ export function EventView() {
                                                                 {event.is_payment_required ? "Paid Event" : "Free Event"}
                                                             </p>
                                                         </div>
-                                                    </div>
+                                                    </div> */}
                                                 </div>
                                             </div>
                                         </CardContent>

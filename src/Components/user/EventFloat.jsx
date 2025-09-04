@@ -10,11 +10,12 @@ import { Autoplay, Pagination } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/autoplay";
+import { useNavigate } from "react-router-dom";
 
 export const EventFloat = () => {
   const api = useAxiosAuth();
   const [events, setEvents] = useState([]);
-
+  const navigate = useNavigate();
   useEffect(() => {
     const fetchEvents = async () => {
       const res = await api.get("/api/event/active-events/");
@@ -63,7 +64,7 @@ export const EventFloat = () => {
         >
           {events.map((event, idx) => (
             <SwiperSlide key={idx}>
-              <div className="w-full bg-gradient-to-r from-blue/70 to-blue/90 p-2 md:p-4 text-white h-[160px] md:h-[200px] rounded-lg">
+              <div className="w-full bg-gradient-to-r from-blue/70 to-blue/90 p-2 md:p-4 text-white h-[160px] md:h-[200px] rounded-lg" onClick={()=>navigate(`/user/event/${event.id}`)}>
                 <CardContent className="p-1 md:p-2 relative h-full">
                   <div className="flex items-start justify-between mb-2 md:mb-3">
                     <div>

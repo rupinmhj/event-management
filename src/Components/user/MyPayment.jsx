@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -30,7 +30,7 @@ export const MyPayment = () => {
     const [showModal, setShowModal] = useState(false);
     const { id } = useParams(); // eventId from route
     const api = useAxiosAuth();
-
+    const navigate = useNavigate();
     useEffect(() => {
         const fetchMyPayments = async () => {
             try {
@@ -270,9 +270,9 @@ export const MyPayment = () => {
                         </ScrollArea>
                     ) : (
                         /* Enhanced Empty State - No Payments */
-                        <div className="text-center py-12">
-                            <div className="flex flex-col items-center max-w-md mx-auto">
-                                <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-full mb-6">
+                        <div className="text-center py-6">
+                            <div className="flex flex-col items-center max-w-md mx-auto ">
+                                <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-full mb-6 ">
                                     <ShoppingCart className="w-12 h-12 text-blue-500" />
                                 </div>
                                 <h3 className="text-xl font-semibold text-gray-900 mb-3">No Tickets Purchased Yet</h3>
@@ -282,10 +282,11 @@ export const MyPayment = () => {
 
                                 {/* Call to Action */}
                                 <Button
-                                    className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
+                                    className="bg-blue hover:bg-blue/80 text-white flex items-center gap-2"
                                     onClick={() => {
                                         // Navigate to ticket purchase or show ticket selection
-                                        console.log('Navigate to ticket purchase');
+                                        navigate('/user/tickets')
+
                                     }}
                                 >
                                     <Plus className="w-4 h-4" />
@@ -443,7 +444,7 @@ export const MyPayment = () => {
                                                     </div>
                                                 ))}
 
-                                              
+
                                             </>
                                         ) : (
                                             <div className="text-center py-8">
@@ -456,7 +457,7 @@ export const MyPayment = () => {
                             </div>
                         </ScrollArea>
 
-                      
+
                     </div>
                     <ToastContainer />
                 </div>

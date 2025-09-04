@@ -277,12 +277,12 @@ export default function ParticipantEventList() {
                                         </div>
 
                                         {/* Payment Status */}
-                                        <div className="flex items-center gap-2">
+                                        {/* <div className="flex items-center gap-2">
                                             <DollarSign className="w-4 h-4 text-green-500" />
                                             <Badge variant={event.is_payment_required ? "paid" : "secondary"}>
                                                 {event.is_payment_required ? "Paid" : "Free"}
                                             </Badge>
-                                        </div>
+                                        </div> */}
                                     </CardContent>
 
                                     <CardFooter className="pt-4 border-t bg-gray-50/50">

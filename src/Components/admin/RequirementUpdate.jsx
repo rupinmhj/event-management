@@ -27,6 +27,7 @@ import {
 import {FaTimes} from 'react-icons/fa'
 import AuthContext from '@/context/AuthContext';
 import useAxiosAuth from '@/hooks/useAxiosAuth';
+import DateTimePicker from '@/utils/DateTimePicker';
 
 const fieldTypeIcons = {
   text: MdTextFields,
@@ -419,7 +420,7 @@ export const RequirementUpdate = () => {
               {/* Deadline */}
               <div className="space-y-2">
                 <Label>Deadline</Label>
-                <DatePicker
+                <DateTimePicker
                   value={requirement.deadline}
                   onChange={(value) => {
                     setRequirement({ ...requirement, deadline: value });

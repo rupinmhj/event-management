@@ -219,14 +219,14 @@ export function EventDetail() {
                                         </span>
                                     </div>
                                     <div className="flex flex-wrap gap-2">
-                                        <button
+                                        {/* <button
                                             className={`text-sm px-3 py-1 rounded font-medium ${event.is_payment_required
                                                 ? "bg-yellow-200 text-yellow-800"
                                                 : "bg-gray-100 text-gray-800"
                                                 }`}
                                         >
                                             {event.is_payment_required ? "Paid Event" : "Free Event"}
-                                        </button>
+                                        </button> */}
                                     </div>
                                 </div>
                             </div>
@@ -357,7 +357,7 @@ export function EventDetail() {
                                                         </div>
                                                     </div>
 
-                                                    <div className="flex items-center gap-3">
+                                                    {/* <div className="flex items-center gap-3">
                                                         <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center">
                                                             <DollarSign className="w-5 h-5 text-primary" />
                                                         </div>
@@ -367,7 +367,7 @@ export function EventDetail() {
                                                                 {event.is_payment_required ? "Paid Event" : "Free Event"}
                                                             </p>
                                                         </div>
-                                                    </div>
+                                                    </div> */}
                                                 </div>
                                             </div>
                                         </CardContent>
@@ -396,14 +396,14 @@ export function EventDetail() {
                                                 </span>
                                             </div>
 
-                                            {!event.is_payment_required && (
+                                            {/* {!event.is_payment_required && (
                                                 <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-950 rounded-lg">
                                                     <DollarSign className="w-5 h-5 text-green-600" />
                                                     <span className="text-sm font-medium text-green-800 dark:text-green-200">
                                                         Free participation
                                                     </span>
                                                 </div>
-                                            )}
+                                            )} */}
 
                                             <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
                                                 <Users className="w-5 h-5 text-blue-600" />

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { FaCalendar, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
- const DatePicker = ({ value, onChange, minDate, maxDate,placeholder }) => {
+const DatePicker = ({ value, onChange, minDate, maxDate, placeholder }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(() => {
     // Initialize currentMonth to either the selected date or today
@@ -47,7 +47,7 @@ import { FaCalendar, FaChevronLeft, FaChevronRight } from "react-icons/fa";
   };
 
   const handleDateSelect = (date) => {
-    const dateString = date.toLocaleDateString("en-US"); // YYYY-MM-DD
+    const dateString = date.toLocaleDateString("en-CA"); // YYYY-MM-DD
     onChange(dateString);
     setCurrentMonth(date);
     setIsOpen(false);
@@ -127,11 +127,10 @@ import { FaCalendar, FaChevronLeft, FaChevronRight } from "react-icons/fa";
                 <button
                   key={year}
                   type="button"
-                  className={`p-2 rounded text-center hover:bg-accent ${
-                    currentMonth.getFullYear() === year
+                  className={`p-2 rounded text-center hover:bg-accent ${currentMonth.getFullYear() === year
                       ? "bg-blue/80 hover:text-blue text-primary-foreground font-bold"
                       : ""
-                  }`}
+                    }`}
                   onClick={() => {
                     const newDate = new Date(currentMonth);
                     newDate.setFullYear(year);
@@ -170,11 +169,10 @@ import { FaCalendar, FaChevronLeft, FaChevronRight } from "react-icons/fa";
                         type="button"
                         onClick={() => !isDateDisabled(date) && handleDateSelect(date)}
                         disabled={isDateDisabled(date)}
-                        className={`w-full h-full text-xs rounded hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed ${
-                          selectedDate && date.toDateString() === selectedDate.toDateString()
+                        className={`w-full h-full text-xs rounded hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed ${selectedDate && date.toDateString() === selectedDate.toDateString()
                             ? "bg-blue/80 text-white"
                             : "hover:bg-accent"
-                        }`}
+                          }`}
                       >
                         {date.getDate()}
                       </button>

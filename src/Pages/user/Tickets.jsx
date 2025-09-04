@@ -331,7 +331,7 @@ export const Tickets = () => {
   const groupedTickets = groupTicketsByEvent();
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
+    <div className="max-w-6xl mx-auto px-4 py-8 min-h-screen">
       <div className="space-y-8">
         {Object.entries(groupedTickets).map(([eventId, eventTickets]) => {
           const selectedCount = getSelectedTicketsForEvent(parseInt(eventId)).length;

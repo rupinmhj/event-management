@@ -357,12 +357,12 @@ export default function EventCardList() {
                                         </div>
 
                                         {/* Payment Status */}
-                                        <div className="flex items-center gap-2">
+                                        {/* <div className="flex items-center gap-2">
                                             <DollarSign className="w-4 h-4 text-green-500" />
                                             <Badge variant={event.is_payment_required ? "paid" : "secondary"}>
                                                 {event.is_payment_required ? "Paid" : "Free"}
                                             </Badge>
-                                        </div>
+                                        </div> */}
                                         {/* <button
                                             onClick={handleAddRequirements}
                                             className="mt-2 text-[14px] bg-blue/80 hover:scale-105 transition-all duration-200 rounded-lg px-2 py-2 text-black"

@@ -44,10 +44,7 @@ const ProfileSetup = () => {
     const [isProfileActive, setIsProfileActive] = useState(true);
     const { setHasProfile } = useContext(AuthContext)
 
-    useEffect(() => {
-        
-        window.scrollTo(0, 0);
-    },[])
+   
     // Default profile image URL
     const defaultProfileImage = "https://via.placeholder.com/96x96/e5e7eb/6b7280?text=Profile";
 
@@ -151,13 +148,17 @@ const ProfileSetup = () => {
                 formData.append('support_document', supportDocument);
             }
 
-
+            for (let [key, value] of formData.entries()) {
+                console.log(key, value);
+            }
 
 
             const res = await api.post('/api/account/profile/', formData);
-            console.log(res);
+            console.log('setupProfile------------------', res);
             localStorage.setItem('has_profile', JSON.stringify(true));
+
             setHasProfile(true);
+
 
             toast.success("Profile Updated: Your profile has been successfully updated.");
             setTimeout(() => {

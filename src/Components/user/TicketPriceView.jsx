@@ -302,14 +302,14 @@ export function TicketPriceView() {
                     <>
                         {/* Summary Cards */}
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                            <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg">
+                            <div className="bg-blue/5  p-4 rounded-lg">
                                 <div className="flex items-center gap-2">
-                                    <Ticket className="w-5 h-5 text-blue-600" />
+                                    <Ticket className="w-5 h-5 text-blue/60" />
                                     <div>
-                                        <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                                        <p className="text-sm font-medium text-blue/80 ">
                                             Total Tickets
                                         </p>
-                                        <p className="text-xl font-bold text-blue-900 dark:text-blue-100">
+                                        <p className="text-xl font-bold text-blue/90 ">
                                             {totalTickets}
                                         </p>
                                     </div>
@@ -432,7 +432,7 @@ export function TicketPriceView() {
                                                 key={ticket.id}
                                                 className={`hover:bg-gray-50 ${isPaid ? "bg-green-50" :
                                                     isExpired ? "bg-red-50 text-gray-400" :
-                                                        isSelected ? "bg-blue-50" : ""
+                                                        isSelected ? "bg-blue/5" : ""
                                                     }`}
                                             >
                                                 {/* Select Checkbox */}

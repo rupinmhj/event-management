@@ -97,7 +97,7 @@ export const SendEmail = () => {
     const handleEditDraft = async (draft) => {
         try {
             setIsLoading(true);
-            
+
             // Clear all existing state first
             setSelectedUserIds([]);
             setEditingDraftId(null);
@@ -112,7 +112,7 @@ export const SendEmail = () => {
             setSubject(draftData.subject || "");
             setHtmlMessage(draftData.html_message || "");
             setIsEventBased(!!draftData.event);
-            
+
             // Set editing state
             setEditingDraftId(draftData.id);
 
@@ -145,11 +145,11 @@ export const SendEmail = () => {
         setIsLoadingParticipants(true);
         try {
             const response = await api.get(`/api/event/${eventId}/participation-list/`);
-            const participants = response.data || [];
-            
+            const participants = Array.isArray(response.data.results) ? response.data.results : [];
+            console.log('_______________participants_________', participants);
             // Set participants first
             setEventParticipants(participants);
-            
+
             // Use requestAnimationFrame to ensure DOM is updated before setting recipients
             requestAnimationFrame(() => {
                 setTimeout(() => {
@@ -157,7 +157,7 @@ export const SendEmail = () => {
                     setSelectedUserIds([...recipientIds]);
                 }, 50);
             });
-            
+
         } catch (error) {
             console.error("Error fetching event participants for draft:", error);
             toast.error("Failed to load event participants");
@@ -171,11 +171,11 @@ export const SendEmail = () => {
         setIsLoadingUsers(true);
         try {
             const response = await api.get('/api/account/user-list/');
-            const users = response.data || [];
-            
+            const users = Array.isArray(response.data) ? response.data : [];
+
             // Set users first
             setAllUsers(users);
-            
+
             // Use requestAnimationFrame to ensure DOM is updated before setting recipients
             requestAnimationFrame(() => {
                 setTimeout(() => {
@@ -183,7 +183,7 @@ export const SendEmail = () => {
                     setSelectedUserIds([...recipientIds]);
                 }, 50);
             });
-            
+
         } catch (error) {
             console.error("Error fetching all users for draft:", error);
             toast.error("Failed to load users");
@@ -437,7 +437,7 @@ export const SendEmail = () => {
         try {
             const response = await api.get('/api/event/sent-mail-list/?status=SENT');
             console.log("Fetched sent emails:", response.data);
-            setEmails(response.data || []);
+            setEmails(Array.isArray(response.data) ? response.data : []);
         } catch (error) {
             console.error("Error fetching sent emails:", error);
             toast.error("Failed to load sent emails");
@@ -452,7 +452,7 @@ export const SendEmail = () => {
         try {
             const response = await api.get('/api/event/sent-mail-list/?status=DRAFT');
             console.log("Fetched draft emails:", response.data);
-            setDrafts(response.data || []);
+            setDrafts(Array.isArray(response.data) ? response.data : []);
         } catch (error) {
             console.error("Error fetching draft emails:", error);
             toast.error("Failed to load draft emails");
@@ -466,7 +466,8 @@ export const SendEmail = () => {
         setIsLoadingEvents(true);
         try {
             const response = await api.get('/api/event/active-events/');
-            setActiveEvents(response.data || []);
+            console.log('______fetchActive_____', response.data);
+            setActiveEvents(Array.isArray(response.data) ? response.data : []);
         } catch (error) {
             console.error("Error fetching active events:", error);
             toast.error("Failed to load active events");
@@ -480,11 +481,12 @@ export const SendEmail = () => {
     const fetchEventParticipants = async (eventId) => {
         // Don't fetch if we're editing a draft - that's handled separately
         if (editingDraftId) return;
-        
+
         setIsLoadingParticipants(true);
         try {
             const response = await api.get(`/api/event/${eventId}/participation-list/`);
-            setEventParticipants(response.data || []);
+            console.log('______fetchEventParticipants_________', response.data.results);
+            setEventParticipants(Array.isArray(response.data.results) ? response.data.results : []);
             // Reset selected users when changing events (but not when editing draft)
             setSelectedUserIds([]);
         } catch (error) {
@@ -499,11 +501,11 @@ export const SendEmail = () => {
     const fetchAllUsers = async () => {
         // Don't fetch if we're editing a draft - that's handled separately
         if (editingDraftId) return;
-        
+
         setIsLoadingUsers(true);
         try {
             const response = await api.get('/api/account/user-list/');
-            setAllUsers(response.data || []);
+            setAllUsers(Array.isArray(response.data) ? response.data : []);
         } catch (error) {
             console.error("Error fetching all users:", error);
             toast.error("Failed to load users");
@@ -517,14 +519,14 @@ export const SendEmail = () => {
         let filtered = [];
 
         if (currentView === 'sent') {
-            filtered = [...emails];
+            filtered = Array.isArray(emails) ? [...emails] : [];
         } else if (currentView === 'draft') {
-            filtered = [...drafts];
+            filtered = Array.isArray(drafts) ? [...drafts] : [];
         }
 
         if (searchTerm.trim()) {
             filtered = filtered.filter(email =>
-                email.subject.toLowerCase().includes(searchTerm.toLowerCase())
+                email.subject && email.subject.toLowerCase().includes(searchTerm.toLowerCase())
             );
         }
 
@@ -578,6 +580,7 @@ export const SendEmail = () => {
     };
 
     const truncateMessage = (html, maxLength = 100) => {
+        if (!html) return '';
         const text = html.replace(/<[^>]*>/g, '');
         return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
     };
@@ -604,7 +607,7 @@ export const SendEmail = () => {
     };
 
     const handleSelectAll = () => {
-        const currentUserList = isEventBased ? eventParticipants : allUsers;
+        const currentUserList = isEventBased ? (Array.isArray(eventParticipants) ? eventParticipants : []) : (Array.isArray(allUsers) ? allUsers : []);
         const allUserIds = currentUserList.map(user =>
             isEventBased ? user.user : user.id
         );
@@ -740,9 +743,18 @@ export const SendEmail = () => {
         { id: 'draft', icon: FileText, label: 'Draft' }
     ];
 
-    const currentUserList = isEventBased ? eventParticipants : allUsers;
-    const allUserIds = currentUserList.map(user => isEventBased ? user.user : user.id);
-    const isAllSelected = selectedUserIds.length > 0 && selectedUserIds.length === allUserIds.length;
+    // FIXED: Safe user list handling
+    const currentUserList = isEventBased ?
+        (Array.isArray(eventParticipants) ? eventParticipants : []) :
+        (Array.isArray(allUsers) ? allUsers : []);
+
+    const allUserIds = currentUserList.map(user =>
+        isEventBased ? user.user : user.id
+    ).filter(id => id !== undefined && id !== null);
+
+    const isAllSelected = selectedUserIds.length > 0 &&
+        allUserIds.length > 0 &&
+        selectedUserIds.length === allUserIds.length;
 
     // Render sidebar
     const renderSidebar = () => (
@@ -845,7 +857,7 @@ export const SendEmail = () => {
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-3 mb-2">
                                                 <h3 className="font-semibold text-gray-900 truncate text-base">
-                                                    {email.subject}
+                                                    {email.subject || 'No Subject'}
                                                 </h3>
                                                 {getStatusBadge(email.status)}
                                             </div>
@@ -861,7 +873,7 @@ export const SendEmail = () => {
                                                 </div>
                                                 <div className="flex items-center gap-1">
                                                     <Users className="w-3 h-3" />
-                                                    {email.recipients_name ? email.recipients_name.length : email.recipients.length} recipient{(email.recipients_name ? email.recipients_name.length : email.recipients.length) !== 1 ? 's' : ''}
+                                                    {email.recipients_name ? email.recipients_name.length : (email.recipients ? email.recipients.length : 0)} recipient{((email.recipients_name ? email.recipients_name.length : (email.recipients ? email.recipients.length : 0)) !== 1 ? 's' : '')}
                                                 </div>
                                                 {email.event_name && (
                                                     <Badge variant="outline" className="text-xs px-2 py-0.5">
@@ -898,7 +910,7 @@ export const SendEmail = () => {
                                                 </Button>
                                             )}
                                             <div className="text-xs text-gray-400 min-w-fit">
-                                                {new Date(email.updated_at).toLocaleTimeString('en-US', {
+                                                {email.updated_at && new Date(email.updated_at).toLocaleTimeString('en-US', {
                                                     hour: 'numeric',
                                                     minute: '2-digit',
                                                     hour12: true
@@ -984,9 +996,9 @@ export const SendEmail = () => {
                                                 <SelectValue placeholder={isLoadingEvents ? "Loading events..." : "Choose an event"} />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                {activeEvents.map((event) => (
+                                                {Array.isArray(activeEvents) && activeEvents.map((event) => (
                                                     <SelectItem key={event.id} value={event.id.toString()}>
-                                                        {event.title}
+                                                        {event.title || 'Untitled Event'}
                                                     </SelectItem>
                                                 ))}
                                             </SelectContent>
@@ -998,8 +1010,8 @@ export const SendEmail = () => {
                                 )}
 
                                 {/* Recipients Selection */}
-                                {((isEventBased && selectedEvent && eventParticipants.length > 0) ||
-                                    (!isEventBased && allUsers.length > 0)) && (
+                                {((isEventBased && selectedEvent && currentUserList.length > 0) ||
+                                    (!isEventBased && currentUserList.length > 0)) && (
                                         <div className="space-y-4">
                                             <div className="flex items-center justify-between">
                                                 <Label className="text-base font-semibold">
@@ -1014,6 +1026,7 @@ export const SendEmail = () => {
                                                     size="sm"
                                                     onClick={handleSelectAll}
                                                     className="flex items-center gap-2"
+                                                    disabled={currentUserList.length === 0}
                                                 >
                                                     {isAllSelected ? (
                                                         <>
@@ -1029,18 +1042,25 @@ export const SendEmail = () => {
                                                 </Button>
                                             </div>
 
-                                            <div className="border rounded-lg max-h-64 overflow-y-auto bb">
+                                            <div className="border rounded-lg max-h-64 overflow-y-auto ">
                                                 {(isLoadingParticipants || isLoadingUsers) ? (
                                                     <div className="p-4 text-center text-gray-500">
                                                         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto mb-2"></div>
                                                         Loading {isEventBased ? 'participants' : 'users'}...
                                                     </div>
+                                                ) : currentUserList.length === 0 ? (
+                                                    <div className="p-4 text-center text-gray-500">
+                                                        <Users className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                                                        No {isEventBased ? 'participants' : 'users'} found
+                                                    </div>
                                                 ) : (
                                                     currentUserList.map((user) => {
-                                                        console.log('__user___', user)
                                                         const userId = isEventBased ? user.user : user.id;
-                                                        const displayName = isEventBased ? user.participant_name : user.full_name_en;
+                                                        const displayName = isEventBased ? (user.participant_name || 'Unknown Participant') : (user.full_name_en || user.name || 'Unknown User');
                                                         const isSelected = selectedUserIds.includes(userId);
+
+                                                        // Skip if userId is invalid
+                                                        if (!userId) return null;
 
                                                         return (
                                                             <div
@@ -1133,8 +1153,8 @@ export const SendEmail = () => {
                                 </div>
 
                                 {/* Submit Buttons */}
-                                <div className="flex justify-center gap-4 pt-6">
-                                    <div className="flex gap-3">
+                                <div className="flex justify-center gap-4 pt-6 ">
+                                    <div className="flex gap-3 w-full">
                                         {/* Send Button */}
                                         <Button
                                             type="button"
@@ -1231,5 +1251,5 @@ export const SendEmail = () => {
                 />
             )}
         </div>
-    );
-};
+    )
+}

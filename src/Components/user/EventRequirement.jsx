@@ -157,8 +157,7 @@ const RequirementCard = () => {
     };
 
     const handleSubmitClick = (event, requirement) => {
-        console.log('hasProfile event', has_profile)
-        if (has_profile == 'undefined' || has_profile==="false") {
+        if (has_profile == 'undefined' || has_profile === "false") {
             toast.info('Please complete your profile before submitting requirements.');
             setTimeout(() => {
                 navigate('/user/setup-profile');
@@ -233,7 +232,7 @@ const RequirementCard = () => {
     return (
         <div className="max-w-6xl mx-auto px-4 py-8">
             {console.log('eventrequirements-hasProfile', hasProfile)}
-            
+
             {/* Only show Submit All Requirements button if there are visible requirements */}
             {hasVisibleRequirements() && (
                 <div className="flex justify-end items-center mb-8">

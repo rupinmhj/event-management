@@ -16,12 +16,14 @@ import { motion } from 'framer-motion'
 import DatePicker from '../../utils/DatePicker'
 import useAxiosAuth from '@/hooks/useAxiosAuth';
 import DateTimePicker from '@/utils/DateTimePicker';
+import { useNavigate } from 'react-router-dom';
 const CreateEvent = ({ onCancel, onSubmit }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [bannerPreview, setBannerPreview] = useState('');
     const [iconPreview, setIconPreview] = useState('');
     const { submitCreate, create } = useContext(GeneralContext)
     const api = useAxiosAuth();
+    const navigate = useNavigate();
     const {
         register,
         handleSubmit,
@@ -150,6 +152,7 @@ const CreateEvent = ({ onCancel, onSubmit }) => {
             console.log(res.data);
             toast.success("Event created successfully");
             setTimeout(() => submitCreate(), 1000);
+            setTimeout(() => navigate('admin'));
 
 
         } catch (error) {
