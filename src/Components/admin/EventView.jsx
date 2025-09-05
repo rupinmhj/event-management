@@ -493,12 +493,12 @@ export function EventView() {
 
                                                 <Separator />
 
-                                                <div className="flex justify-between items-center">
+                                                {/* <div className="flex justify-between items-center">
                                                     <span className="text-sm font-medium">Payment</span>
                                                     <Badge variant={event.is_payment_required ? "paid" : "secondary"}>
                                                         {event.is_payment_required ? "Required" : "Free"}
                                                     </Badge>
-                                                </div>
+                                                </div> */}
                                             </div>
                                         </CardContent>
                                     </Card>

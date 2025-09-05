@@ -243,7 +243,7 @@ export const SendEmail = () => {
                         {/* Email details */}
                         <div className="px-6 py-4 border-b border-gray-100 bg-gray-50">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                                <div className="flex items-center gap-2">
+                                {/* <div className="flex items-center gap-2">
                                     <Calendar className="w-4 h-4 text-gray-400" />
                                     <span className="text-gray-600">{email.status === 'DRAFT' ? 'Created:' : 'Sent:'}</span>
                                     <span className="font-medium">
@@ -257,10 +257,10 @@ export const SendEmail = () => {
                                             hour12: true
                                         })}
                                     </span>
-                                </div>
+                                </div> */} 
                                 <div className="flex items-center gap-2">
                                     <Users className="w-4 h-4 text-gray-400" />
-                                    <span className="text-gray-600">Recipients:</span>
+                                    <span className="text-gray-600">Recipients:</span> 
                                     <span className="font-medium">
                                         {email.recipients_name ? email.recipients_name.length : email.recipients.length} recipient{(email.recipients_name ? email.recipients_name.length : email.recipients.length) !== 1 ? 's' : ''}
                                     </span>
@@ -566,13 +566,15 @@ export const SendEmail = () => {
         const now = new Date();
         const diffInHours = (now - date) / (1000 * 60 * 60);
 
-        if (diffInHours < 24) {
+        if (diffInHours < 12) {
             return date.toLocaleTimeString('en-US', {
                 hour: '2-digit',
                 minute: '2-digit'
             });
         } else {
             return date.toLocaleDateString('en-US', {
+                 hour: '2-digit',
+                minute: '2-digit',
                 month: 'short',
                 day: 'numeric'
             });
@@ -867,10 +869,10 @@ export const SendEmail = () => {
                                             </p>
 
                                             <div className="flex items-center gap-4 text-xs text-gray-500">
-                                                <div className="flex items-center gap-1">
-                                                    <Calendar className="w-3 h-3" />
+                                                {/* <div className="flex items-center gap-1">
+                                                    <Calendar className="w-3 h-3" /> 
                                                     {formatDate(email.updated_at)}
-                                                </div>
+                                                </div> */}
                                                 <div className="flex items-center gap-1">
                                                     <Users className="w-3 h-3" />
                                                     {email.recipients_name ? email.recipients_name.length : (email.recipients ? email.recipients.length : 0)} recipient{((email.recipients_name ? email.recipients_name.length : (email.recipients ? email.recipients.length : 0)) !== 1 ? 's' : '')}
@@ -911,6 +913,8 @@ export const SendEmail = () => {
                                             )}
                                             <div className="text-xs text-gray-400 min-w-fit">
                                                 {email.updated_at && new Date(email.updated_at).toLocaleTimeString('en-US', {
+                                                     month: 'short',
+                                            day: 'numeric',
                                                     hour: 'numeric',
                                                     minute: '2-digit',
                                                     hour12: true

@@ -538,7 +538,7 @@ const UserProfile = () => {
                         {supportDocumentName ? (
                           <div className="flex flex-col items-center">
                             <p className="text-sm text-gray-700 font-medium">{supportDocumentName}</p>
-                            {formData.support_document && (
+                            {formData?.support_document && (
                               <a
                                 href={formData.support_document}
                                 target="_blank"

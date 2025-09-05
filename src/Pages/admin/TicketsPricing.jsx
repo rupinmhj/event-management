@@ -27,7 +27,7 @@ export const TicketsPricing = () => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [loading, setLoading] = useState(false);
   const location = useLocation();
-  
+
   const [ticketPricing, setTicketPricing] = useState({
     event: null,
     ticket_type: '',
@@ -246,7 +246,7 @@ export const TicketsPricing = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="event-select">Event</Label>
+                <Label htmlFor="event-select">Event *</Label>
                 <Select
                   value={selectedEvent ? selectedEvent?.id.toString() : ""}
                   onValueChange={(value) => {
@@ -292,7 +292,7 @@ export const TicketsPricing = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Ticket Type */}
                 <div className="space-y-2 max-w-sm">
-                  <Label>Ticket Type</Label>
+                  <Label>Ticket Type *</Label>
                   <Input
                     placeholder="E.g., General Admission, VIP, Early Bird..."
                     value={ticketPricing.ticket_type}
@@ -309,7 +309,7 @@ export const TicketsPricing = () => {
 
                 {/* Amount Field */}
                 <div className="space-y-2 max-w-sm">
-                  <Label>Amount (Rs.)</Label>
+                  <Label>Amount (Rs.) *</Label>
                   <Input
                     type="number"
                     placeholder="Enter ticket price..."
@@ -317,6 +317,11 @@ export const TicketsPricing = () => {
                     onChange={(e) => {
                       setTicketPricing({ ...ticketPricing, amount: e.target.value });
                       clearError('amount');
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "-" || e.key === "+") {
+                        e.preventDefault();
+                      }
                     }}
                     className={`border-event-primary/20 focus:border-event-primary ${errors.amount ? 'border-red-500' : ''}`}
                   />
@@ -326,21 +331,9 @@ export const TicketsPricing = () => {
                 </div>
               </div>
 
-              {/* Description */}
-              <div className="space-y-2">
-                <Label>Description (Optional)</Label>
-                <Textarea
-                  placeholder="Describe what this ticket includes..."
-                  value={ticketPricing.description}
-                  onChange={(e) => setTicketPricing({ ...ticketPricing, description: e.target.value })}
-                  className="border-event-primary/20 focus:border-event-primary resize-none h-[150px]"
-                  rows={2}
-                />
-              </div>
-
               {/* Deadline */}
               <div className="space-y-2 max-w-sm">
-                <Label>Sale End Date</Label>
+                <Label>Sale End Date *</Label>
                 <DatePicker
                   value={ticketPricing.deadline}
                   onChange={(value) => {
@@ -355,8 +348,22 @@ export const TicketsPricing = () => {
                 )}
               </div>
 
-              {/* File Upload (optional image for the ticket) */}
+              {/* Description */}
               <div className="space-y-2">
+                <Label>Description </Label>
+                <Textarea
+                  placeholder="Describe what this ticket includes..."
+                  value={ticketPricing.description}
+                  onChange={(e) => setTicketPricing({ ...ticketPricing, description: e.target.value })}
+                  className="border-event-primary/20 focus:border-event-primary resize-none h-[150px]"
+                  rows={2}
+                />
+              </div>
+
+
+
+              {/* File Upload (optional image for the ticket) */}
+              <div className="space-y-2 hidden">
                 <Label htmlFor="ticket-file">
                   Ticket Image (optional)
                 </Label>
@@ -377,7 +384,7 @@ export const TicketsPricing = () => {
               </div>
 
               {/* Admin Verification Required */}
-              <div className="space-y-2 pt-4">
+              <div className="space-y-2 pt-4 hidden">
                 <label htmlFor="is_verification_required" className="flex items-center gap-2">
                   <input
                     type="checkbox"

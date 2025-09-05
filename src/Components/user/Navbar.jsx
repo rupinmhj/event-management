@@ -91,9 +91,13 @@ const UserMenu = ({ mode, logout }) => {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" portalled={false} className='mt-3'>
         <DropdownMenuItem>
-          <NavLink to="user-profile" className="w-full block">
-            Profile
-          </NavLink>
+
+          {(has_profile == "undefined" || has_profile === "false") ? (<NavLink to="setup-profile" className="w-full block">
+            My Profile
+          </NavLink>) : <NavLink to="user-profile" className="w-full block">
+           My Profile
+          </NavLink>}
+
         </DropdownMenuItem>
         {/* <DropdownMenuItem>
           <NavLink to="/settings" className="w-full block">
@@ -144,7 +148,7 @@ const Navbar = ({ mode }) => {
       <div className="md:px-12 px-2 flex h-16 items-center justify-between gap-4">
         {/* Left side */}
         <div className="flex items-center gap-2 ">
-         
+
 
           {/* Logo & Desktop Navigation */}
           <div className="flex items-center gap-6">
@@ -184,7 +188,7 @@ const Navbar = ({ mode }) => {
             <NotificationMenu /> */}
           </div>
           <UserMenu mode={mode} logout={logout} />
-           {/* Mobile menu trigger */}
+          {/* Mobile menu trigger */}
           <Popover modal={false}>
             <PopoverTrigger asChild>
               <Button

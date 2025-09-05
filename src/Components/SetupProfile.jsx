@@ -48,6 +48,10 @@ const ProfileSetup = () => {
     // Default profile image URL
     const defaultProfileImage = "https://via.placeholder.com/96x96/e5e7eb/6b7280?text=Profile";
 
+    useEffect(()=>{
+        window.scrollTo(0,0);
+    },[])
+
     const handleProfilePictureChange = (e) => {
         const file = e.target.files?.[0];
         if (file) {

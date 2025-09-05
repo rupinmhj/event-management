@@ -287,12 +287,12 @@ useEffect(() => {
                 Event Information
               </CardTitle>
               <CardDescription>
-                Select the event for which this requirement applies *
+                Select the event for which this requirement applies 
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="event-select">Event</Label>
+                <Label htmlFor="event-select">Event *</Label>
                 <Select
                   value={selectedEvent ? selectedEvent?.id.toString() : ""}
                   onValueChange={(value) => {
@@ -338,7 +338,7 @@ useEffect(() => {
               <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
                 {/* Field Type */}
                 <div className="space-y-2 max-w-sm">
-                  <Label>Requirement Type</Label>
+                  <Label>Requirement Type *</Label>
                   <Select
                     value={requirement.type}
                     onValueChange={(value) => {
@@ -388,7 +388,7 @@ useEffect(() => {
 
                 {/* Field Label */}
                 <div className="space-y-2 max-w-sm">
-                  <Label>Field Label</Label>
+                  <Label>Field Label *</Label>
                   <Input
                     placeholder="Enter field label..."
                     value={requirement.label}
@@ -406,7 +406,7 @@ useEffect(() => {
 
               {/* Description */}
               <div className="space-y-2">
-                <Label>Field Description (Optional)</Label>
+                <Label>Field Description </Label>
                 <Textarea
                   placeholder="Add helpful description for this field..."
                   value={requirement.description}
@@ -419,7 +419,7 @@ useEffect(() => {
               {/* Deadline */}
 
               <div className="space-y-2 max-w-sm">
-                <Label>Deadline</Label>
+                <Label>Deadline *</Label>
                 <DateTimePicker
                   value={requirement.deadline}
                   onChange={(value) => {
@@ -435,7 +435,7 @@ useEffect(() => {
               </div>
 
               {/* File Upload (admin chooses a photo) */}
-              <div className="space-y-2">
+              <div className="space-y-2 hidden">
                 <Label htmlFor="req-file">
                   Attach Photo {requirement.type === 'FILE' ? '(required)' : '(optional)'}
                 </Label>
