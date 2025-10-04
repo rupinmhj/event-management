@@ -7,13 +7,13 @@ import {
   FaCalendar, FaChevronLeft, FaChevronRight, FaSave, FaTimes, FaEye
 } from "react-icons/fa";
 import { toast, ToastContainer } from 'react-toastify';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Components/ui/card";
+import { Button } from "@/Components/ui/button";
+import { Input } from "@/Components/ui/input";
+import { Label } from "@/Components/ui/label";
+import { Textarea } from "@/Components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
+import { Avatar, AvatarFallback, AvatarImage } from "@/Components/ui/avatar";
 import useAxiosAuth from '@/hooks/useAxiosAuth';
 import AuthContext from '@/context/AuthContext';
 import { motion } from 'framer-motion'
@@ -37,7 +37,7 @@ const DetailItemDocument = ({ icon, label, value, className = "" }) => {
   const hasDocument = Boolean(value);
 
   return (
-    <div className={`flex items-start gap-3 group ${className}`}>
+    <div className={`flex items-start gap-3 `}>
       <span className="text-muted-foreground mt-1 group-hover:text-primary transition-colors">
         {icon}
       </span>
@@ -48,14 +48,17 @@ const DetailItemDocument = ({ icon, label, value, className = "" }) => {
         </p>
 
         {hasDocument ? (
-          <a
-            href={value}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-1 text-primary hover:text-blue flex items-center gap-1 text-sm font-medium"
-          >
-            <FaEye className="inline-block" /> View Document
-          </a>
+          <button className='bg-blue/90 hover:bg-blue/70 px-3 py-2 rounded-md mt-2'>
+            <a
+              href={value}
+              target="_blank"
+              rel="noopener noreferrer"
+              className=" text-white hover:text-white flex items-center gap-1 text-sm font-medium"
+            >
+              <FaEye className="inline-block" /> View Document
+            </a>
+          </button>
+
         ) : (
           <p className="text-sm font-medium text-muted-foreground mt-1">
             No document uploaded
@@ -212,11 +215,11 @@ const UserProfile = () => {
   const handleSupportDocumentChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
-      const allowedTypes = ['.pdf', '.doc', '.docx'];
+      const allowedTypes = ['.pdf', '.doc', '.docx', '.jpg', '.jpeg', '.png'];
       const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
 
       if (!allowedTypes.includes(fileExtension)) {
-        setErrors((prev) => ({ ...prev, supportDocument: "Please select a PDF, DOC, or DOCX file" }));
+        setErrors((prev) => ({ ...prev, supportDocument: "Please select a PDF, DOC, DOCX, JPG, or PNG file" }));
         return;
       }
       if (file.size > 10 * 1024 * 1024) {
@@ -275,6 +278,10 @@ const UserProfile = () => {
       for (let [key, value] of submitData.entries()) {
         console.log(key, value);
       }
+      console.log("submit form data:")
+      submitData.forEach((value, key) => {
+        console.log(key, value);
+      });
 
       const res = await api.put('/api/account/profile/update/', submitData);
       console.log(res);
@@ -301,14 +308,14 @@ const UserProfile = () => {
 
   if (isEditing) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
+      <div className="min-h-screen  py-8 px-4">
         <div className="lg:w-[1024px] mx-auto">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-semibold text-blue-700 mb-2">Edit Your Profile</h1>
             <p className="text-blue-600 opacity-70">Update your profile information below.</p>
           </div>
 
-          <Card className="shadow-xl border-0 bg-white">
+          <Card className="shadow-xl border-0 bg-white/50">
             <CardHeader className="text-center pb-2">
               <div className="flex justify-center mb-4">
                 <div className="relative">
@@ -367,7 +374,7 @@ const UserProfile = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email (Cannot be changed)</Label>
+                    <Label htmlFor="email">Email </Label>
                     <Input
                       id="email"
                       value={formData.user_detail.email}
@@ -383,6 +390,7 @@ const UserProfile = () => {
                     <Label htmlFor="phone">Phone Number *</Label>
                     <Input
                       id="phone"
+                      className='bg-white'
                       placeholder="Enter your phone number"
                       value={formData.user_detail.phone_number}
                       onChange={(e) => handleInputChange('user_detail.phone_number', e.target.value)}
@@ -394,8 +402,8 @@ const UserProfile = () => {
 
                   <div className="space-y-2">
                     <Label htmlFor="sex">Gender *</Label>
-                    <Select onValueChange={(value) => handleInputChange('sex', value)} value={formData.sex}>
-                      <SelectTrigger>
+                    <Select onValueChange={(value) => handleInputChange('sex', value)} value={formData.sex} className='bg-white'>
+                      <SelectTrigger className='bg-white'>
                         <SelectValue placeholder="Select gender" />
                       </SelectTrigger>
                       <SelectContent>
@@ -431,7 +439,7 @@ const UserProfile = () => {
                       onValueChange={(value) => handleInputChange('education_level', value)}
                       value={formData.education_level}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className='bg-white'>
                         <SelectValue placeholder="Select education level" />
                       </SelectTrigger>
                       <SelectContent>
@@ -453,7 +461,7 @@ const UserProfile = () => {
                   <Textarea
                     id="address"
                     placeholder="Enter your full address"
-                    className="resize-none"
+                    className="resize-none bg-white"
                     rows={3}
                     value={formData.address}
                     onChange={(e) => handleInputChange('address', e.target.value)}
@@ -469,6 +477,7 @@ const UserProfile = () => {
                   <Input
                     id="organization"
                     placeholder="Your organization name"
+                    className='bg-white'
                     value={formData.organization}
                     onChange={(e) => handleInputChange('organization', e.target.value)}
                   />
@@ -485,6 +494,7 @@ const UserProfile = () => {
                       <Input
                         id="employeeId"
                         placeholder="Your employee ID"
+                        className='bg-white'
                         value={formData.employee_id}
                         onChange={(e) => handleInputChange('employee_id', e.target.value)}
                       />
@@ -499,6 +509,7 @@ const UserProfile = () => {
                         id="designation"
                         placeholder="Your job title"
                         value={formData.designation}
+                        className='bg-white'
                         onChange={(e) => handleInputChange('designation', e.target.value)}
                       />
                       {errors?.designation && (
@@ -515,7 +526,7 @@ const UserProfile = () => {
                   <Textarea
                     id="bio"
                     placeholder="Tell us a bit about yourself..."
-                    className="resize-none"
+                    className="resize-none bg-white"
                     rows={4}
                     value={formData.bio}
                     onChange={(e) => handleInputChange('bio', e.target.value)}
@@ -535,6 +546,8 @@ const UserProfile = () => {
                     >
                       <div className="flex flex-col items-center justify-center pt-5 pb-6">
                         <FaUpload className="w-8 h-8 mb-3 text-gray-400" />
+
+                        {/* CASE 1: User uploaded new document */}
                         {supportDocumentName ? (
                           <div className="flex flex-col items-center">
                             <p className="text-sm text-gray-700 font-medium">{supportDocumentName}</p>
@@ -546,16 +559,31 @@ const UserProfile = () => {
                                 className="mt-2 flex items-center gap-1 text-blue-600 hover:text-blue text-sm"
                               >
                                 <FaEye className="w-4 h-4" />
-                                View Document
+                                View Previously Uploaded
                               </a>
                             )}
                           </div>
                         ) : (
                           <>
-                            <p className="mb-2 text-sm text-gray-500">
-                              <span className="font-semibold">Click to upload</span> your support document
-                            </p>
-                            <p className="text-xs text-gray-500">PDF, DOC, DOCX (MAX. 10MB)</p>
+                            {/* CASE 2: Already uploaded document from server */}
+                            {formData?.support_document ? (
+                              <a
+                                href={formData.support_document}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-1 text-blue-600 hover:text-blue text-sm"
+                              >
+                                <FaEye className="w-4 h-4" />
+                                View Existing Document
+                              </a>
+                            ) : (
+                              <>
+                                <p className="mb-2 text-sm text-gray-500">
+                                  <span className="font-semibold">Click to upload</span> your support document
+                                </p>
+                                <p className="text-xs text-gray-500">PDF, DOC, DOCX, JPG or PNG (MAX. 10MB)</p>
+                              </>
+                            )}
                           </>
                         )}
                       </div>
@@ -563,7 +591,7 @@ const UserProfile = () => {
                         id="supportDocument"
                         type="file"
                         className="hidden"
-                        accept=".pdf,.doc,.docx"
+                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                         onChange={handleSupportDocumentChange}
                       />
                     </label>
@@ -572,6 +600,7 @@ const UserProfile = () => {
                     <p className="text-sm text-red-600">{errors.supportDocument}</p>
                   )}
                 </div>
+
 
                 {/* Submit Buttons */}
                 <div className="flex gap-4 pt-4">
@@ -613,41 +642,11 @@ const UserProfile = () => {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3, delay: 0.15 }}
     >
-      <div className={`min-h-screen  px-4 sm:px-6 lg:px-8 py-12 ${has_profile == "undefined" ? 'hidden' : ''}`}>
+      <div className={`min-h-screen  px-4 sm:px-6 lg:px-8 md:py-12 ${has_profile == "undefined" ? 'hidden' : ''}`}>
         <div className="max-w-6xl mx-auto space-y-6">
-          <div className="relative overflow-hidden rounded-xl border text-gray-800 shadow-lg hover:shadow-xl transition-all duration-300">
-            <div className="absolute inset-0 " />
-            <div className="relative p-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <h1 className="text-[18px] font-bold text-gray-800">{formData.user_detail.full_name_en}</h1>
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 text-gray-500">
-                    <span className="flex items-center gap-2 text-sm">
-                      <FaMapMarkerAlt />
-                      {formData.address || "—"}
-                    </span>
-                    <span className="flex items-center gap-2 text-sm">
-                      <FaPhone />
-                      {formData.user_detail.phone_number || "—"}
-                    </span>
-                    <span className="flex items-center gap-2 text-sm">
-                      <FaUser />
-                      {formData.user_detail.email || "—"}
-                    </span>
-                  </div>
-                </div>
-                <button
-                  onClick={handleEditClick}
-                  className="group flex items-center gap-2 px-4 py-2 rounded-lg bg-blue/90 hover:bg-blue/80 text-primary-foreground transition-all duration-200 border border-primary/20"
-                >
-                  <FaEdit className="text-sm" />
-                  <span className="text-sm font-medium">Edit</span>
-                </button>
-              </div>
-            </div>
-          </div>
 
-          <div className="rounded-xl border bg-card shadow-lg overflow-hidden">
+
+          <div className="rounded-xl border bg-white/50 shadow-lg overflow-hidden">
             <div className="p-8">
               <div className="flex flex-col lg:flex-row gap-8">
                 <div className="flex flex-col items-center lg:items-start space-y-4 ">
@@ -659,26 +658,53 @@ const UserProfile = () => {
                     />
                     <div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-black/20 to-transparent opacity-0  transition-opacity duration-300" />
                   </div>
-                  <div className="text-center lg:text-left">
-                    <h2 className="text-xl font-semibold text-card-foreground">
-                      {formData.designation || ""}
-                    </h2>
-                    <p className="text-sm text-muted-foreground">
-                      {formData.organization || ""}
-                    </p>
+                  <div className="flex flex-col">
+                    <h1 className="text-[18px] font-bold text-gray-800 ">{formData.user_detail.full_name_en}</h1>
+                    <div className="text-center lg:text-left ">
+                      <h2 className="text-[13px] font-medium text-card-foreground">
+                        {formData.designation || ""}
+                      </h2>
+                      <p className="text-[11px] text-muted-foreground">
+                        {formData.organization || ""}
+                      </p>
+                    </div>
                   </div>
+
                 </div>
 
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-card-foreground mb-6 flex items-center gap-2">
-                    <FaUser className="text-primary" />
-                    Personal Information
-                  </h3>
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-lg font-semibold text-card-foreground mb-6 flex items-center gap-2 ">
+                      {/* <FaUser className="text-primary" /> */}
+                      Personal Information
+                    </h3>
+                    <button
+                      onClick={handleEditClick}
+                      className="group  flex items-center gap-2 px-4 py-2  rounded-lg bg-blue hover:bg-blue/80 text-primary-foreground transition-all duration-200 border border-primary/20"
+                    >
+                      {/* <FaEdit className="text-sm" /> */}
+                      <span className="text-sm font-medium">Edit</span>
+                    </button>
+
+                  </div>
+
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <DetailItem icon={<FaBirthdayCake />} label="Date of Birth" value={formData.date_of_birth || "—"} />
                     <DetailItem
-                      icon={<FaVenusMars />}
+                      // icon={<FaUser />}
+                      label="Email"
+                      value={formData.user_detail?.email || "—"}
+                    />
+                    <DetailItem
+                      // icon={<FaPhone />}
+                      label="Phone Number"
+                      value={formData.user_detail?.phone_number || "—"}
+                    />
+                    <DetailItem
+                      //  icon={<FaBirthdayCake />}
+                      label="Date of Birth" value={formData.date_of_birth || "—"} />
+                    <DetailItem
+                      // icon={<FaVenusMars />}
                       label="Gender"
                       value={
                         formData.sex === 'MALE' ? 'Male' :
@@ -686,10 +712,22 @@ const UserProfile = () => {
                             formData.sex ? 'Other' : '—'
                       }
                     />
-                    <DetailItem icon={<FaBuilding />} label="Organization" value={formData.organization || "—"} />
-                    <DetailItem icon={<FaIdBadge />} label="Employee ID" value={formData.employee_id || "—"} />
+
                     <DetailItem
-                      icon={<FaGraduationCap />}
+                      //  icon={<FaBuilding />} 
+                      label="Organization" value={formData.organization || "—"} />
+                    <DetailItem
+                      //  icon={<FaIdBadge />}
+                      label="Employee ID" value={formData.employee_id || "—"} />
+                    <DetailItem
+                      // icon={<FaMapMarkerAlt />}
+                      label="Address"
+                      value={formData.address || "—"}
+                    />
+
+
+                    <DetailItem
+                      // icon={<FaGraduationCap />}
                       label="Education"
                       value={
                         formData.education_level === 'BACHELORS' ? "Bachelor's Degree" :
@@ -700,16 +738,17 @@ const UserProfile = () => {
                       }
                     />
                     <DetailItemDocument
-                      icon={<FaFileAlt />}
+                      // icon={<FaFileAlt />}
                       label="Document"
                       value={formData.support_document || "No document uploaded"}
                       className="group cursor-pointer hover:bg-accent/50 -mx-2 px-2 py-2 rounded-lg transition-colors"
                     />
                   </div>
 
+
                   <div className="mt-8 p-4 rounded-lg bg-muted/30 border">
                     <DetailItem
-                      icon={<FaInfoCircle />}
+                      // icon={<FaInfoCircle />}
                       label="Bio"
                       value={formData.bio || "No bio available"}
                     />

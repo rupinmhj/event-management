@@ -1,10 +1,10 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { Textarea } from '@/Components/ui/textarea';
 import { motion } from 'framer-motion'
 import { toast, ToastContainer } from 'react-toastify'
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -17,7 +17,7 @@ import {
 import { FaTimes } from 'react-icons/fa'
 import AuthContext from '@/context/AuthContext';
 import useAxiosAuth from '@/hooks/useAxiosAuth';
-import DatePicker from '@/utils/DatePicker';
+import DateTimePicker from '@/utils/DateTimePicker';
 
 export const TicketsPricing = () => {
   const { authTokens, authReady } = useContext(AuthContext);
@@ -86,6 +86,19 @@ export const TicketsPricing = () => {
 
     fetchData();
   }, [authReady, authTokens, api]);
+
+  const getMaxDeadlineDate = () => {
+    if (!selectedEvent || !selectedEvent.start_date) {
+      return new Date(2040, 12, 30); // fallback to original max date
+    }
+
+    const eventStartDate = new Date(selectedEvent.start_date);
+    // Subtract one day from event start date to ensure deadline is before event
+    const maxDeadline = new Date(eventStartDate);
+    maxDeadline.setDate(maxDeadline.getDate());
+
+    return maxDeadline;
+  };
 
   const formatDateForAPI = (value) => {
     if (!value) return null;
@@ -332,16 +345,17 @@ export const TicketsPricing = () => {
               </div>
 
               {/* Deadline */}
-              <div className="space-y-2 max-w-sm">
+              <div className="space-y-2 max-w-sm ">
                 <Label>Sale End Date *</Label>
-                <DatePicker
+                <DateTimePicker
                   value={ticketPricing.deadline}
                   onChange={(value) => {
                     setTicketPricing({ ...ticketPricing, deadline: value });
                     clearError('deadline');
                   }}
                   minDate={new Date()}
-                  maxDate={new Date(2040, 12, 30)}
+                  maxDate={getMaxDeadlineDate()}
+                  disabled={!selectedEvent}
                 />
                 {errors.deadline && (
                   <p className='text-red-500 text-[12px] mt-1'>{errors.deadline}</p>

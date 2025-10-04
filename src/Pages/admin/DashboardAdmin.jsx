@@ -1,55 +1,10 @@
 import { useState, useEffect } from "react";
 import { Calendar, Users, DollarSign, BarChart3 } from "lucide-react";
-// import { DashboardHeader } from "/Components/admin/DashboardHeader";
 import { DashboardHeader } from "../../Components/admin/DashboardHeader";
 import { MetricsCard } from "../../Components/admin/MetrixsCard";
 import { EventsTable } from "../../Components/admin/EventsTable";
 import useAxiosAuth from "@/hooks/useAxiosAuth";
-// Mock data for demonstration - replace with actual API call
 
-// const mockDashboardData = {
-//   total_events: 4,
-//   total_participations: 18,
-//   total_revenue: 6650.0,
-//   event_wise_data: [
-//     {
-//       id: 10,
-//       name: "Dashain Fest",
-//       date: "2025-09-10",
-//       is_active: true,
-//       location: "Putalisadak, Kathmandu",
-//       total_participants: 13,
-//       total_revenue: 5800.0
-//     },
-//     {
-//       id: 8,
-//       name: "Musical Night with Purna Rai",
-//       date: "2025-08-31",
-//       is_active: false,
-//       location: "Tinkune Ground",
-//       total_participants: 3,
-//       total_revenue: 0
-//     },
-//     {
-//       id: 4,
-//       name: "Pubg event version version 7",
-//       date: "2025-09-02",
-//       is_active: true,
-//       location: "Lalitpur, Nepal",
-//       total_participants: 2,
-//       total_revenue: 850.0
-//     },
-//     {
-//       id: 1,
-//       name: "PMNC South Asia",
-//       date: "2025-08-07",
-//       is_active: false,
-//       location: "Youtube",
-//       total_participants: 0,
-//       total_revenue: 0
-//     }
-//   ]
-// };
 
 export const DashboardAdmin = () => {
   const [dashboardData, setDashboardData] = useState(null);
@@ -59,7 +14,6 @@ export const DashboardAdmin = () => {
 
     const fetchDashboardData = async () => {
       try {
-        // Replace this with actual API call to /api/event/admin-dashboard/
         const response = await api.get('/api/event/admin-dashboard/');
         console.log('____Dashboard-admin', response.data);
 
@@ -76,13 +30,13 @@ export const DashboardAdmin = () => {
     fetchDashboardData();
   }, []);
 
-   if (loading) {
-        return (
-            <div className="flex items-center justify-center min-h-[400px]">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue"></div>
-            </div>
-        );
-    }
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue"></div>
+      </div>
+    );
+  }
 
   if (!dashboardData) {
     return (
@@ -103,8 +57,8 @@ export const DashboardAdmin = () => {
   };
 
   return (
-    <div className="min-h-screen bg-dashboard-bg px-6 pt-16">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-dashboard-bg px-6 pt-20">
+      <div className="max-w-7xl mx-auto ">
         <DashboardHeader />
 
         {/* Metrics Cards */}

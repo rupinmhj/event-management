@@ -4,6 +4,7 @@ import UserProfile from '@/Components/UserProfile'
 import { EventFloat } from '@/Components/user/EventFloat'
 import EventRequirement from '@/Components/user/EventRequirement'
 import AuthContext from '@/context/AuthContext'
+import EventList from '@/Components/user/EventList'
 
 export const Dashboard = () => {
   const { hasProfile } = useContext(AuthContext);
@@ -16,9 +17,10 @@ export const Dashboard = () => {
 
   return (
     <div>
-      <EventFloat />
-      <EventRequirement />
-      <UserProfile hasProfile={hasProfile} />
+      {/* <EventFloat />
+      <EventRequirement /> */}
+      <EventList />
+      {/* <UserProfile hasProfile={hasProfile} /> */}
     </div>
   )
 }

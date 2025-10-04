@@ -1,13 +1,13 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { Switch } from '@/Components/ui/switch';
+import { Textarea } from '@/Components/ui/textarea';
+import { Badge } from '@/Components/ui/badge';
 import DatePicker from '@/utils/DatePicker';
 import { motion } from 'framer-motion'
 import { toast, ToastContainer } from 'react-toastify'
@@ -24,7 +24,7 @@ import {
   MdEdit,
   MdNotes
 } from 'react-icons/md';
-import {FaTimes} from 'react-icons/fa'
+import { FaTimes } from 'react-icons/fa'
 import AuthContext from '@/context/AuthContext';
 import useAxiosAuth from '@/hooks/useAxiosAuth';
 import DateTimePicker from '@/utils/DateTimePicker';
@@ -62,7 +62,8 @@ export const RequirementUpdate = () => {
     description: '',
     file: null,
     is_active: false,
-    deadline: null
+    deadline: null,
+    is_required: false,
   });
 
   // Store existing file info
@@ -127,7 +128,8 @@ export const RequirementUpdate = () => {
           file: null, // We'll handle existing file separately
           is_active: reqData.is_active || false,
           is_verification_required: reqData.is_verification_required || false,
-          deadline: deadlineValue
+          deadline: deadlineValue,
+          is_required: reqData.is_required || false,
         });
 
         // Store existing file info if present
@@ -207,10 +209,7 @@ export const RequirementUpdate = () => {
       newErrors.deadline = "Deadline is required";
     }
 
-    // File validation for FILE type (only if no existing file and no new file)
-    if (requirement.type === 'FILE' && !requirement.file && !existingFile) {
-      newErrors.file = "File is required for file upload type";
-    }
+
 
     setErrors(newErrors);
 
@@ -233,6 +232,7 @@ export const RequirementUpdate = () => {
       formData.append('label', requirement.label || '');
       formData.append('description', requirement.description || '');
       formData.append('is_verification_required', String(!!requirement.is_verification_required));
+      formData.append('is_required', String(!!requirement.is_required));
       formData.append('is_active', String(!!requirement.is_active));
 
       const deadline = formatDateForAPI(requirement.deadline);
@@ -493,7 +493,25 @@ export const RequirementUpdate = () => {
                   If checked, this requirement must be verified by an admin after submission.
                 </p>
               </div>
-
+              {/*Is required*/}
+              <div className="space-y-2">
+                <label htmlFor="is_required" className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="is_required"
+                    checked={requirement.is_required || false}
+                    onChange={e => setRequirement({
+                      ...requirement,
+                      is_required: e.target.checked
+                    })}
+                    className="accent-blue-600 h-[40px]"
+                  />
+                  <span className="text-sm font-medium">Mandatory Requirement</span>
+                </label>
+                <p className="text-xs text-gray-500">
+                  Enable this option if applicants must submit this requirement to proceed.
+                </p>
+              </div>
               {/* Active Status */}
               <div className="space-y-2">
                 <Label>Active Status</Label>

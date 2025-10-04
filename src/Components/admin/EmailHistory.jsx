@@ -1,9 +1,9 @@
 import { useState, useEffect, useContext } from "react";
 import { toast, ToastContainer } from 'react-toastify';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Components/ui/card";
+import { Button } from "@/Components/ui/button";
+import { Badge } from "@/Components/ui/badge";
+import { Input } from "@/Components/ui/input";
 import AuthContext from "@/context/AuthContext";
 import {
     Mail,
@@ -32,31 +32,31 @@ const EmailHistory = () => {
     const [selectedStatus, setSelectedStatus] = useState("ALL");
 
     useEffect(() => {
-        if(!authReady || !authTokens) return;
-           const fetchSentEmails = async () => {
-        setIsLoading(true);
-        try {
-            const response = await api.get('/api/event/sent-mail-list/');
-            console.log("Fetched sent emails:", response.data);
-            setEmails(response.data || []);
-        } catch (error) {
-            console.error("Error fetching sent emails:", error);
-            toast.error("Failed to load email history");
-            setEmails([]);
-        } finally {
-            setIsLoading(false);
-        }
-    };
+        if (!authReady || !authTokens) return;
+        const fetchSentEmails = async () => {
+            setIsLoading(true);
+            try {
+                const response = await api.get('/api/event/sent-mail-list/');
+                console.log("Fetched sent emails:", response.data);
+                setEmails(response.data || []);
+            } catch (error) {
+                console.error("Error fetching sent emails:", error);
+                toast.error("Failed to load email history");
+                setEmails([]);
+            } finally {
+                setIsLoading(false);
+            }
+        };
 
         fetchSentEmails();
     }, [authReady, authTokens]);
 
     useEffect(() => {
-        if(!authReady || !authTokens) return;
+        if (!authReady || !authTokens) return;
         filterEmails();
     }, [emails, searchTerm, selectedStatus, authReady, authTokens]);
 
- 
+
     const filterEmails = () => {
         let filtered = [...emails];
 

@@ -6,7 +6,7 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@/components/ui/pagination"
+} from "@/Components/ui/pagination"
 
 export function PaginationControls({ currentPage, totalPages, onPageChange }) {
   // Generate page numbers (you can make this smarter if needed)

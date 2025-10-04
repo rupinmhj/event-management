@@ -1,7 +1,7 @@
 // src/hooks/useAxiosAuth.js
 import { useContext, useMemo } from "react";
 import axios from "axios";
-import AuthContext from "../Context/authContext";
+import AuthContext from "../context/AuthContext";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 

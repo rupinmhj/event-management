@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Clock, CreditCard, Check, ShoppingCart, Users, Tag } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Button } from '@/Components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Badge } from '@/Components/ui/badge';
+import { Checkbox } from '@/Components/ui/checkbox';
 import useAxiosAuth from '@/hooks/useAxiosAuth';
 import AuthContext from '@/context/AuthContext';
 import { useNavigate, useParams, Navigate } from 'react-router-dom';
@@ -23,7 +23,7 @@ export const Tickets = () => {
   const navigate = useNavigate();
   const { id: eventId } = useParams();
   const [tid, setTid] = useState([]);
-
+  const [expanded, setExpanded] = useState(false);
   useEffect(() => {
     window.scrollTo(0, 0);
     fetchTicketsAndEvents();
@@ -51,9 +51,9 @@ export const Tickets = () => {
         // Get active event IDs for filtering
         const activeEventIds = eventsRes.data.map(event => event.id);
         console.log('Active event IDs:', activeEventIds);
-        
+
         // Filter tickets to only include those from active events
-        const filteredTickets = ticketsRes.data.filter(ticket => 
+        const filteredTickets = ticketsRes.data.filter(ticket =>
           activeEventIds.includes(ticket.event)
         );
         console.log('Filtered tickets (active events only):', filteredTickets);
@@ -80,7 +80,7 @@ export const Tickets = () => {
       } else {
         // For specific event, just set the tickets without filtering
         setTickets(ticketsRes.data);
-        
+
         // For specific event, fetch its paid/unpaid status
         try {
           const ticketData = await api.get(`/api/event/${eventId}/tickets/`);
@@ -138,90 +138,23 @@ export const Tickets = () => {
     setSelectedTickets(newSelected);
   };
 
-  const handleIndividualPayment = async (ticket) => {
+  // Unified payment function for both individual and bulk payments
+  const handlePayment = async (ticketsToProcess, eventId, isBulk = false) => {
     if (!hasProfile) {
       toast.info('Please complete your profile before purchasing tickets.');
       setTimeout(() => {
-        navigate('/user/setup-profile');
+        // navigate('/user/setup-profile');
+        navigate(`/user/event/submit/${eventId}`)
       }, 1000);
       return;
     }
 
     try {
-      const { event } = ticket;
-      const res2 = await api.get(`/api/event/own-participation-list/?event=${event}`);
-      console.log(res2.data);
-      const pid = res2.data[0]?.id;
-      console.log(pid);
-      if (!pid) {
-        toast.error("Fill the requirements first!!");
-        setTimeout(() => {
-          navigate('/user');
-        }, 1000);
-        return;
+      if (isBulk) {
+        setProcessingBulk(prev => ({ ...prev, [eventId]: true }));
+      } else {
+        setProcessingPayment(ticketsToProcess[0].id);
       }
-      console.log('Participation ID:', pid);
-
-      setProcessingPayment(ticket.id);
-      console.log('Ticket ID:', ticket.id);
-
-      const payload = {
-        tickets: [
-          { ticket_id: ticket.id }
-        ]
-      };
-      console.log('Payload:', payload);
-
-      const res = await api.post(
-        `/api/event/participation/${pid}/tickets/`,
-        payload
-      );
-      console.log('Response:', res.data);
-      const { total_amount, participant_ticket_ids } = res.data;
-
-      setTid(participant_ticket_ids);
-      console.log("Total amount:", total_amount);
-
-      // Navigate to payment page with correct path
-      navigate(`/user/payment/${pid}`, {
-        state: {
-          tid: participant_ticket_ids,
-          totalAmount: total_amount,
-          pid: pid
-        }
-      });
-
-    } catch (error) {
-      console.error('Payment failed:', error);
-      toast.error('Payment failed. Please try again.');
-    } finally {
-      setProcessingPayment(null);
-    }
-  };
-
-  const handleBulkPayment = async (eventId) => {
-    if (!hasProfile) {
-      toast.info('Please complete your profile before purchasing tickets.');
-      setTimeout(() => {
-        navigate('/user/setup-profile');
-      }, 1000);
-      return;
-    }
-
-    const eventTickets = tickets.filter(ticket =>
-      ticket.event === eventId &&
-      selectedTickets.has(ticket.id) &&
-      !isTicketPaid(ticket.id) &&
-      !isDeadlinePassed(ticket.deadline)
-    );
-
-    if (eventTickets.length === 0) {
-      toast.warning('Please select at least one unpaid ticket for bulk payment.');
-      return;
-    }
-
-    try {
-      setProcessingBulk(prev => ({ ...prev, [eventId]: true }));
 
       // Get participation ID for this event
       const res2 = await api.get(`/api/event/own-participation-list/?event=${eventId}`);
@@ -229,28 +162,35 @@ export const Tickets = () => {
       const pid = res2.data[0]?.id;
       console.log(pid);
       if (!pid) {
-        toast.error("Fill the requirements first!!");
+        toast.info("Fill the requirements first!!");
         setTimeout(() => {
-          navigate('/user');
+          // navigate('/user');
+          navigate(`/user/event/submit/${eventId}`)
         }, 1000);
         return;
       }
 
       console.log('Participation ID:', pid);
+      console.log('Processing tickets:', ticketsToProcess);
+      console.log('Event ID:', eventId);
 
-      // Create payload with selected tickets for this event
+      // Create payload with tickets and their event IDs
       const payload = {
-        tickets: eventTickets.map(ticket => ({ ticket_id: ticket.id }))
+        tickets: ticketsToProcess.map(ticket => ({
+          ticket_id: ticket.id,
+          event_id: ticket.event
+        })),
+        event_id: eventId
       };
-      console.log('Bulk payload:', payload);
+      console.log('---------Payment payload--------', payload);
 
-      // Make the API call for bulk payment
       const res = await api.post(
-        `/api/event/participation/${pid}/tickets/`,
+        `/api/event/participation/tickets/`,
         payload
       );
-      console.log('Bulk payment response:', res.data);
+      console.log('Payment response:', res.data);
       const { total_amount, participant_ticket_ids } = res.data;
+
       setTid(participant_ticket_ids);
       console.log("Total amount:", total_amount);
 
@@ -263,17 +203,46 @@ export const Tickets = () => {
         }
       });
 
-      // Clear selections for this event
-      const newSelected = new Set(selectedTickets);
-      eventTickets.forEach(ticket => newSelected.delete(ticket.id));
-      setSelectedTickets(newSelected);
+      // Clear selections if it's bulk payment
+      if (isBulk) {
+        const newSelected = new Set(selectedTickets);
+        ticketsToProcess.forEach(ticket => newSelected.delete(ticket.id));
+        setSelectedTickets(newSelected);
+      }
 
     } catch (error) {
-      console.error('Bulk payment failed:', error);
-      toast.error('Bulk payment failed. Please try again.');
+      console.error('Payment failed:', error);
+      toast.error('Payment failed. Please try again.');
     } finally {
-      setProcessingBulk(prev => ({ ...prev, [eventId]: false }));
+      if (isBulk) {
+        setProcessingBulk(prev => ({ ...prev, [eventId]: false }));
+      } else {
+        setProcessingPayment(null);
+      }
     }
+  };
+
+  const handleIndividualPayment = async (event) => {
+    // await handlePayment([ticket], ticket.event, false);
+
+    toast.info('Continue the steps!')
+    setTimeout(() => navigate(`/user/event/submit/${event}`), 1000)
+  };
+
+  const handleBulkPayment = async (eventId) => {
+    const eventTickets = tickets.filter(ticket =>
+      ticket.event === eventId &&
+      selectedTickets.has(ticket.id) &&
+      !isTicketPaid(ticket.id) &&
+      !isDeadlinePassed(ticket.deadline)
+    );
+
+    if (eventTickets.length === 0) {
+      toast.warning('Please select at least one unpaid ticket for bulk payment.');
+      return;
+    }
+
+    await handlePayment(eventTickets, eventId, true);
   };
 
   const handleSelectAllForEvent = (eventId, checked) => {
@@ -322,8 +291,9 @@ export const Tickets = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue"></div>
+        <span className="ml-3">Loading tickets...</span>
       </div>
     );
   }
@@ -331,7 +301,7 @@ export const Tickets = () => {
   const groupedTickets = groupTicketsByEvent();
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8 min-h-screen">
+    <div className="max-w-6xl mx-auto px-4  py-8 min-h-screen ">
       <div className="space-y-8">
         {Object.entries(groupedTickets).map(([eventId, eventTickets]) => {
           const selectedCount = getSelectedTicketsForEvent(parseInt(eventId)).length;
@@ -343,8 +313,8 @@ export const Tickets = () => {
           return (
             <div key={eventId} className="space-y-4">
               {/* Event Header */}
-              <div className="flex items-center justify-between p-4 bg-card rounded-lg border">
-                <div className="flex items-center space-x-3">
+              <div className="flex  items-center justify-between p-4 bg-black/20 rounded-lg">
+                <div className="flex items-center space-x-3 ">
                   <Users className="w-6 h-6 text-primary" />
                   <div>
                     <h2 className="text-xl font-semibold text-gray-800">
@@ -376,7 +346,7 @@ export const Tickets = () => {
 
                     {selectedCount > 0 && (
                       <div className="flex items-center space-x-2">
-                        <Badge variant="secondary" className="bg-primary/10 text-primary">
+                        <Badge variant="secondary" className=" text-primary">
                           {selectedCount} selected • {formatPrice(totalAmount)}
                         </Badge>
                         <Button
@@ -403,7 +373,7 @@ export const Tickets = () => {
               </div>
 
               {/* Tickets for this event */}
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 ">
                 {eventTickets.map((ticket) => {
                   const isOverdue = isDeadlinePassed(ticket.deadline);
                   const isNearDeadline = isDeadlineNear(ticket.deadline);
@@ -414,21 +384,13 @@ export const Tickets = () => {
                   return (
                     <Card
                       key={ticket.id}
-                      className={`relative transition-all duration-300 ${isPaid ? 'bg-green-50 border-green-200' :
-                        isSelected ? 'ring-2 ring-green-600 bg-primary/5' :
+                      className={`relative flex flex-col  transition-all duration-300 ${isPaid ? 'bg-green-50 border-green-200 ' :
+                        isSelected ? 'ring-2 ring-green-400 ' :
                           isNearDeadline ? 'bg-destructive/5 border-destructive/20' :
-                            'bg-card hover:shadow-md'
+                            'bg-white/30 hover:shadow-md'
                         } ${isOverdue ? 'opacity-50' : ''}`}
                     >
-                      {/* Paid Badge */}
-                      {isPaid && (
-                        <div className="absolute top-3 right-3">
-                          <Badge className="bg-green-500 text-white">
-                            <Check className="w-3 h-3 mr-1" />
-                            Purchased
-                          </Badge>
-                        </div>
-                      )}
+
 
                       {/* Selection Checkbox - only for unpaid, non-overdue tickets */}
                       {!isOverdue && !isPaid && availableTickets.length > 1 && (
@@ -443,7 +405,7 @@ export const Tickets = () => {
                         </div>
                       )}
 
-                      <CardHeader className="pb-2">
+                      <CardHeader className="pb-2 ">
                         <div className="flex items-start justify-between">
                           <div className="flex items-center space-x-2">
                             <Tag className="w-5 h-5 text-primary" />
@@ -457,13 +419,30 @@ export const Tickets = () => {
                         </div>
                       </CardHeader>
 
-                      <CardContent>
-                        <p className="text-sm text-muted-foreground mb-4">
-                          {ticket.description}
-                        </p>
+                      <CardContent className='flex-1 flex flex-col'>
+
+                        <div className="max-w-[600px]">
+                          <p
+                            className={`text-sm text-justify max-md:text-[12px] text-gray-600
+                               ${expanded ? "" : "line-clamp-3"}`}
+                          >
+                            {ticket.description}
+                          </p>
+
+                          {/* Show toggle button only if text is long */}
+                          {ticket.description && ticket.description.split(" ").length > 15 && (
+                            <button
+                              onClick={() => setExpanded(!expanded)}
+                              className="mt-2 mb-1 text-blue-600 text-xs font-medium hover:underline"
+                            >
+                              {expanded ? "Read less" : "Read more"}
+                            </button>
+                          )}
+                        </div>
+
 
                         {ticket.deadline && (
-                          <div className={`flex items-center gap-2 text-sm mb-4 ${isNearDeadline ? 'text-destructive' : 'text-muted-foreground'
+                          <div className={`flex items-center gap-2 text-sm mb-4 mt-2 ${isNearDeadline ? 'text-destructive' : 'text-muted-foreground'
                             }`}>
                             <Clock className="w-4 h-4" />
                             <span>
@@ -475,39 +454,42 @@ export const Tickets = () => {
                             </span>
                           </div>
                         )}
+                        <div className="mt-auto">
+                          {isPaid ? (
+                            <div className="bg-green-50 border border-green-200 rounded-md p-3 mt-auto">
+                              <p className="text-green-700 text-sm font-medium flex items-center">
+                                <Check className="w-4 h-4 mr-2" />
+                                Ticket purchased successfully
+                              </p>
+                            </div>
+                          ) : isOverdue ? (
+                            <div className="bg-destructive/10 border border-destructive/20 rounded-md p-3">
+                              <p className="text-destructive text-sm font-medium">
+                                ⚠️ Deadline has passed
+                              </p>
+                            </div>
+                          ) : (
+                            <Button
+                              // onClick={() => handleIndividualPayment(ticket)}
+                              onClick={() => handleIndividualPayment(ticket.event)}
+                              disabled={isProcessing}
+                              className="w-full bg-blue hover:bg-blue/90 text-primary-foreground"
+                            >
+                              {isProcessing ? (
+                                <>
+                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                  Processing...
+                                </>
+                              ) : (
+                                <>
+                                  <CreditCard className="w-4 h-4 mr-2" />
+                                  Buy Now
+                                </>
+                              )}
+                            </Button>
+                          )}
+                        </div>
 
-                        {isPaid ? (
-                          <div className="bg-green-50 border border-green-200 rounded-md p-3">
-                            <p className="text-green-700 text-sm font-medium flex items-center">
-                              <Check className="w-4 h-4 mr-2" />
-                              Ticket purchased successfully
-                            </p>
-                          </div>
-                        ) : isOverdue ? (
-                          <div className="bg-destructive/10 border border-destructive/20 rounded-md p-3">
-                            <p className="text-destructive text-sm font-medium">
-                              ⚠️ Deadline has passed
-                            </p>
-                          </div>
-                        ) : (
-                          <Button
-                            onClick={() => handleIndividualPayment(ticket)}
-                            disabled={isProcessing}
-                            className="w-full bg-blue hover:bg-blue/90 text-primary-foreground"
-                          >
-                            {isProcessing ? (
-                              <>
-                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                                Processing...
-                              </>
-                            ) : (
-                              <>
-                                <CreditCard className="w-4 h-4 mr-2" />
-                                Buy Now
-                              </>
-                            )}
-                          </Button>
-                        )}
                       </CardContent>
                     </Card>
                   );

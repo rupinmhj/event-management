@@ -1,10 +1,10 @@
 import { useContext, useEffect, useState } from "react";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent, CardFooter, CardHeader } from "@/Components/ui/card";
+import { Button } from "@/Components/ui/button";
+import { Badge } from "@/Components/ui/badge";
+import { Switch } from "@/Components/ui/switch";
+import { Input } from "@/Components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import AuthContext from "@/context/AuthContext";
 import useAxiosAuth from "@/hooks/useAxiosAuth";
 import GeneralContext from "@/context/GeneralContext";
@@ -37,7 +37,7 @@ export default function EventCardList() {
     const [filteredEvents, setFilteredEvents] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
-    const [eventsPerPage] = useState(6);
+    const [eventsPerPage] = useState(100);
     const [searchTerm, setSearchTerm] = useState("");
     const [filterType, setFilterType] = useState("all");
     const [filterPayment, setFilterPayment] = useState("all");
@@ -60,8 +60,9 @@ export default function EventCardList() {
                 const res = await api.get("/api/event/event-list/");
                 const data = res.data;
                 console.log('Event list', data);
-                setEvents(data);
-                setFilteredEvents(data);
+                const sortedEvents = data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                setEvents(sortedEvents);
+                setFilteredEvents(sortedEvents);
 
             } catch (error) {
                 console.error("Error fetching events:", error);
@@ -152,19 +153,30 @@ export default function EventCardList() {
         navigate(`/admin/event/${id}`)
     }
 
-    // Format date
-  const formatDate = (dateString) => {
-  const date = new Date(dateString);
-  return date.toLocaleString("en-US", {
-    year: "numeric",
-    month: "short",  // e.g. Oct
-    day: "numeric",  // e.g. 15
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true,    // 12-hour clock with AM/PM
-    timeZone: "UTC", // keep consistent with "Z" (UTC) in your string
-  });
-};
+
+    const formatDate = (dateString) => {
+
+        const date = new Date(dateString);
+
+        // Nepal timezone offset in minutes (+5:45 = 345 minutes)
+        const nepalOffset = 5 * 60 + 45;
+
+        // Convert date to UTC in milliseconds
+        const utc = date.getTime() + date.getTimezoneOffset() * 60000;
+
+        // Convert UTC to Nepal time
+        const nepalTime = new Date(utc + nepalOffset * 60 * 1000);
+
+        // Format Nepali date/time
+        return nepalTime.toLocaleString("en-US", {
+            year: "numeric",
+            month: "short",  // e.g. Sep
+            day: "numeric",  // e.g. 29
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true     // 12-hour clock with AM/PM
+        });
+    };
 
 
     // Card variants for animation
@@ -253,7 +265,7 @@ export default function EventCardList() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 3xl:grid-cols-4 gap-8 items-stretch"
                     >
                         {currentEvents.map((event, index) => (
                             <motion.div
@@ -264,7 +276,7 @@ export default function EventCardList() {
                                 exit="exit"
                                 transition={{ duration: 0.3, delay: index * 0.1 }}
                             >
-                                <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden">
+                                <Card className="h-full flex flex-col group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden">
                                     {/* Status Badge */}
                                     <div className="absolute top-3 right-3 z-10">
                                         <button
@@ -278,7 +290,7 @@ export default function EventCardList() {
                                     </div>
 
                                     {/* Event Banner */}
-                                    <div className="relative h-[180px] bg-gradient-to-br from-blue/20 to-purple-500/20 overflow-hidden cursor-pointer" onClick={() => handleView(event.id)}>
+                                    {/* <div className="relative h-[180px] bg-gradient-to-br from-blue/20 to-purple-500/20 overflow-hidden cursor-pointer" onClick={() => handleView(event.id)}>
                                         {event.banner ? (
                                             <img
                                                 src={event.banner}
@@ -291,7 +303,7 @@ export default function EventCardList() {
                                             </div>
                                         )}
 
-                                        {/* Event Icon Overlay */}
+                                      
                                         <div className="absolute bottom-3 left-3">
                                             <div className="w-12 h-12 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg">
                                                 {event.icon ? (
@@ -305,15 +317,15 @@ export default function EventCardList() {
                                                 )}
                                             </div>
                                         </div>
-                                    </div>
+                                    </div> */}
 
                                     <CardHeader className="pb-3 cursor-pointer" onClick={() => handleView(event.id)}>
                                         <div className="flex items-start justify-between">
-                                            <div className="flex-1">
+                                            <div className="flex-1 pr-10">
                                                 <h3 className="font-bold text-lg text-gray-900 group-hover:text-blue transition-colors line-clamp-2">
                                                     {event.title}
                                                 </h3>
-                                                <p className="text-sm text-muted-foreground mt-1 line-clamp-2 h-[40px]">
+                                                <p className="text-sm text-muted-foreground mt-1 line-clamp-2 h-[40px]  min-h-[2.5rem]">
                                                     {event.description || "No description available"}
                                                 </p>
                                             </div>
@@ -324,9 +336,9 @@ export default function EventCardList() {
                                         {/* Event Type */}
                                         <div className="flex items-center gap-2">
                                             {event.event_type === "ONLINE" ? (
-                                                <Globe className="w-4 h-4 text-green-600" />
+                                                <Globe className="w-4 h-4 text-gray-500" />
                                             ) : (
-                                                <Building className="w-4 h-4 text-blue-600" />
+                                                <Building className="w-4 h-4 text-gray-500" />
                                             )}
                                             <span className="text-sm font-medium">
                                                 {event.event_type === "ONLINE" ? "Online Event" : "Physical Event"}
@@ -335,7 +347,7 @@ export default function EventCardList() {
 
                                         {/* Location */}
                                         <div className="flex items-center gap-2">
-                                            <MapPin className="w-4 h-4 text-red-500" />
+                                            <MapPin className="w-4 h-4 text-gray-500" />
                                             <span className="text-sm text-muted-foreground truncate">
                                                 {event.location}
                                             </span>
@@ -343,36 +355,23 @@ export default function EventCardList() {
 
                                         {/* Date and Duration */}
                                         <div className="flex items-center gap-2">
-                                            <Calendar className="w-4 h-4 text-purple-500" />
+                                            <Calendar className="w-4 h-4 text-gray-500" />
                                             <span className="text-sm text-muted-foreground">
                                                 {formatDate(event.start_date)}
                                             </span>
                                         </div>
 
                                         <div className="flex items-center gap-2">
-                                            <Clock className="w-4 h-4 text-orange-500" />
+                                            <Clock className="w-4 h-4 text-gray-500" />
                                             <span className="text-sm text-muted-foreground">
                                                 {event.duration}
                                             </span>
                                         </div>
 
-                                        {/* Payment Status */}
-                                        {/* <div className="flex items-center gap-2">
-                                            <DollarSign className="w-4 h-4 text-green-500" />
-                                            <Badge variant={event.is_payment_required ? "paid" : "secondary"}>
-                                                {event.is_payment_required ? "Paid" : "Free"}
-                                            </Badge>
-                                        </div> */}
-                                        {/* <button
-                                            onClick={handleAddRequirements}
-                                            className="mt-2 text-[14px] bg-blue/80 hover:scale-105 transition-all duration-200 rounded-lg px-2 py-2 text-black"
-                                            
-                                        >
-                                            Add Requirements
-                                        </button> */}
+
                                     </CardContent>
 
-                                    <CardFooter className="pt-4 border-t bg-gray-50/50">
+                                    <CardFooter className="mt-auto border-t px-6 py-4 flex justify-between items-center">
                                         <div className="flex items-center justify-between w-full">
                                             {/* Status Toggle */}
                                             <div className="flex items-center gap-2 ">

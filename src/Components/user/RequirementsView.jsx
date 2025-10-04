@@ -1,8 +1,8 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { TabsContent } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader } from "@/Components/ui/card";
+import { Button } from "@/Components/ui/button";
+import { Badge } from "@/Components/ui/badge";
+import { TabsContent } from "@/Components/ui/tabs";
 import ViewSubmissionModal from './ViewSubmissionModal';
 import { toast, ToastContainer } from 'react-toastify'
 import {

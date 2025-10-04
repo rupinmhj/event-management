@@ -4,7 +4,7 @@ import { FaAngleLeft, FaRegEye, FaRegEyeSlash } from "react-icons/fa6";
 import { toast, ToastContainer } from 'react-toastify';
 import { AiOutlineMail, AiOutlinePhone, AiOutlineLock } from "react-icons/ai";
 import images from '../assets/images'
-import ThemeContext from '@/context/ThemeContext';
+// import ThemeContext from '@/context/ThemeContext';
 import { CgProfile } from "react-icons/cg";
 import { useNavigate } from 'react-router-dom';
 // import AuthContext from '@/context/AuthContext';
@@ -24,7 +24,7 @@ export const SignupForm = ({ switchToSignin }) => {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [loading, setLoading] = useState(false);
-    const { theme, toggleTheme } = useContext(ThemeContext);
+    // const { theme, toggleTheme } = useContext(ThemeContext);
     const api = useAxiosAuth();
     const navigate = useNavigate();
     const validate = () => {
@@ -100,8 +100,12 @@ export const SignupForm = ({ switchToSignin }) => {
             setPhone('');
             setPassword('');
             setConfirmPassword('');
+            if (switchToSignin) {
 
-            if (switchToSignin) switchToSignin();
+                setTimeout(() => switchToSignin(), 1000)
+            }
+
+            // if (switchToSignin) switchToSignin();
 
         } catch (error) {
             const msg =
@@ -124,12 +128,13 @@ export const SignupForm = ({ switchToSignin }) => {
             transition={{ duration: 0.3, delay: 0.15 }}
         >
             <div className=" font-sans dark:bg-bgDark dark:text-textDark ">
-                <div className="px-6 min-w-[420px] mx-auto">
+                <div className="md:px-6 min-w-[300px] md:min-w-[500px] mx-auto">
 
                     <main className='pt-5'>
                         <form onSubmit={handleSignUp}>
                             {/* Fullname */}
                             <div className=" w-full flex flex-col">
+                                <div className="w-full flex justify-center text-[20px] font-bold pb-6 text-blue">Sign Up!</div>
                                 <div className="relative mb-[20px]">
                                     <CgProfile
                                         className="dark:invert absolute top-6 text-gray-500 left-4 size-5"
@@ -218,12 +223,12 @@ export const SignupForm = ({ switchToSignin }) => {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className={`w-full bg-blue p-4 text-[16px] font-bold text-white rounded-xl mt-6 ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
+                                className={`w-full bg-blue p-3 text-[16px] font-bold text-white rounded-xl mt-6 ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
                             >
                                 {loading ? "Signing Up..." : "Sign Up"}
                             </button>
                         </form>
-                        <div onClick={switchToSignin} className="flex mt-[35px] justify-center">
+                        <div onClick={switchToSignin} className="flex mt-[20px] justify-center">
                             <p className="text-[#71757D] dark:text-gray-400 text-[14px] font-medium">
                                 Already have an account?
                                 <span className="text-[#2869FE] cursor-pointer"> Sign In</span>

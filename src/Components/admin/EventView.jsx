@@ -1,16 +1,16 @@
 import { useContext, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Card, CardContent, CardHeader } from "@/Components/ui/card";
+import { Button } from "@/Components/ui/button";
+import { Badge } from "@/Components/ui/badge";
+import { Separator } from "@/Components/ui/separator";
+import { ScrollArea, ScrollBar } from "@/Components/ui/scroll-area";
 import {
     Tabs,
     TabsContent,
     TabsList,
     TabsTrigger,
-} from "@/components/ui/tabs";
+} from "@/Components/ui/tabs";
 import AuthContext from "@/context/AuthContext";
 import useAxiosAuth from "@/hooks/useAxiosAuth";
 import {
@@ -145,15 +145,27 @@ export function EventView() {
 
     // Format date
     const formatDate = (dateString) => {
+        console.log('dateString', dateString)
         const date = new Date(dateString);
-        return date.toLocaleString("en-US", {
+
+        // Nepal timezone offset in minutes (+5:45 = 345 minutes)
+        const nepalOffset = 5 * 60 + 45;
+
+        // Convert date to UTC in milliseconds
+        const utc = date.getTime() + date.getTimezoneOffset() * 60000;
+
+        // Convert UTC to Nepal time
+        const nepalTime = new Date(utc + nepalOffset * 60 * 1000);
+        console.log('nepalTime', nepalTime)
+
+        // Format Nepali date/time
+        return nepalTime.toLocaleString("en-US", {
             year: "numeric",
-            month: "short",  // e.g. Oct
-            day: "numeric",  // e.g. 15
+            month: "short",  // e.g. Sep
+            day: "numeric",  // e.g. 29
             hour: "2-digit",
             minute: "2-digit",
-            hour12: true,    // 12-hour clock with AM/PM
-            timeZone: "UTC", // keep consistent with "Z" (UTC) in your string
+            hour12: true     // 12-hour clock with AM/PM
         });
     };
 

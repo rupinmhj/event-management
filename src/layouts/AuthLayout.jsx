@@ -1,5 +1,5 @@
 import { Outlet, useNavigate } from "react-router-dom";
-import Navbar from "../components/common/Navbar";
+import Navbar from "../Components/common/Navbar";
 
 
 export default function AuthLayout() {
@@ -8,8 +8,8 @@ export default function AuthLayout() {
 
     <div className="admin-layout">
       <Navbar />
-      <div className="admin-main">
-        <main>
+      <div className="admin-main bb">alksjdlkdfjlk
+        <main >
           <Outlet /> {/* This changes per page */}
         </main>
       </div>

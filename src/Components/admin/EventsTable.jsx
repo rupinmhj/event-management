@@ -5,12 +5,14 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from "@/components/ui/table";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { MapPin, Calendar, Users, DollarSign } from "lucide-react";
+} from "@/Components/ui/table";
+import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
+import { Badge } from "@/Components/ui/badge";
+import { MapPin, Calendar, Users, DollarSign, Eye } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export const EventsTable = ({ events }) => {
+    const navigate = useNavigate();
     const formatCurrency = (amount) => {
         return new Intl.NumberFormat('ne-NP', {
             style: 'currency',
@@ -42,6 +44,8 @@ export const EventsTable = ({ events }) => {
                                 <TableHead className="text-muted-foreground">Location</TableHead>
                                 <TableHead className="text-muted-foreground">Participants</TableHead>
                                 <TableHead className="text-muted-foreground">Revenue</TableHead>
+                                <TableHead className="text-muted-foreground">View</TableHead>
+
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -53,11 +57,11 @@ export const EventsTable = ({ events }) => {
                                     <TableCell>
                                         <Badge
                                             variant={event.is_active ? "active" : "secondary"}
-                                            // className={
-                                            //     event.is_active
-                                            //         ? "bg-success text-success-foreground"
-                                            //         : "bg-muted text-muted-foreground"
-                                            // }
+                                        // className={
+                                        //     event.is_active
+                                        //         ? "bg-success text-success-foreground"
+                                        //         : "bg-muted text-muted-foreground"
+                                        // }
                                         >
                                             {event.is_active ? "Active" : "Inactive"}
                                         </Badge>
@@ -75,7 +79,7 @@ export const EventsTable = ({ events }) => {
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex items-center justify-center gap-2">
                                             <Users className="h-4 w-4 text-muted-foreground" />
                                             <span className="text-foreground">{event.total_participants}</span>
                                         </div>
@@ -85,6 +89,11 @@ export const EventsTable = ({ events }) => {
                                             <span className="font-medium text-foreground">
                                                 {formatCurrency(event.total_revenue)}
                                             </span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div onClick={() => navigate(`/admin/event/${event.id}`)} className="flex items-center justify-center gap-2 cursor-pointer hover:text-blue">
+                                            <Eye className="size-4" />
                                         </div>
                                     </TableCell>
                                 </TableRow>

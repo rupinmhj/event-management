@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { TabsContent } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader } from "@/Components/ui/card";
+import { Button } from "@/Components/ui/button";
+import { ScrollArea } from "@/Components/ui/scroll-area";
+import { TabsContent } from "@/Components/ui/tabs";
 import { Users, Eye, ArrowRight } from "lucide-react";
 import useAxiosAuth from "@/hooks/useAxiosAuth";
 import { PaginationControls } from "@/utils/PaginationControls"

@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import EventList from '@/Components/admin/EventList'
 import { motion } from 'framer-motion'
 import GeneralContext from "../../context/GeneralContext"
@@ -6,7 +6,10 @@ import CreateEvent from '@/Components/admin/CreateEvent'
 export const Events = () => {
     const [authView, setAuthView] = useState('signup')
     const [showOtp, setShowOtp] = useState(0)
-    const { setIsCreateEvent, isCreateEvent } = useContext(GeneralContext)
+    const { setIsCreateEvent, isCreateEvent } = useContext(GeneralContext);
+    useEffect(() => {
+        setIsCreateEvent(false);
+    }, [])
     return (
         <>
             <motion.div

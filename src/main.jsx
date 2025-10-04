@@ -8,7 +8,7 @@ import "@fontsource/poppins/600.css";
 import "@fontsource/poppins/700.css";
 import "@fontsource/poppins/800.css";
 import "@fontsource/poppins/900.css";
-import { ThemeProvider } from './context/ThemeContext.jsx'
+// import { ThemeProvider } from './context/ThemeContext.jsx'
 import { AuthProvider } from './context/AuthContext.jsx';
 import { GeneralProvider } from './context/GeneralContext.jsx';
 import { createRoot } from 'react-dom/client'
@@ -18,12 +18,12 @@ import App from './App.jsx'
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <AuthProvider >
-      <ThemeProvider>
-        <GeneralProvider>
+      {/* <ThemeProvider> */}
+      <GeneralProvider>
 
-          <App />
-        </GeneralProvider>
-      </ThemeProvider>
+        <App />
+      </GeneralProvider>
+      {/* </ThemeProvider> */}
     </AuthProvider>
   </StrictMode>,
 )

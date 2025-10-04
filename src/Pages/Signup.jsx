@@ -1,16 +1,16 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { motion } from "framer-motion"
 import { FaAngleLeft, FaRegEye, FaRegEyeSlash } from "react-icons/fa6";
 import { toast, ToastContainer } from 'react-toastify';
 import { AiOutlineMail, AiOutlinePhone, AiOutlineLock } from "react-icons/ai";
 import images from '../assets/images'
-import ThemeContext from '../context/ThemeContext';
+// import ThemeContext from '@/context/ThemeContext';
 import { CgProfile } from "react-icons/cg";
 import { useNavigate } from 'react-router-dom';
 // import AuthContext from '@/context/AuthContext';
 import useAxiosAuth from '@/hooks/useAxiosAuth';
 import apiPublic from '../../api'
-export const Signup = ({ switchToSignin }) => {
+export const SignupForm = ({ switchToSignin }) => {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [phone, setPhone] = useState("");
@@ -24,7 +24,7 @@ export const Signup = ({ switchToSignin }) => {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [loading, setLoading] = useState(false);
-    const { theme, toggleTheme } = useContext(ThemeContext);
+    // const { theme, toggleTheme } = useContext(ThemeContext);
     const api = useAxiosAuth();
     const navigate = useNavigate();
     const validate = () => {
@@ -59,7 +59,7 @@ export const Signup = ({ switchToSignin }) => {
             setPasswordError("Password is required.");
             valid = false;
         } else if (
-            !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(password)
+            !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/.test(password)
         ) {
             setPasswordError(
                 "Password must be at least 8 characters and include uppercase, lowercase, number, and special character."
@@ -105,12 +105,17 @@ export const Signup = ({ switchToSignin }) => {
 
         } catch (error) {
             const msg =
-                error.response?.data?.detail || error.response?.data?.message || 'Signup failed, try again';
-            toast.error(msg);
+                error.response?.data?.email || error.response?.data?.phone_number || 'Signup failed, try again';
+            toast.error(String(msg));
+            console.error(msg);
+            console.error(error);
         } finally {
             setLoading(false);
         }
     };
+    useEffect(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: "smooth" })
+    }, [])
     return (
         <motion.div
             initial={{ opacity: 0 }}
@@ -119,12 +124,13 @@ export const Signup = ({ switchToSignin }) => {
             transition={{ duration: 0.3, delay: 0.15 }}
         >
             <div className=" font-sans dark:bg-bgDark dark:text-textDark ">
-                <div className="px-6 min-w-[420px] mx-auto">
+                <div className="md:px-6 min-w-[300px] md:min-w-[500px] mx-auto">
 
                     <main className='pt-5'>
                         <form onSubmit={handleSignUp}>
                             {/* Fullname */}
                             <div className=" w-full flex flex-col">
+                                <div className="w-full flex justify-center text-[20px] font-bold pb-6">Sign Up!</div>
                                 <div className="relative mb-[20px]">
                                     <CgProfile
                                         className="dark:invert absolute top-6 text-gray-500 left-4 size-5"
@@ -228,6 +234,7 @@ export const Signup = ({ switchToSignin }) => {
                     </main>
                 </div>
             </div>
+            <ToastContainer />
         </motion.div>
     )
 }

@@ -1,12 +1,12 @@
 import { useState, useEffect, useContext } from "react";
 import { toast, ToastContainer } from 'react-toastify';
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Card, CardContent } from "@/Components/ui/card";
+import { Button } from "@/Components/ui/button";
+import { Badge } from "@/Components/ui/badge";
+import { Input } from "@/Components/ui/input";
+import { Label } from "@/Components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
+import { Checkbox } from "@/Components/ui/checkbox";
 import {
     Mail,
     Send,
@@ -257,10 +257,10 @@ export const SendEmail = () => {
                                             hour12: true
                                         })}
                                     </span>
-                                </div> */} 
+                                </div> */}
                                 <div className="flex items-center gap-2">
                                     <Users className="w-4 h-4 text-gray-400" />
-                                    <span className="text-gray-600">Recipients:</span> 
+                                    <span className="text-gray-600">Recipients:</span>
                                     <span className="font-medium">
                                         {email.recipients_name ? email.recipients_name.length : email.recipients.length} recipient{(email.recipients_name ? email.recipients_name.length : email.recipients.length) !== 1 ? 's' : ''}
                                     </span>
@@ -394,6 +394,7 @@ export const SendEmail = () => {
 
     // Fetch sent emails when auth is ready and viewing sent
     useEffect(() => {
+        window.scrollTo(0, 0);
         if (!authReady || !authTokens) return;
 
         if (currentView === 'sent') {
@@ -573,7 +574,7 @@ export const SendEmail = () => {
             });
         } else {
             return date.toLocaleDateString('en-US', {
-                 hour: '2-digit',
+                hour: '2-digit',
                 minute: '2-digit',
                 month: 'short',
                 day: 'numeric'
@@ -913,8 +914,8 @@ export const SendEmail = () => {
                                             )}
                                             <div className="text-xs text-gray-400 min-w-fit">
                                                 {email.updated_at && new Date(email.updated_at).toLocaleTimeString('en-US', {
-                                                     month: 'short',
-                                            day: 'numeric',
+                                                    month: 'short',
+                                                    day: 'numeric',
                                                     hour: 'numeric',
                                                     minute: '2-digit',
                                                     hour12: true

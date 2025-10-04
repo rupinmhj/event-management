@@ -1,12 +1,12 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { Switch } from '@/Components/ui/switch';
+import { Textarea } from '@/Components/ui/textarea';
+import { Badge } from '@/Components/ui/badge';
 import DatePicker from '@/utils/DatePicker';
 import { motion } from 'framer-motion'
 import { toast, ToastContainer } from 'react-toastify'
@@ -49,7 +49,7 @@ export const RequirementSetup = () => {
   const [loading, setLoading] = useState(false);
   const { eventName } = useContext(GeneralContext);
   const location = useLocation();
-  console.log('Location state:', location.state);
+  // console.log('Location state:', location.state);
   // const { id } = location.state || {};
   // const event_id = id;
   const [requirement, setRequirement] = useState({
@@ -59,7 +59,8 @@ export const RequirementSetup = () => {
     description: '',
     file: null,
     is_active: false,
-    deadline: null
+    deadline: null,
+    is_required: false,
   });
 
   // Validation errors state
@@ -79,22 +80,38 @@ export const RequirementSetup = () => {
     }));
   }, [selectedEvent]);
 
-useEffect(() => {
-  const { eventId } = location.state || {};
-  console.log("eventId from location:", eventId);
+  useEffect(() => {
+    const { eventId } = location.state || {};
+    console.log("eventId from location:", eventId);
 
-  if (eventId && events.length > 0) {
-    const event = events.find(e => Number(e.id) === Number(eventId));
-    console.log("Matched event:", event);
+    if (eventId && events.length > 0) {
+      const event = events.find(e => Number(e.id) === Number(eventId));
+      console.log("Matched event:", event);
 
-    if (event) {
-      setSelectedEvent(event);
-    } else {
-      console.warn("No event found for eventId:", eventId);
+      if (event) {
+        setSelectedEvent(event);
+      } else {
+        console.warn("No event found for eventId:", eventId);
+      }
     }
-  }
-}, [events, location.state]);
+  }, [events, location.state]);
 
+  // Reset deadline when event changes to avoid invalid deadline
+  useEffect(() => {
+    if (selectedEvent && requirement.deadline) {
+      const eventStartDate = new Date(selectedEvent.start_date);
+      const currentDeadline = new Date(requirement.deadline);
+
+      // If current deadline is after event start date, reset it
+      if (currentDeadline >= eventStartDate) {
+        setRequirement(prev => ({
+          ...prev,
+          deadline: null
+        }));
+        toast.warning('Deadline was reset because it was after the event start date');
+      }
+    }
+  }, [selectedEvent]);
 
   useEffect(() => {
     if (!authTokens || !authReady) return;
@@ -139,6 +156,20 @@ useEffect(() => {
     }
   };
 
+  // Calculate max date for deadline based on selected event
+  const getMaxDeadlineDate = () => {
+    if (!selectedEvent || !selectedEvent.start_date) {
+      return new Date(2040, 12, 30); // fallback to original max date
+    }
+
+    const eventStartDate = new Date(selectedEvent.start_date);
+    // Subtract one day from event start date to ensure deadline is before event
+    const maxDeadline = new Date(eventStartDate);
+    maxDeadline.setDate(maxDeadline.getDate());
+
+    return maxDeadline;
+  };
+
   // Validation function
   const validateForm = () => {
     const newErrors = {
@@ -167,11 +198,13 @@ useEffect(() => {
     // Deadline validation
     if (!requirement.deadline) {
       newErrors.deadline = "Deadline is required";
-    }
+    } else if (selectedEvent) {
+      const eventStartDate = new Date(selectedEvent.start_date);
+      const deadlineDate = new Date(requirement.deadline);
 
-    // File validation for FILE type
-    if (requirement.type === 'FILE' && !requirement.file) {
-      newErrors.file = "File is required for file upload type";
+      if (deadlineDate >= eventStartDate) {
+        newErrors.deadline = "Deadline must be before the event start date";
+      }
     }
 
     setErrors(newErrors);
@@ -180,9 +213,9 @@ useEffect(() => {
     return Object.values(newErrors).every(error => error === '');
   };
 
-  useEffect(()=>{
-    window.scrollTo(0,0);
-  },[])
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [])
 
   const saveRequirement = async () => {
     // Validate form
@@ -198,18 +231,15 @@ useEffect(() => {
       formData.append('label', requirement.label || '');
       formData.append('description', requirement.description || '');
       formData.append('is_verification_required', String(!!requirement.is_verification_required));
+      formData.append('is_required', String(!!requirement.is_required));
       formData.append('is_active', String(!!requirement.is_active));
       const deadline = formatDateForAPI(requirement.deadline);
       if (deadline) formData.append('deadline', deadline);
       if (requirement.file) formData.append('file', requirement.file);
-
+      console.log('------requirements')
       formData.forEach((value, key) => {
         console.log(key, value);
       });
-
-      const res = await api.post('/api/event/requirements/', formData);
-      const data = res.data;
-      console.log('requirement post', data);
 
       console.log('Posting payload (FormData):', {
         event: requirement.event,
@@ -218,8 +248,12 @@ useEffect(() => {
         description: requirement.description,
         is_active: requirement.is_active,
         deadline,
+        is_required: requirement.is_required,
         file: requirement.file ? requirement.file.name : null,
       });
+      const res = await api.post('/api/event/requirements/', formData);
+      const data = res.data;
+      console.log('requirement post', data);
 
       // Reset form on success
       setRequirement({
@@ -229,7 +263,8 @@ useEffect(() => {
         description: '',
         file: null,
         is_active: false,
-        deadline: null
+        deadline: null,
+        is_required: false,
       });
       setSelectedEvent(null);
       setErrors({
@@ -287,7 +322,7 @@ useEffect(() => {
                 Event Information
               </CardTitle>
               <CardDescription>
-                Select the event for which this requirement applies 
+                Select the event for which this requirement applies
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -318,6 +353,27 @@ useEffect(() => {
                 {errors.event && (
                   <p className='text-red-500 text-[12px] mt-1'>{errors.event}</p>
                 )}
+
+                {/* Show selected event details */}
+                {/* {selectedEvent && (
+                  <div className="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <p className="text-sm text-blue-800">
+                      <strong>Selected Event:</strong> {selectedEvent.title}
+                    </p>
+                    <p className="text-sm text-blue-600">
+                      <strong>Start Date:</strong> {new Date(selectedEvent.start_date).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </p>
+                    <p className="text-xs text-blue-500 mt-1">
+                      Requirement deadline must be before the event start date
+                    </p>
+                  </div>
+                )} */}
               </div>
             </CardContent>
           </Card>
@@ -417,7 +473,6 @@ useEffect(() => {
               </div>
 
               {/* Deadline */}
-
               <div className="space-y-2 max-w-sm">
                 <Label>Deadline *</Label>
                 <DateTimePicker
@@ -427,10 +482,19 @@ useEffect(() => {
                     clearError('deadline');
                   }}
                   minDate={new Date()}
-                  maxDate={new Date(2040, 12, 30)}
+                  maxDate={getMaxDeadlineDate()}
+                  disabled={!selectedEvent} // Disable if no event selected
                 />
                 {errors.deadline && (
                   <p className='text-red-500 text-[12px] mt-1'>{errors.deadline}</p>
+                )}
+                {!selectedEvent && (
+                  <p className='text-gray-500 text-[12px] mt-1'>Please select an event first to set deadline</p>
+                )}
+                {selectedEvent && (
+                  <p className='text-gray-500 text-[12px] mt-1'>
+                    Deadline must be before {new Date(selectedEvent.start_date).toLocaleDateString()}
+                  </p>
                 )}
               </div>
 
@@ -473,7 +537,25 @@ useEffect(() => {
                   If checked, this requirement must be verified by an admin after submission.
                 </p>
               </div>
-
+              {/*Is required*/}
+              <div className="space-y-2">
+                <label htmlFor="is_required" className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="is_required"
+                    checked={requirement.is_required || false}
+                    onChange={e => setRequirement({
+                      ...requirement,
+                      is_required: e.target.checked
+                    })}
+                    className="accent-blue-600 h-[40px]"
+                  />
+                  <span className="text-sm font-medium">Mandatory Requirement</span>
+                </label>
+                <p className="text-xs text-gray-500">
+                  Enable this option if applicants must submit this requirement to proceed.
+                </p>
+              </div>
 
               {/* Active Status */}
               <div className="space-y-2">
@@ -494,16 +576,14 @@ useEffect(() => {
                   </button>
                 </div>
               </div>
+
             </CardContent>
           </Card>
 
-
           <div className="flex justify-center gap-4 pt-6 md:px-0 px-4">
-
-
             <Button
               onClick={saveRequirement}
-              disabled={loading}
+              // disabled={loading}
               className="flex-1 bg-blue transition-all duration-300 hover:scale-[1.02] text-primary-foreground hover:bg-blue/90"
               size='lg'
             >

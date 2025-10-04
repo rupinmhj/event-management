@@ -1,23 +1,23 @@
 import React, { useContext } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/Components/ui/button";
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import {
     NavigationMenu,
     NavigationMenuItem,
     NavigationMenuLink,
     NavigationMenuList,
-} from "@/components/ui/navigation-menu";
+} from "@/Components/ui/navigation-menu";
 import {
     Popover,
     PopoverContent,
     PopoverTrigger,
-} from "@/components/ui/popover";
+} from "@/Components/ui/popover";
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/Components/ui/dropdown-menu";
 import { Bell, HelpCircle, User } from "lucide-react";
 import AuthContext from "@/context/AuthContext";
 
@@ -131,6 +131,7 @@ const navigationLinks = [
     { to: "/admin/requirement-setup", label: "Requirement Setup" },
     { to: "/admin/tickets-pricing", label: "Tickets/Pricing" },
     { to: "/admin/send-email", label: "Email" },
+    { to: "/admin/about", label: "About Us" },
     // { to: "/admin/registered-members", label: "Registered Members" },
 ];
 
@@ -149,7 +150,7 @@ const Navbar = ({ mode }) => {
                 {/* Left side */}
                 <div className="flex items-center gap-2 ">
                     {/* Mobile menu trigger */}
-                   
+
                     {/* Main nav */}
                     <div className="flex items-center gap-6">
                         <Link to="/admin" className="text-blue hover:text-blue/90">
@@ -187,51 +188,15 @@ const Navbar = ({ mode }) => {
                     </div>
                     {/* User menu */}
                     <UserMenu mode={mode} logout={logout} />
-                     <Popover modal={false}>
-                        <PopoverTrigger asChild>
-                            <Button
-                                className="group relative size-10 md:hidden bg-gradient-to-br from-slate-50 to-white border border-slate-200 shadow-sm hover:shadow-md hover:from-white hover:to-slate-50 transition-all duration-300"
-                                variant="ghost"
-                                size="icon"
-                            >
-                                <div className="relative">
-                                    <svg
-                                        className="pointer-events-none"
-                                        width={18}
-                                        height={18}
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth="2"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                    >
-                                        <path
-                                            d="M4 12L20 12"
-                                            className="origin-center -translate-y-[7px] transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-x-0 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[315deg]"
-                                        />
-                                        <path
-                                            d="M4 12H20"
-                                            className="origin-center transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.8)] group-aria-expanded:rotate-45"
-                                        />
-                                        <path
-                                            d="M4 12H20"
-                                            className="origin-center translate-y-[7px] transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[135deg]"
-                                        />
-                                    </svg>
-                                    {/* Notification dot for active state */}
-                                    <span className="absolute -top-1 -right-1 size-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full opacity-0 group-aria-expanded:opacity-100 transition-opacity duration-300"></span>
-                                </div>
-                            </Button>
-                        </PopoverTrigger>
+                    <Popover modal={false}>
+
 
                         <PopoverContent
                             align="start"
                             className="w-64 p-0 md:hidden bg-gradient-to-br from-white via-slate-50/50 to-white border border-slate-200/60 shadow-xl backdrop-blur-sm"
                             portalled={false}
                         >
-                           
+
 
                             {/* Navigation Items */}
                             <NavigationMenu className="max-w-none ">
@@ -307,8 +272,45 @@ const Navbar = ({ mode }) => {
                                 </NavigationMenuList>
                             </NavigationMenu>
 
-                           
+
                         </PopoverContent>
+                        <PopoverTrigger asChild>
+                            <Button
+                                className="group relative size-10 md:hidden bg-gradient-to-br from-slate-50 to-white border border-slate-200 shadow-sm hover:shadow-md hover:from-white hover:to-slate-50 transition-all duration-300"
+                                variant="ghost"
+                                size="icon"
+                            >
+                                <div className="relative">
+                                    <svg
+                                        className="pointer-events-none"
+                                        width={18}
+                                        height={18}
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <path
+                                            d="M4 12L20 12"
+                                            className="origin-center -translate-y-[7px] transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-x-0 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[315deg]"
+                                        />
+                                        <path
+                                            d="M4 12H20"
+                                            className="origin-center transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.8)] group-aria-expanded:rotate-45"
+                                        />
+                                        <path
+                                            d="M4 12H20"
+                                            className="origin-center translate-y-[7px] transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[135deg]"
+                                        />
+                                    </svg>
+                                    {/* Notification dot for active state */}
+                                    <span className="absolute -top-1 -right-1 size-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full opacity-0 group-aria-expanded:opacity-100 transition-opacity duration-300"></span>
+                                </div>
+                            </Button>
+                        </PopoverTrigger>
                     </Popover>
                 </div>
             </div>

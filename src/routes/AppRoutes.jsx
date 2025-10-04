@@ -2,25 +2,29 @@ import { createBrowserRouter } from "react-router-dom";
 import AdminLayout from "../layouts/AdminLayout";
 
 // Admin pages
-import { DashboardAdmin } from "../pages/admin/DashboardAdmin";
-import { Events } from "../pages/admin/Events";
-import { RequirementSetup } from "../pages/admin/RequirementSetup";
-import { TicketsPricing } from "../pages/admin/TicketsPricing";
-import { RegisteredMembers } from "../pages/admin/RegisteredMembers";
+import { DashboardAdmin } from "../Pages/admin/DashboardAdmin";
+import { Events } from "../Pages/admin/Events";
+import { RequirementSetup } from "../Pages/admin/RequirementSetup";
+import { TicketsPricing } from "../Pages/admin/TicketsPricing";
+import { RegisteredMembers } from "../Pages/admin/RegisteredMembers";
 import { EventView } from "@/Components/admin/EventView"
 import { SendEmail } from "@/Components/admin/SendEmail";
 import { ParticipantReview } from "@/Components/admin/ParticipantReview";
 import AdminUserProfileView from "@/Components/admin/AdminUserProfileView";
-import {EditTicket} from "@/Components/admin/EditTicket"
-// User pages
+import { EditTicket } from "@/Components/admin/EditTicket"
+import { AboutUs } from "../Pages/admin/AboutUs";
+// User Pages
 import UserLayout from "../layouts/UserLayout";
-import { Dashboard } from "../pages/user/Dashboard";
-import { About } from "@/Pages/user/About";
+import { Dashboard } from "../Pages/user/Dashboard";
+// import { About } from "@/Pages/user/About";
 import { Home } from '@/Pages/user/Home'
 import { Registration } from '@/Pages/user/Registration'
 import { Tickets } from '@/Pages/user/Tickets'
 import { MyProfile } from "@/Components/user/MyProfile";
 import { Payment } from "@/Components/user/Payment";
+import { Submit } from "@/Components/user/Submit";
+import EventDetailTwo from "@/Components/user/EventDetailTwo"
+import MyPayments from "@/Pages/user/MyPayments";
 
 //Auth page
 import { AuthPage } from '@/Pages/public/AuthPage'
@@ -37,14 +41,21 @@ import { ResetPasswordForm } from "@/forms/ResetPasswordForm";
 import EmailHistory from "@/Components/admin/EmailHistory";
 import ProtectedRoute from "./ProtectedRoute";
 // Updated payment component imports
-import { PaymentSuccess } from "@/components/user/payment/PaymentSuccess";
-import PaymentFailure from "@/components/user/payment/PaymentFailure";
+import { PaymentSuccess } from "@/Components/user/Payment/PaymentSuccess";
+import PaymentFailure from "@/Components/user/Payment/PaymentFailure";
+import MySubmission from "@/Pages/user/MySubmission";
+import NotFoundPage from "@/Components/common/NotFoundPage";
+import EventDetailAuth from "@/Components/common/EventDetailAuth";
 
 const router = createBrowserRouter([
     // Public routes
     {
         path: "/",
         element: <AuthPage />,
+    },
+    {
+        path: "*",
+        element: <NotFoundPage />
     },
     {
         path: "/forgot-password",
@@ -65,6 +76,10 @@ const router = createBrowserRouter([
         path: "/user/payment-failed",
         element: <PaymentFailure />
     },
+    {
+        path: "event/:id",
+        element: <EventDetailAuth />
+    },
 
     // Admin routes
     {
@@ -76,7 +91,7 @@ const router = createBrowserRouter([
         ),
         children: [
             { index: true, element: <DashboardAdmin /> },
-            
+
             { path: "events", element: <Events /> },
             { path: "event/:id", element: <EventView /> },
             { path: "requirement-setup", element: <RequirementSetup /> },
@@ -89,7 +104,8 @@ const router = createBrowserRouter([
             { path: "email-history", element: <EmailHistory /> },
             { path: 'participant-review/:id', element: <ParticipantReview /> },
             { path: 'user-profile/:userId', element: <AdminUserProfileView /> },
-            { path: 'ticket-update/:id', element: <EditTicket/>}
+            { path: 'ticket-update/:id', element: <EditTicket /> },
+            { path: 'about', element: <AboutUs /> },
         ],
     },
 
@@ -106,13 +122,16 @@ const router = createBrowserRouter([
             { path: 'setup-profile', element: <Setup /> },
             { path: "events", element: <Home /> },
             { path: "event/:id", element: <EventDetail /> },
-            { path: "about", element: <About /> },
             { path: "registration", element: <Registration /> },
+            { path: "my-submission", element: <MySubmission /> },
             { path: "tickets", element: <Tickets /> },
             { path: "event-form/:id", element: <DynamicRequirementForm /> },
             { path: "change-password", element: <ChangePasswordForm user={'user'} /> },
             { path: "user-profile", element: <MyProfile /> },
             { path: 'payment/:pid', element: <Payment /> },
+            { path: 'event/submit/:id', element: <Submit /> },
+            { path: 'event-detail/:id', element: <EventDetailTwo /> },
+            { path: 'my-payments', element: <MyPayments /> }
 
         ],
     },

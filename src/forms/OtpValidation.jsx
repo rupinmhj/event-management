@@ -75,7 +75,7 @@ export const OtpValidation = ({ setShowOtp }) => {
             });
             console.log(response.data);
             setTimeout(() => {
-                navigate('/forget-password/reset-password', { state: response.data.reset_token });
+                navigate('/forgot-password/reset-password', { state: response.data.reset_token });
             }, 1000);
         } catch (err) {
             const msg = err?.response?.data?.detail || 'Verification failed. Please try again.';
@@ -126,9 +126,9 @@ export const OtpValidation = ({ setShowOtp }) => {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3, delay: 0.15 }}
         >
-            <div className="w-full max-w-md mx-auto animate-fade-in font-sans  md:pr-20">
+            <div className="w-full max-w-md mx-auto animate-fade-in font-sans   ">
                 <div className="mb-8 text-center">
-                    <div className="w-16 h-16 bg-event-blue-light rounded-full flex items-center justify-center mx-auto mb-4">
+                    <div className="w-16 h-16  bg-event-blue-light  flex items-center justify-center mx-auto mb-4">
                         <svg className="w-8 h-8 text-event-blue" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
                             <polyline points="22,6 12,13 2,6" />
@@ -142,7 +142,7 @@ export const OtpValidation = ({ setShowOtp }) => {
                 </div>
 
                 <div className="mb-6">
-                    <div className="flex justify-center space-x-3 mb-4">
+                    <div className="flex justify-center space-x-3 mb-4 ">
                         {otp.map((digit, index) => (
                             <input
                                 key={index}
@@ -154,7 +154,7 @@ export const OtpValidation = ({ setShowOtp }) => {
                                 onChange={(e) => handleInputChange(index, e.target.value)}
                                 onKeyDown={(e) => handleKeyDown(index, e)}
                                 onPaste={handlePaste}
-                                className="w-12 h-12 text-center text-lg font-semibold border border-input-border rounded-lg bg-input focus:ring-2 focus:ring-ring focus:border-ring transition-colors"
+                                className="w-12 h-12 max-md:h-8 max-md:w-8 text-center border-gray-500 text-lg font-semibold border border-input-border rounded-lg bg-input focus:ring-2 focus:ring-ring focus:border-ring transition-colors"
                             />
                         ))}
                     </div>
@@ -166,7 +166,7 @@ export const OtpValidation = ({ setShowOtp }) => {
                         onClick={handleVerify}
                         variant="event"
                         size="lg"
-                        className="w-full"
+                        className="w-full bg-blue/90 text-white hover:bg-blue/70"
                         disabled={!isOtpComplete || isVerifying}
                     >
                         {isVerifying ? (

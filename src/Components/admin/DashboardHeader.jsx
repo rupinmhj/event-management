@@ -12,10 +12,8 @@ export const DashboardHeader = () => {
     <div className="mb-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground bg-gradient-primary bg-clip-text text-transparent">
-            Event Dashboard
-          </h1>
-          <div className="flex items-center gap-2 mt-2">
+
+          <div className="flex items-center gap-2 mt-4">
             <Calendar className="h-4 w-4 text-muted-foreground" />
             <p className="text-muted-foreground">{currentDate}</p>
           </div>

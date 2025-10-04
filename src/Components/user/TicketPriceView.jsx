@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { TabsContent } from "@/components/ui/tabs";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Card, CardContent, CardHeader } from "@/Components/ui/card";
+import { Button } from "@/Components/ui/button";
+import { Badge } from "@/Components/ui/badge";
+import { TabsContent } from "@/Components/ui/tabs";
+import { Checkbox } from "@/Components/ui/checkbox";
 import useAxiosAuth from '@/hooks/useAxiosAuth';
 import AuthContext from '@/context/AuthContext';
 import { useNavigate, useParams } from "react-router-dom";
@@ -141,42 +141,31 @@ export function TicketPriceView() {
         try {
             setProcessingTicketId(ticket.id);
 
-            // Get participation ID for this event
-            const participationRes = await api.get(`/api/event/own-participation-list/?event=${eventId}`);
-            console.log('Participation data:', participationRes.data);
-            const pid = participationRes.data[0]?.id;
-
-            if (!pid) {
-                toast.error("Fill the requirements first!!");
-                setTimeout(() => {
-                    navigate('/user');
-                }, 1000);
-                return;
-            }
-
-            console.log('Participation ID:', pid);
+            console.log('Processing single ticket purchase for event:', eventId);
 
             // Create payload with selected ticket
             const payload = {
-                tickets: [{ ticket_id: ticket.id }]
+                tickets: [{ ticket_id: ticket.id, event_id: eventId }],
+                event_id: eventId
             };
             console.log('Single ticket payload:', payload);
 
-            // Make the API call to create ticket order
+            // Make the API call to create ticket order directly
             const orderRes = await api.post(
-                `/api/event/participation/${pid}/tickets/`,
+                `/api/event/participation/tickets/`,
                 payload
             );
             console.log('Order response:', orderRes.data);
             const { total_amount, participant_ticket_ids } = orderRes.data;
             console.log("Total amount:", total_amount);
 
-            // Navigate to payment page
-            navigate(`/user/payment/${pid}`, {
+            // Navigate to payment page with ticket information
+            navigate(`/user/payment/${eventId}`, {
                 state: {
                     tid: participant_ticket_ids,
                     totalAmount: total_amount,
-                    pid: pid
+                    eventId: eventId,
+                    ticketDetails: [ticket]
                 }
             });
 
@@ -189,7 +178,7 @@ export function TicketPriceView() {
     };
 
     const handleBulkPayment = async () => {
-        if (!hasProfile) {
+        if (has_profile == 'undefined' || has_profile === 'false') {
             toast.info('Please complete your profile before purchasing tickets.');
             setTimeout(() => {
                 navigate('/user/setup-profile');
@@ -218,30 +207,21 @@ export function TicketPriceView() {
         try {
             setIsProcessingPayment(true);
 
-            // Get participation ID for this event
-            const participationRes = await api.get(`/api/event/own-participation-list/?event=${eventId}`);
-            console.log('Participation data:', participationRes.data);
-            const pid = participationRes.data[0]?.id;
-
-            if (!pid) {
-                toast.error("Fill the requirements first!!");
-                setTimeout(() => {
-                    navigate('/user');
-                }, 1000);
-                return;
-            }
-
-            console.log('Participation ID:', pid);
+            console.log('Processing bulk payment for event:', eventId);
 
             // Create payload with selected tickets
             const payload = {
-                tickets: selectedTicketsData.map(ticket => ({ ticket_id: ticket.id }))
+                tickets: selectedTicketsData.map(ticket => ({
+                    ticket_id: ticket.id,
+                    event_id: eventId
+                })),
+                event_id: eventId
             };
             console.log('Bulk payment payload:', payload);
 
-            // Make the API call for bulk payment
+            // Make the API call for bulk payment directly
             const orderRes = await api.post(
-                `/api/event/participation/${pid}/tickets/`,
+                `/api/event/participation/tickets/`,
                 payload
             );
             console.log('Bulk order response:', orderRes.data);
@@ -249,11 +229,12 @@ export function TicketPriceView() {
             console.log("Total amount:", total_amount);
 
             // Navigate to payment page
-            navigate(`/user/payment/${pid}`, {
+            navigate(`/user/payment/${eventId}`, {
                 state: {
                     tid: participant_ticket_ids,
                     totalAmount: total_amount,
-                    pid: pid
+                    eventId: eventId,
+                    ticketDetails: selectedTicketsData
                 }
             });
 
@@ -289,7 +270,7 @@ export function TicketPriceView() {
         <Card>
             <CardContent>
                 {!ticketsData || ticketsData.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                    <div className="flex flex-col items-center justify-center py-12 text-center ">
                         <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
                             <Ticket className="w-8 h-8 text-muted-foreground" />
                         </div>
@@ -301,7 +282,7 @@ export function TicketPriceView() {
                 ) : (
                     <>
                         {/* Summary Cards */}
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 ">
                             <div className="bg-blue/5  p-4 rounded-lg">
                                 <div className="flex items-center gap-2">
                                     <Ticket className="w-5 h-5 text-blue/60" />

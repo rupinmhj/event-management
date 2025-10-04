@@ -5,24 +5,31 @@ import {
     FaFileImage, FaMoneyBillWave, FaListUl, FaInfoCircle, FaSpinner
 } from 'react-icons/fa';
 import { SiMaterialdesignicons } from "react-icons/si";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
+import { Button } from "@/Components/ui/button";
+import { Input } from "@/Components/ui/input";
+import { Label } from "@/Components/ui/label";
+import { Textarea } from "@/Components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import GeneralContext from '@/context/GeneralContext';
 import { motion } from 'framer-motion'
 import DatePicker from '../../utils/DatePicker'
 import useAxiosAuth from '@/hooks/useAxiosAuth';
 import { useParams, useNavigate } from 'react-router-dom';
-import {toast,ToastContainer} from 'react-toastify'
+import { toast, ToastContainer } from 'react-toastify'
 import DateTimePicker from '@/utils/DateTimePicker';
+import Cropper from "react-easy-crop";
+import { useCallback } from "react";
 const EditEvent = ({ eventId, onCancel, onSubmit }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingData, setIsLoadingData] = useState(true);
     const [bannerPreview, setBannerPreview] = useState('');
     const [iconPreview, setIconPreview] = useState('');
+    const [crop, setCrop] = useState({ x: 0, y: 0 });
+    const [zoom, setZoom] = useState(1);
+    const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+    const [showCropper, setShowCropper] = useState(false);
+    const [selectedImage, setSelectedImage] = useState(null);
     const [eventData, setEventData] = useState(null);
     const { submitCreate, create } = useContext(GeneralContext)
     const api = useAxiosAuth();
@@ -48,7 +55,8 @@ const EditEvent = ({ eventId, onCancel, onSubmit }) => {
             banner: null,
             icon: null,
             is_payment_required: 'False',
-            is_active:'false',
+            is_active: 'false',
+            number_of_seat: null,
             requirements: [
                 {
                     label: '',
@@ -89,7 +97,8 @@ const EditEvent = ({ eventId, onCancel, onSubmit }) => {
                     start_date: data.start_date || '',
                     duration: data.duration || '',
                     location: data.location || '',
-                    is_active:data.is_active|| '',
+                    is_active: data.is_active || '',
+                    number_of_seat: data.number_of_seat || '',
                     banner: null, // We'll handle existing images separately
                     icon: null,
                     is_payment_required: data.is_payment_required ? 'True' : 'False',
@@ -132,17 +141,52 @@ const EditEvent = ({ eventId, onCancel, onSubmit }) => {
     const handleBannerChange = (e) => {
         const file = e.target.files?.[0];
         if (file) {
-            if (!file.type.startsWith('image/')) {
-                return;
-            }
-            if (file.size > 5 * 1024 * 1024) {
-                return;
-            }
+            if (!file.type.startsWith("image/")) return;
+            if (file.size > 5 * 1024 * 1024) return;
 
-            setValue('banner', file);
-            setBannerPreview(URL.createObjectURL(file));
+            const imageUrl = URL.createObjectURL(file);
+            setSelectedImage(imageUrl);
+            setShowCropper(true); // open cropper instead of directly setting preview
         }
     };
+
+
+    const getCroppedImage = async (imageSrc, croppedAreaPixels) => {
+        const image = await createImage(imageSrc);
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+
+        canvas.width = croppedAreaPixels.width;
+        canvas.height = croppedAreaPixels.height;
+
+        ctx.drawImage(
+            image,
+            croppedAreaPixels.x,
+            croppedAreaPixels.y,
+            croppedAreaPixels.width,
+            croppedAreaPixels.height,
+            0,
+            0,
+            croppedAreaPixels.width,
+            croppedAreaPixels.height
+        );
+
+        return new Promise((resolve) => {
+            canvas.toBlob((blob) => {
+                resolve(blob);
+            }, "image/jpeg");
+        });
+    };
+
+    // Helper to load image
+    const createImage = (url) =>
+        new Promise((resolve, reject) => {
+            const image = new Image();
+            image.addEventListener("load", () => resolve(image));
+            image.addEventListener("error", (error) => reject(error));
+            image.setAttribute("crossOrigin", "anonymous");
+            image.src = url;
+        });
 
     // Handle icon file upload
     const handleIconChange = (e) => {
@@ -158,6 +202,14 @@ const EditEvent = ({ eventId, onCancel, onSubmit }) => {
             setValue('icon', file);
             setIconPreview(URL.createObjectURL(file));
         }
+    };
+    const clearIcon = () => {
+        setValue('icon', null); // reset form value
+        setIconPreview(null);   // remove preview
+    };
+    const clearBanner = () => {
+        setValue('banner', null); // reset form value
+        setBannerPreview(null);   // remove preview
     };
 
     // Handle requirement file upload
@@ -194,6 +246,7 @@ const EditEvent = ({ eventId, onCancel, onSubmit }) => {
             submitData.append('location', data.location);
             submitData.append('is_active', data.is_active);
             submitData.append('is_payment_required', data.is_payment_required);
+            submitData.append('number_of_seat', data.number_of_seat);
 
             // Add banner if a new file is selected
             if (data.banner && data.banner instanceof File) {
@@ -215,7 +268,7 @@ const EditEvent = ({ eventId, onCancel, onSubmit }) => {
                 }
             });
 
-            console.log("submit form data:")
+            console.log("edit event submit form data:")
             for (let [key, value] of submitData.entries()) {
                 console.log(key, value);
             }
@@ -229,8 +282,8 @@ const EditEvent = ({ eventId, onCancel, onSubmit }) => {
                 submitCreate();
             }
             toast.success("Event updated successfully")
-            setTimeout(()=>navigate('/admin/events'),1000);
-            
+            setTimeout(() => navigate('/admin/events'), 1000);
+
         } catch (error) {
             console.error('Error updating event:', error);
         } finally {
@@ -382,11 +435,30 @@ const EditEvent = ({ eventId, onCancel, onSubmit }) => {
                                         <p className="text-sm text-destructive">{errors.description.message}</p>
                                     )}
                                 </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="seat">Number of seats</Label>
+                                    <Input
+                                        id="seat"
+                                        type="number"
+                                        min={1}
+                                        {...register("number_of_seat", {
+                                            setValueAs: (v) => (v === "" ? null : Number(v)), // convert "" → null
+                                            validate: (value) =>
+                                                value === null || value >= 1 || "Number of seats must be greater than 0",
+                                        })}
+                                        placeholder="Number of seats"
+                                    />
+                                    {errors.number_of_seat && (
+                                        <p className="text-sm text-destructive">{errors.number_of_seat.message}</p>
+                                    )}
+                                </div>
+
+
 
                                 {/* Event Icon Upload */}
                                 <div className="space-y-4">
                                     <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                                        <SiMaterialdesignicons className="text-gray-800" />
+                                        {/* <SiMaterialdesignicons className="text-gray-800" /> */}
                                         Event Icon
                                     </h3>
 
@@ -406,7 +478,7 @@ const EditEvent = ({ eventId, onCancel, onSubmit }) => {
                                                         />
                                                     ) : (
                                                         <>
-                                                            <SiMaterialdesignicons className="w-6 h-6 mb-2 text-muted-foreground" />
+                                                            {/* <SiMaterialdesignicons className="w-6 h-6 mb-2 text-muted-foreground" /> */}
                                                             <p className="text-xs text-muted-foreground text-center">
                                                                 <span className="font-semibold">Click to upload</span> icon
                                                             </p>
@@ -422,13 +494,23 @@ const EditEvent = ({ eventId, onCancel, onSubmit }) => {
                                                 />
                                             </label>
                                         </div>
+                                        {iconPreview && (
+                                            <button
+                                                type="button"
+                                                onClick={clearIcon}
+                                                className="text-red-500 hover:text-red-700 flex items-center gap-1 text-sm font-medium"
+                                            >
+                                                <FaTimes className="inline-block" /> Clear
+                                            </button>
+
+                                        )}
                                     </div>
                                 </div>
 
                                 {/* Banner Upload */}
                                 <div className="space-y-4">
                                     <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                                        <FaFileImage className="text-gray-800" />
+                                        {/* <FaFileImage className="text-gray-800" /> */}
                                         Event Banner
                                     </h3>
 
@@ -448,7 +530,7 @@ const EditEvent = ({ eventId, onCancel, onSubmit }) => {
                                                         />
                                                     ) : (
                                                         <>
-                                                            <FaFileImage className="w-8 h-8 mb-3 text-muted-foreground" />
+                                                            {/* <FaFileImage className="w-8 h-8 mb-3 text-muted-foreground" /> */}
                                                             <p className="mb-2 text-sm text-muted-foreground">
                                                                 <span className="font-semibold">Click to upload</span> banner image
                                                             </p>
@@ -460,11 +542,21 @@ const EditEvent = ({ eventId, onCancel, onSubmit }) => {
                                                     id="banner"
                                                     type="file"
                                                     className="hidden"
-                                                    accept="image/*"
+                                                    accept=".png, .jpg, .jpeg,"
                                                     onChange={handleBannerChange}
                                                 />
                                             </label>
                                         </div>
+                                        {bannerPreview && (
+                                            <button
+                                                type="button"
+                                                onClick={clearBanner}
+                                                className="text-red-500 hover:text-red-700 flex items-center gap-1 text-sm font-medium"
+                                            >
+                                                <FaTimes className="inline-block" /> Clear
+                                            </button>
+
+                                        )}
                                     </div>
                                 </div>
 
@@ -497,6 +589,57 @@ const EditEvent = ({ eventId, onCancel, onSubmit }) => {
                     </Card>
                 </div>
             </div>
+            {showCropper && (
+                <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 bb">
+                    <div className="bg-white p-4 rounded-lg shadow-lg w-[90%] max-w-xl">
+                        <h2 className="text-lg font-semibold mb-2">Crop Banner (16:9)</h2>
+
+                        <div className="relative w-full h-64 md:h-[70dvh] bg-gray-200">
+                            <Cropper
+                                image={selectedImage}
+                                crop={crop}
+                                zoom={zoom}
+                                aspect={16 / 9} // FIXED RATIO
+                                onCropChange={setCrop}
+                                onZoomChange={setZoom}
+                                onCropComplete={(croppedArea, croppedAreaPixels) =>
+                                    setCroppedAreaPixels(croppedAreaPixels)
+                                }
+                            />
+                        </div>
+
+                        <div className="flex justify-end gap-3 mt-4">
+                            <Button
+                                variant="outline"
+                                onClick={() => {
+                                    setShowCropper(false);
+                                    setSelectedImage(null);
+                                }}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                onClick={async () => {
+                                    const croppedBlob = await getCroppedImage(
+                                        selectedImage,
+                                        croppedAreaPixels
+                                    );
+                                    const croppedFile = new File([croppedBlob], "banner.jpg", {
+                                        type: "image/jpeg",
+                                    });
+
+                                    setValue("banner", croppedFile);
+                                    setBannerPreview(URL.createObjectURL(croppedFile));
+
+                                    setShowCropper(false);
+                                }}
+                            >
+                                Save Crop
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
             <ToastContainer />
 
         </motion.div>

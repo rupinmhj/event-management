@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Card, CardContent, CardHeader } from "@/Components/ui/card";
+import { Button } from "@/Components/ui/button";
+import { Badge } from "@/Components/ui/badge";
+import { ScrollArea } from "@/Components/ui/scroll-area";
+import { Textarea } from "@/Components/ui/textarea";
 import DOMPurify from "dompurify";
 import {
   ArrowLeft,
@@ -16,27 +17,56 @@ import {
   Calendar,
   AlertCircle,
   Eye,
+  MessageSquare,
 } from "lucide-react";
 
 import useAxiosAuth from "@/hooks/useAxiosAuth";
 import AuthContext from "@/context/AuthContext";
+
 export const ParticipantReview = () => {
   const [participantData, setParticipantData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [verifying, setVerifying] = useState({});
+  const [updating, setUpdating] = useState({});
+  const [remarks, setRemarks] = useState({});
+  const [showRemarksInput, setShowRemarksInput] = useState({});
   const { id } = useParams(); // participantId from route
-  const participantId = id; // Adjust based on your route setup
+  const participantId = id;
   const api = useAxiosAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
   const { authReady, authTokens } = useContext(AuthContext);
+
+  const formatDate = (dateString) => {
+    console.log('dateString', dateString);
+    const date = new Date(dateString);
+
+    // Nepal timezone offset in minutes (+5:45 = 345 minutes)
+    const nepalOffset = 5 * 60 + 45;
+
+    // Convert date to UTC in milliseconds
+    const utc = date.getTime() + date.getTimezoneOffset() * 60000;
+
+    // Convert UTC to Nepal time
+    const nepalTime = new Date(utc + nepalOffset * 60 * 1000);
+
+    // Format Nepali date/time
+    return nepalTime.toLocaleString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true
+    });
+  };
+
   useEffect(() => {
     const fetchParticipantDetail = async () => {
       try {
         if (!authReady && !authTokens) return;
         setLoading(true);
         const res = await api.get(`/api/event/participation-detail/${participantId}/`);
-        console.log('participant detail', res.data);
+        console.log('participant detail---', res.data);
         setParticipantData(res.data);
       } catch (error) {
         console.error("Error fetching participant details:", error);
@@ -48,30 +78,54 @@ export const ParticipantReview = () => {
     fetchParticipantDetail();
   }, [participantId, api, authReady, authTokens]);
 
-  const handleVerification = async (responseId, isVerified) => {
-    setVerifying(prev => ({ ...prev, [responseId]: true }));
+  const handleStatusUpdate = async (responseId, status, remarksText = '') => {
+    setUpdating(prev => ({ ...prev, [responseId]: true }));
 
     try {
-      const res = await api.put(`/api/event/response/${responseId}/verify/`, {
-        is_verified: isVerified
-      });
-      console.log('isVerified', res.data);
+      const requestData = {
+        status: status
+      };
+
+      // Add remarks if provided
+      if (remarksText.trim()) {
+        requestData.remarks = remarksText.trim();
+      }
+
+      const res = await api.put(`/api/event/response/${responseId}/verify/`, requestData);
+      console.log('status update response', res.data);
+
       // Update local state
       setParticipantData(prev => ({
         ...prev,
         responses: prev.responses.map(response =>
           response.id === responseId
-            ? { ...response, is_verified: isVerified }
+            ? {
+              ...response,
+              status: status,
+              remarks: requestData.remarks || response.remarks
+            }
             : response
         )
       }));
+
+      // Clear remarks input and hide it
+      setRemarks(prev => ({ ...prev, [responseId]: '' }));
+      setShowRemarksInput(prev => ({ ...prev, [responseId]: false }));
+
     } catch (error) {
-      console.error("Error updating verification:", error);
+      console.error("Error updating status:", error);
     } finally {
-      setVerifying(prev => ({ ...prev, [responseId]: false }));
+      setUpdating(prev => ({ ...prev, [responseId]: false }));
     }
   };
 
+  const handleRemarksChange = (responseId, value) => {
+    setRemarks(prev => ({ ...prev, [responseId]: value }));
+  };
+
+  const toggleRemarksInput = (responseId) => {
+    setShowRemarksInput(prev => ({ ...prev, [responseId]: !prev[responseId] }));
+  };
 
   const getStatusBadge = (response) => {
     if (!response.is_submitted) {
@@ -79,10 +133,14 @@ export const ParticipantReview = () => {
     }
 
     if (response.requirement_detail.is_verification_required) {
-      if (response.is_verified) {
-        return <Badge variant="default" className="bg-green-600 text-xs">Verified</Badge>;
-      } else {
-        return <Badge variant="secondary" className="text-xs">Pending Verification</Badge>;
+      switch (response.status) {
+        case 'verified':
+          return <Badge variant="default" className="bg-green-600 text-xs">Verified</Badge>;
+        case 'rejected':
+          return <Badge variant="destructive" className="text-xs">Rejected</Badge>;
+        case 'submitted':
+        default:
+          return <Badge variant="secondary" className="text-xs">Pending Verification</Badge>;
       }
     }
 
@@ -107,7 +165,7 @@ export const ParticipantReview = () => {
 
   const renderRequirementValue = (response) => {
     const { type } = response.requirement_detail;
-    console.log('response', response)
+    console.log('response', response);
 
     switch (type) {
       case 'FILE':
@@ -119,7 +177,7 @@ export const ParticipantReview = () => {
               <Button
                 size="sm"
                 variant="outline"
-                className="ml-2 h-6 text-xs"
+                className="text-white hover:text-white flex items-center gap-1 text-sm font-medium bg-blue/90 hover:bg-blue/70 px-3 py-2 rounded-md"
                 onClick={() => window.open(response.file, '_blank')}
               >
                 <Eye className="w-3 h-3 mr-1" />
@@ -225,14 +283,14 @@ export const ParticipantReview = () => {
   }
 
   return (
-    <div className="container mx-auto p-6 pt-20 max-w-6xl  ">
+    <div className="container mx-auto p-6 pt-20 max-w-6xl">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
 
       </div>
 
       {/* Participant Info Card */}
-      <Card className="mb-6 border ">
+      <Card className="mb-6 border">
         <CardHeader>
           <div className="flex items-center justify-between gap-3">
             <div className="flex gap-4 items-center">
@@ -241,19 +299,14 @@ export const ParticipantReview = () => {
             </div>
             <div className="">
               <button
-                
                 onClick={() => navigate(`/admin/user-profile/${participantData.user}`)}
               >
                 <Eye className="w-5 h-5 text-gray-600 hover:text-blue/80" />
               </button>
             </div>
-
           </div>
         </CardHeader>
-        <CardContent className="relative cursor-pointer"  onClick={() => navigate(`/admin/user-profile/${participantData.user}`)}>
-          {/* Eye icon at top-right */}
-
-
+        <CardContent className="relative cursor-pointer" onClick={() => navigate(`/admin/user-profile/${participantData.user}`)}>
           <div className="grid md:grid-cols-2 gap-4">
             <div>
               <p className="text-sm text-gray-600">Name</p>
@@ -273,18 +326,12 @@ export const ParticipantReview = () => {
             </div>
           </div>
         </CardContent>
-
-
       </Card>
 
       {/* Requirements Review */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-end">
-            {/* <div className="flex items-center gap-3">
-              <FileText className="w-5 h-5 text-primary" />
-              <h2 className="text-xl font-semibold">Requirements Review</h2>
-            </div> */}
             <div className="text-sm text-gray-600">
               {participantData.responses.filter(r => r.is_submitted).length} / {participantData.responses.length} submitted
             </div>
@@ -311,7 +358,7 @@ export const ParticipantReview = () => {
                         <div className="flex items-center gap-4 text-xs text-gray-500">
                           <div className="flex items-center gap-1">
                             <Calendar className="w-3 h-3" />
-                            <span>Due: {response.requirement_detail.deadline}</span>
+                            <span>Due: {formatDate(response.requirement_detail.deadline)}</span>
                           </div>
                           <div className={`flex items-center gap-1 ${deadlineInfo.color}`}>
                             <Clock className="w-3 h-3" />
@@ -321,8 +368,6 @@ export const ParticipantReview = () => {
                       </div>
                     </div>
 
-
-
                     {/* Submitted Content */}
                     {response.is_submitted ? (
                       <div className="space-y-3">
@@ -331,42 +376,102 @@ export const ParticipantReview = () => {
                           {renderRequirementValue(response)}
                         </div>
 
-                        {/* Verification Actions */}
-                        {response.requirement_detail.is_verification_required && (
-                          <div className="flex items-center gap-3 pt-3 border-t">
-                            <p className="text-sm font-medium text-gray-700">Verification:</p>
-                            <div className="flex gap-2">
-                              <Button
-                                size="sm"
-                                variant={response.is_verified ? "default" : "outline"}
-                                onClick={() => handleVerification(response.id, true)} // ✅ use response.id
-                                disabled={verifying[response.id]}
-                                className="h-7 text-xs"
-                              >
-                                {verifying[response.id] ? (
-                                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
-                                ) : (
-                                  <CheckCircle className="w-3 h-3 mr-1" />
-                                )}
-                                Verify
-                              </Button>
-
-                              <Button
-                                size="sm"
-                                variant={!response.is_verified ? "destructive" : "outline"}
-                                onClick={() => handleVerification(response.id, false)}
-                                disabled={verifying[response.id]}
-                                className="h-7 text-xs"
-                              >
-                                {verifying[response.id] ? (
-                                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
-                                ) : (
-                                  <XCircle className="w-3 h-3 mr-1" />
-                                )}
-                                Reject
-                              </Button>
-
+                        {/* Display existing remarks if any */}
+                        {response.remarks && response.status === 'rejected' && (
+                          <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3">
+                            <div className="flex items-start gap-2">
+                              <MessageSquare className="w-4 h-4 text-yellow-600 mt-0.5" />
+                              <div>
+                                <p className="text-sm font-medium text-yellow-800">Admin Remarks:</p>
+                                <p className="text-sm text-yellow-700">{response.remarks}</p>
+                              </div>
                             </div>
+                          </div>
+                        )}
+
+                        {/* Status Actions */}
+                        {response.requirement_detail.is_verification_required && (
+                          <div className="space-y-3 pt-3 border-t">
+                            <div className="flex items-center gap-3">
+                              {/* <p className="text-sm font-medium text-gray-700">Status:</p> */}
+                              <div className="flex gap-2">
+                                {/* Show Verify button only if not verified */}
+                                {response.status !== 'verified' && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleStatusUpdate(response.id, 'verified')}
+                                    disabled={updating[response.id]}
+                                    className="h-7 text-xs"
+                                  >
+                                    {updating[response.id] ? (
+                                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-gray-600"></div>
+                                    ) : (
+                                      <CheckCircle className="w-3 h-3 mr-1" />
+                                    )}
+                                    Verify
+                                  </Button>
+                                )}
+
+                                {/* Show Reject button only if not rejected */}
+                                {response.status !== 'verified' && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => toggleRemarksInput(response.id)}
+                                    disabled={updating[response.id]}
+                                    className="h-7 text-xs border-red-300 text-red-600 hover:bg-red-50 "
+                                  >
+                                    <XCircle className="w-3 h-3 mr-1" />
+                                    Reject
+                                  </Button>
+                                )}
+
+
+                              </div>
+                            </div>
+
+                            {/* Remarks input section for rejection */}
+                            {showRemarksInput[response.id] && (
+                              <div className="space-y-3 p-3 bg-gray-50 rounded-md">
+                                <div>
+                                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Rejection Remarks
+                                  </label>
+                                  <Textarea
+                                    placeholder="Provide feedback on why this submission was rejected..."
+                                    value={remarks[response.id] || ''}
+                                    onChange={(e) => handleRemarksChange(response.id, e.target.value)}
+                                    rows={3}
+                                    className="w-full text-sm"
+                                  />
+                                </div>
+                                <div className="flex gap-2 justify-end">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => toggleRemarksInput(response.id)}
+                                    className="h-7 text-xs"
+                                  >
+                                    Cancel
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="destructive"
+                                    onClick={() => handleStatusUpdate(response.id, 'rejected', remarks[response.id])}
+                                    disabled={updating[response.id] || !remarks[response.id]?.trim()}
+                                    className="h-7 text-xs"
+                                  >
+                                    {updating[response.id] ? (
+                                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
+                                    ) : (
+                                      <XCircle className="w-3 h-3 mr-1" />
+                                    )}
+                                    Reject Submission
+                                  </Button>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>

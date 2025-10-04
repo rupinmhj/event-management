@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Card, CardContent, CardHeader } from "@/Components/ui/card";
+import { Button } from "@/Components/ui/button";
+import { ScrollArea } from "@/Components/ui/scroll-area";
 import { CreditCard, Eye, ArrowRight, Download, X, Calendar, User, Hash, Banknote } from "lucide-react";
 import useAxiosAuth from "@/hooks/useAxiosAuth";
 import { PaginationControls } from "@/utils/PaginationControls"
@@ -228,8 +228,8 @@ export const ParticipationPayment = () => {
 
             {/* Payment Details Modal */}
             {showModal && selectedPayment && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto
+                <div className="fixed inset-0 bg-black/50  z-50 p-4 ">
+                    <div className="bg-white rounded-lg shadow-xl max-w-5xl   max-h-[90vh] overflow-y-auto mx-auto mt-5
 ">
                         {/* Modal Header */}
                         <div className="flex items-center justify-between p-6 border-b border-gray-200">
@@ -367,15 +367,7 @@ export const ParticipationPayment = () => {
                             >
                                 Close
                             </Button>
-                            <Button
-                                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white"
-                                onClick={() => {
-                                    navigate(`/admin/payment-details/${selectedPayment.id}`);
-                                    closeModal();
-                                }}
-                            >
-                                View Full Details
-                            </Button>
+
                         </div>
                     </div>
                     <PaginationControls

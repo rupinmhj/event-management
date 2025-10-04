@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Clock, FileText, Link, Upload, Edit, Eye } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@/Components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Badge } from '@/Components/ui/badge';
 import useAxiosAuth from '@/hooks/useAxiosAuth';
 import SubmissionModal from './SubmissionModal';
 import SubmitAllModal from './SubmitAllModal';

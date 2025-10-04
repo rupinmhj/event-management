@@ -1,8 +1,8 @@
 import React from 'react';
 import { X, Eye, FileText, Link, Upload } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@/Components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
+import { Badge } from '@/Components/ui/badge';
 
 const ViewSubmissionModal = ({
     isOpen,

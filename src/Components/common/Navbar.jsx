@@ -1,23 +1,23 @@
 import React, { useContext } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/Components/ui/button";
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import {
     NavigationMenu,
     NavigationMenuItem,
     NavigationMenuLink,
     NavigationMenuList,
-} from "@/components/ui/navigation-menu";
+} from "@/Components/ui/navigation-menu";
 import {
     Popover,
     PopoverContent,
     PopoverTrigger,
-} from "@/components/ui/popover";
+} from "@/Components/ui/popover";
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/Components/ui/dropdown-menu";
 import { Bell, HelpCircle, User } from "lucide-react";
 import AuthContext from "@/context/AuthContext";
 
@@ -102,12 +102,12 @@ const Navbar = ({ mode }) => {
     const { logout } = useContext(AuthContext);
     const location = useLocation();
     return (
-        <header className="border-b font-sans bg-white">
-            <div className="md:px-12 px-4 flex h-16 items-center justify-between gap-4">
+        <header className=" font-sans grad ">
+            <div className="md:px-12 px-4 flex h-16 items-center justify-between gap-4 bg-blue/5">
                 {/* Left side */}
                 <div className="flex items-center gap-2">
                     {/* Mobile menu trigger */}
-                   
+
                     {/* Main nav */}
                     <div className="flex items-center gap-6">
                         <Link to="/" className="text-blue hover:text-blue/90">

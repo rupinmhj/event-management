@@ -12,7 +12,8 @@ const ESEWA_CONFIG = {
     product_code: "EPAYTEST"
   },
   production: {
-    url: "https://epay.esewa.com.np/api/epay/main/v2/form",
+    // url: "https://epay.esewa.com.np/api/epay/main/v2/form",
+    url: "https://rc-epay.esewa.com.np/api/epay/main/v2/form",
     product_code: "EPAYTEST"
   }
 };
@@ -27,7 +28,7 @@ const encodeTransactionData = (participationId, ticketIds) => {
     t: ticketIds,      // ticket IDs array
     u: uuidv4()        // unique UUID
   };
-  
+
   // Convert to base64 for URL safety
   return btoa(JSON.stringify(data));
 };
@@ -36,7 +37,7 @@ const encodeTransactionData = (participationId, ticketIds) => {
 const decodeTransactionData = (encodedData) => {
   try {
     if (!encodedData) return null;
-    
+
     const decodedString = atob(encodedData);
     return JSON.parse(decodedString);
   } catch (error) {
@@ -75,7 +76,8 @@ export const Payment = () => {
     product_delivery_charge: "0",
     product_code: esewaConfig.product_code,
     success_url: `${currentDomain}/user/payment-success/`,
-    failure_url: `${currentDomain}/user/payment-failure/`,
+    // failure_url: `${currentDomain}/user/payment-failed/`,
+    failure_url: `https://developer.esewa.com.np/failure`,
     signed_field_names: "total_amount,transaction_uuid,product_code",
     signature: "",
     secret: "8gBm/:&EnhH.1/q",
@@ -184,7 +186,7 @@ export const Payment = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 max-md:py-6 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl">
         <div className="p-8">
           {/* Header */}
@@ -365,14 +367,14 @@ export const PaymentSuccess = () => {
   // Function to extract participation_id and ticket_ids from transaction_uuid
   const extractTransactionData = (transactionUuid) => {
     if (!transactionUuid) return { participationId: null, ticketIds: [] };
-    
+
     const decodedData = decodeTransactionData(transactionUuid);
-    
+
     if (!decodedData) {
       console.error("Failed to decode transaction data");
       return { participationId: null, ticketIds: [] };
     }
-    
+
     return {
       participationId: decodedData.p,
       ticketIds: decodedData.t || []

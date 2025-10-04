@@ -1,19 +1,54 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
-import { Button } from "@/components/ui/button";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { Card, CardContent, CardHeader } from "@/Components/ui/card";
+import { Switch } from "@/Components/ui/switch";
+import { Button } from "@/Components/ui/button";
 import { FileText, Pencil, Trash2, Eye, Plus } from "lucide-react";
-import { TabsContent } from "@/components/ui/tabs";
+import { TabsContent } from "@/Components/ui/tabs";
 import useAxiosAuth from "@/hooks/useAxiosAuth";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogDescription,
+    AlertDialogTrigger,
+} from "@/Components/ui/alert-dialog"
 
 export const RequirementsView = ({ requirements }) => {
     const [requirementsData, setRequirementsData] = useState(requirements || []);
     const api = useAxiosAuth();
     const navigate = useNavigate();
-
+    const location = useLocation()
     // Safely get event ID if there is at least one requirement
-    const eventId = requirementsData.length > 0 ? requirementsData[0].event : null;
+    const { id: eventId } = useParams();
+    const formatDate = (dateString) => {
+        console.log('dateString', dateString)
+        const date = new Date(dateString);
+
+        // Nepal timezone offset in minutes (+5:45 = 345 minutes)
+        const nepalOffset = 5 * 60 + 45;
+
+        // Convert date to UTC in milliseconds
+        const utc = date.getTime() + date.getTimezoneOffset() * 60000;
+
+        // Convert UTC to Nepal time
+        const nepalTime = new Date(utc + nepalOffset * 60 * 1000);
+        console.log('nepalTime', nepalTime)
+
+        // Format Nepali date/time
+        return nepalTime.toLocaleString("en-US", {
+            year: "numeric",
+            month: "short",  // e.g. Sep
+            day: "numeric",  // e.g. 29
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true     // 12-hour clock with AM/PM
+        });
+    };
 
     const handleStatusToggle = async (reqId, currentStatus) => {
         try {
@@ -40,10 +75,23 @@ export const RequirementsView = ({ requirements }) => {
         }
     };
 
+    const handleDelete = async (id) => {
+        try {
+            const res = await api.delete(`/api/event/delete-requirements/${id}/`);
+            console.log(res.data);
+
+            // Update local state after successful delete
+            setRequirementsData((prev) => prev.filter((req) => req.id !== id));
+        } catch (error) {
+            console.error("Delete failed:", error);
+        }
+    };
+
+
     return (
         <TabsContent value="requirements" className="min-h-[70vh]">
             <Card>
-                <div>
+                <div >
                     <div className="flex justify-between md:px-8 px-2 md:py-6 py-3 ">
                         <div className="flex items-center gap-2 min-lg:hidden">
                             <FileText className="w-5 h-5 text-primary" />
@@ -58,7 +106,7 @@ export const RequirementsView = ({ requirements }) => {
                                         state: { eventId },
                                     })
                                 }
-                                className="bg-blue hover:bg-blue/90 text-white shadow-lg hover:shadow-xl transition-all duration-200 flex items-center"
+                                className="bg-blue hover:bg-blue/90 text-white shadow-lg hover:shadow-xl transition-all duration-200 flex items-center "
                             >
                                 <Plus className="w-4 h-4 mr-2" />
                                 <span className="hidden md:inline">Add requirements</span>
@@ -70,7 +118,7 @@ export const RequirementsView = ({ requirements }) => {
 
                 {/* If no requirements, show a message */}
                 {requirementsData.length === 0 ? (
-                    <CardContent className="text-center text-gray-500 py-10">
+                    <CardContent className="text-center text-gray-500 py-10 ">
                         No requirements set up yet.
                     </CardContent>
                 ) : (
@@ -127,8 +175,11 @@ export const RequirementsView = ({ requirements }) => {
                                             </div>
                                         </td>
                                         <td className="px-3 py-2 whitespace-nowrap text-[13px]">
-                                            {req.deadline || "—"}
+                                            {req.deadline
+                                                ? formatDate(req.deadline)
+                                                : "—"}
                                         </td>
+
                                         <td className="px-3 py-2 whitespace-nowrap text-center">
                                             <div className="flex gap-2 justify-center">
                                                 <button
@@ -138,13 +189,35 @@ export const RequirementsView = ({ requirements }) => {
                                                 >
                                                     <Pencil className="w-4 h-4" />
                                                 </button>
-                                                <button
-                                                    onClick={() => console.log("Delete", req.id)}
-                                                    className="p-1 rounded hover:bg-red-100 text-red-600"
-                                                    title="Delete"
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </button>
+
+                                                {/* Delete confirmation modal */}
+                                                <AlertDialog>
+                                                    <AlertDialogTrigger asChild>
+                                                        <button
+                                                            className="p-1 rounded hover:bg-red-100 text-red-600"
+                                                            title="Delete"
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </button>
+                                                    </AlertDialogTrigger>
+                                                    <AlertDialogContent>
+                                                        <AlertDialogHeader>
+                                                            <AlertDialogTitle>Delete Requirement</AlertDialogTitle>
+                                                            <AlertDialogDescription>
+                                                                Are you sure you want to delete this requirement? This action cannot be undone.
+                                                            </AlertDialogDescription>
+                                                        </AlertDialogHeader>
+                                                        <AlertDialogFooter>
+                                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                            <AlertDialogAction
+                                                                className="bg-red-600 hover:bg-red-700"
+                                                                onClick={() => handleDelete(req.id)}
+                                                            >
+                                                                Delete
+                                                            </AlertDialogAction>
+                                                        </AlertDialogFooter>
+                                                    </AlertDialogContent>
+                                                </AlertDialog>
                                             </div>
                                         </td>
                                     </tr>

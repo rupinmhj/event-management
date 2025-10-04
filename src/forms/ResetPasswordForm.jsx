@@ -52,7 +52,7 @@ export const ResetPasswordForm = ({ onComplete, onBack, mode }) => {
         setLoading(true);
 
         try {
-            
+
             const response = await apiPublic.post('/api/account/reset-password/', {
                 reset_token: resetToken,
                 new_password: newPassword,
@@ -113,8 +113,8 @@ export const ResetPasswordForm = ({ onComplete, onBack, mode }) => {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3, delay: 0.15 }}
         >
-            <div className="font-sans dark:bg-bgDark dark:text-textDark">
-                <div className="px-6 min-w-[420px] mx-auto">
+            <div className="font-sans ">
+                <div className=" mx-auto">
                     <main className="pt-5">
                         <div className="mb-6">
                             <h2 className="text-2xl font-bold text-center text-gray-900 dark:text-white">
@@ -128,7 +128,7 @@ export const ResetPasswordForm = ({ onComplete, onBack, mode }) => {
 
                         <form onSubmit={handleResetPassword}>
                             {/* New Password */}
-                            <div className="w-full flex flex-col">
+                            <div className="w-full flex flex-col ">
                                 <div className="relative mb-5">
                                     <AiOutlineLock className="dark:invert absolute top-6 left-4 text-gray-500 size-5" />
                                     <input
@@ -195,7 +195,7 @@ export const ResetPasswordForm = ({ onComplete, onBack, mode }) => {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className={`w-full bg-blue p-4 text-[16px] font-bold text-white rounded-xl mt-6 ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
+                                className={`w-full bg-blue p-3 text-[16px] font-bold text-white rounded-xl mt-6 ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
                             >
                                 {loading ? "Resetting Password..." : "Reset Password"}
                             </button>

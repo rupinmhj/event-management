@@ -1,12 +1,12 @@
 import { useState, useRef, useEffect, useContext } from "react";
 import { toast, ToastContainer } from 'react-toastify';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Components/ui/card";
+import { Button } from "@/Components/ui/button";
+import { Input } from "@/Components/ui/input";
+import { Label } from "@/Components/ui/label";
+import { Textarea } from "@/Components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
+import { Avatar, AvatarFallback, AvatarImage } from "@/Components/ui/avatar";
 import { Upload, User, Camera, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import useAxiosAuth from "@/hooks/useAxiosAuth";
 import { useNavigate } from "react-router-dom";
@@ -44,13 +44,13 @@ const ProfileSetup = () => {
     const [isProfileActive, setIsProfileActive] = useState(true);
     const { setHasProfile } = useContext(AuthContext)
 
-   
+
     // Default profile image URL
     const defaultProfileImage = "https://via.placeholder.com/96x96/e5e7eb/6b7280?text=Profile";
 
-    useEffect(()=>{
-        window.scrollTo(0,0);
-    },[])
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [])
 
     const handleProfilePictureChange = (e) => {
         const file = e.target.files?.[0];
@@ -79,11 +79,11 @@ const ProfileSetup = () => {
         const file = e.target.files?.[0];
         if (file) {
             // Validate file type
-            const allowedTypes = ['.pdf', '.doc', '.docx'];
+            const allowedTypes = ['.pdf', '.doc', '.docx', '.jpg', '.jpeg', '.png'];
             const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
 
             if (!allowedTypes.includes(fileExtension)) {
-                setErrors(prev => ({ ...prev, supportDocument: "Please select a PDF, DOC, or DOCX file" }));
+                setErrors(prev => ({ ...prev, supportDocument: "Please select a PDF, DOC, DOCX, JPG, or PNG  file" }));
                 return;
             }
 
@@ -188,7 +188,7 @@ const ProfileSetup = () => {
                     <p className="text-blue-600 opacity-70">Help us get to know you better by completing your profile information.</p>
                 </div>
 
-                <Card className="shadow-xl border-0 bg-white">
+                <Card className="shadow-xl border-0 bg-white/50">
                     <CardHeader className="text-center pb-2">
                         <div className="flex justify-center mb-4">
                             <div className="relative" ref={containerRef}>
@@ -236,7 +236,7 @@ const ProfileSetup = () => {
                                 <div className="space-y-2">
                                     <Label htmlFor="sex">Gender *</Label>
                                     <Select onValueChange={setSex} value={sex}>
-                                        <SelectTrigger>
+                                        <SelectTrigger className='bg-white'>
                                             <SelectValue placeholder="Select gender" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -270,8 +270,8 @@ const ProfileSetup = () => {
                                 <Textarea
                                     id="address"
                                     placeholder="Enter your full address"
-                                    className="resize-none"
-                                    rows={3}
+                                    className="resize-none bg-white"
+                                    rows={1}
                                     value={address}
                                     onChange={(e) => setAddress(e.target.value)}
                                 />
@@ -286,7 +286,7 @@ const ProfileSetup = () => {
                                 <div className="space-y-2">
                                     <Label htmlFor="educationLevel">Education Level *</Label>
                                     <Select onValueChange={setEducationLevel} value={educationLevel}>
-                                        <SelectTrigger>
+                                        <SelectTrigger className="bg-white">
                                             <SelectValue placeholder="Select education level" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -309,6 +309,7 @@ const ProfileSetup = () => {
                                         placeholder="Your organization name"
                                         value={organization}
                                         onChange={(e) => setOrganization(e.target.value)}
+                                        className="bg-white"
                                     />
                                     {errors?.organization && (
                                         <p className="text-sm text-red-600">{errors.organization}</p>
@@ -327,6 +328,7 @@ const ProfileSetup = () => {
                                             placeholder="Your employee ID"
                                             value={employeeId}
                                             onChange={(e) => setEmployeeId(e.target.value)}
+                                            className="bg-white"
                                         />
                                         {errors.employeeId && (
                                             <p className="text-sm text-red-600">{errors.employeeId}</p>
@@ -340,6 +342,7 @@ const ProfileSetup = () => {
                                             placeholder="Your job title"
                                             value={designation}
                                             onChange={(e) => setDesignation(e.target.value)}
+                                            className="bg-white"
                                         />
                                         {errors.designation && (
                                             <p className="text-sm text-red-600">{errors.designation}</p>
@@ -354,7 +357,7 @@ const ProfileSetup = () => {
                                 <Textarea
                                     id="bio"
                                     placeholder="Tell us a bit about yourself..."
-                                    className="resize-none"
+                                    className="resize-none bg-white"
                                     rows={4}
                                     value={bio}
                                     onChange={(e) => setBio(e.target.value)}
@@ -365,39 +368,51 @@ const ProfileSetup = () => {
                             </div>
 
                             {/* Row 6 (Last): Support Document */}
+                            {/* Support Document Section */}
                             <div className="space-y-2">
                                 <Label htmlFor="supportDocument">Upload Verification Document</Label>
                                 <div className="flex items-center justify-center w-full">
-                                    <label
-                                        htmlFor="supportDocument"
-                                        className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors"
-                                    >
-                                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                            <Upload className="w-8 h-8 mb-3 text-gray-400" />
-                                            {supportDocumentName ? (
-                                                <p className="text-sm text-gray-700 font-medium">{supportDocumentName}</p>
-                                            ) : (
-                                                <>
-                                                    <p className="mb-2 text-sm text-gray-500">
-                                                        <span className="font-semibold">Click to upload</span> your support document
-                                                    </p>
-                                                    <p className="text-xs text-gray-500">PDF, DOC, DOCX (MAX. 10MB)</p>
-                                                </>
-                                            )}
+                                    {!supportDocument ? (
+                                        <label
+                                            htmlFor="supportDocument"
+                                            className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors"
+                                        >
+                                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                                <Upload className="w-8 h-8 mb-3 text-gray-400" />
+                                                <p className="mb-2 text-sm text-gray-500">
+                                                    <span className="font-semibold">Click to upload</span> your support document
+                                                </p>
+                                                <p className="text-xs text-gray-500">PDF, DOC, DOCX, JPG, JPEG, PNG (MAX. 10MB)</p>
+                                            </div>
+                                            <input
+                                                id="supportDocument"
+                                                type="file"
+                                                className="hidden"
+                                                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                                                onChange={handleSupportDocumentChange}
+                                            />
+                                        </label>
+                                    ) : (
+                                        <div className="flex items-center justify-between w-full border p-3 rounded-lg bg-gray-100">
+                                            <span className="text-sm font-medium text-gray-700">{supportDocumentName}</span>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setSupportDocument(null);
+                                                    setSupportDocumentName("");
+                                                }}
+                                                className="ml-4 text-red-600 text-sm hover:underline"
+                                            >
+                                                Remove
+                                            </button>
                                         </div>
-                                        <input
-                                            id="supportDocument"
-                                            type="file"
-                                            className="hidden"
-                                            accept=".pdf,.doc,.docx"
-                                            onChange={handleSupportDocumentChange}
-                                        />
-                                    </label>
+                                    )}
                                 </div>
                                 {errors.supportDocument && (
                                     <p className="text-sm text-red-600">{errors.supportDocument}</p>
                                 )}
                             </div>
+
 
                             {/* Submit */}
                             <Button

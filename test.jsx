@@ -1,150 +1,98 @@
-import React from "react";
-import { useLocation, useParams } from "react-router-dom";
-import { useGetData } from "../../../service";
-import { Flex, Box, Avatar, Button } from "@chakra-ui/react";
-import CryptoJS from "crypto-js";
-const apiUrl = process.env.REACT_APP_API_URL;
-
-export const Articlepreview = () => {
-  const { slug } = useParams();
-  const location = useLocation();
-  const post_id = location.state?.postid;
-
-  // console.log(post_id)
-
-  const { rows: post, loading } = useGetData(`content/contents/${post_id}/`);
-
-  const handleEsewaPayment = () => {
-    const merchantId = "EPAYTEST"; 
-    const contentAmount = post?.price?.price; 
-    const contentslug = slug;  
-    const uuid =  Date.now()
-    const secretKey= "8gBm/:&EnhH.1/q"
-
-    const transactionData = {
-        user_id: post?.user?.id,   
-        product_id: post?.id,      
-        contentAmount: post?.price?.price,
-        slug: post_id,
-        transaction_uuid: uuid
-      };
-
-      const transactionJson = JSON.stringify(transactionData);
-      const encodedTransactionData = btoa(transactionJson);
-
-    const signatureString = `total_amount=${contentAmount},transaction_uuid=${uuid},product_code=${merchantId}`;
-    console.log("Signature String: ", signatureString);  
+import { useState } from "react";
+import Navbar from "../../Components/common/Navbar";
+import Footer from "../../Components/Footer";
+import OTPVerification from "../../Components/OtpVerification";
+import { SignupForm } from "../../forms/SignupForm";
+import { SigninForm } from "../../forms/SigninForm";
+import { useContext, useEffect } from "react";
+import AuthContext from "@/context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import EventList from "@/Components/common/EventList";
+export function AuthPage() {
+  const [authView, setAuthView] = useState("signin"); // signup | signin
+  const [showOtp, setShowOtp] = useState(false);
+  const navigate = useNavigate();
+  const { role, authTokens } = useContext(AuthContext);
+  const has_profile = localStorage.getItem('has_profile');
 
 
-    const hash = CryptoJS.HmacSHA256(signatureString, secretKey);
-    const signature = CryptoJS.enc.Base64.stringify(hash);
-
-    const currentDomain = window.location.origin;
-    const paymentData = {
-      amount: contentAmount,
-      failure_url: `${currentDomain}/payment-fail`,  
-      product_delivery_charge: 0,
-      product_service_charge: 0,
-      product_code: merchantId,  
-      signature: signature,  
-      signed_field_names: "total_amount,transaction_uuid,product_code",  
-      success_url: `${currentDomain}/payment-success/${encodedTransactionData}/`,  
-      tax_amount: 0,
-      total_amount: contentAmount,
-      transaction_uuid: uuid,  
-    };
-
-    console.log("Payment Data: ", paymentData);  // For debugging
-
-
-    const form = document.createElement("form");
-    form.method = "POST";
-    form.action = "https://rc-epay.esewa.com.np/api/epay/main/v2/form";  
-    Object.keys(paymentData).forEach((key) => {
-      const input = document.createElement("input");
-      input.type = "hidden";
-      input.name = key;
-      input.value = paymentData[key];
-      form.appendChild(input);
-    });
-    document.body.appendChild(form);
-    form.submit();
-  };
+  useEffect(() => {
+    console.log("____role", role);
+    console.log("____authTokens", authTokens);
+    console.log("__hasprofile authpage", has_profile);
+    if (authTokens) {
+      if (role === 'ADMIN') {
+        navigate('/admin');
+      } else if (role === 'USER' && has_profile == "undefined") {
+        navigate('/user/setup-profile');
+      } else if (role === 'USER') {
+        navigate('/user');
+      }
+    }
+  }, [navigate, authTokens, role, has_profile]);
 
 
   return (
-    <div className="w-[80%] mx-auto py-20 flex justify-between">
-      <div className="content-container-box w-[60%]">
-        <h1 className="post-preview-title">{post?.title}</h1>
+    <div className="min-h-screen flex flex-col bg-gradient-to-r from-[#8463ba] via-[#57c793] to-[#586275] ">
+      {/* Fixed Navbar */}
+      <header className="fixed top-0 left-0 right-0 z-10">
+        <Navbar className="" />
+      </header>
 
-        <div>
-          <Flex spacing="4" alignItems="center">
-            <Flex flex="1" gap="3" alignItems="center" flexWrap="wrap">
-              <Avatar name={post?.user?.full_name} src="" />
-              <Box>
-                <h1 className="font-medium text-[14px]">
-                  {post?.user?.full_name}
+      {/* Main content */}
+      <div className=" ">
+        <main className="flex flex-1 min-h-[70dvh] md:min-h-screen  md:w-[90vw] max-lg:justify-center  items-center justify-around max-xl:justify-between px-12 max-md:px-0 py-[64px] md:flex-row gap-8 mx-auto ">
+          <section className="flex-[0.5] flex max-lg:hidden ">
+            <div className="space-y-4 md:space-y-6">
+              <div className="space-y-2 md:space-y-3">
+                <h1
+                  className="text-2xl sm:text-3xl md:text-4xl lg:text-3xl xl:text-4xl 2xl:text-5xl 
+                 font-bold bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 
+                 bg-clip-text text-transparent leading-tight  pb-2"
+                >
+                  Welcome to Our Event Management System
                 </h1>
-                <p className="text-[14px] mb-0 mt-[-6px]">{post?.user?.post}</p>
-              </Box>
-            </Flex>
-            <p className="mb-0">
-              <span className="font-semibold">Published On</span>{" "}
-              {post?.created_at}
-            </p>
-          </Flex>
+                <div
+                  className="w-12 md:w-16 h-1 bg-gradient-to-r from-blue-600 to-purple-600 
+                 mx-auto lg:mx-0 rounded-full"
+                ></div>
+              </div>
 
-          <div className="profile-navigations-list mt-6">
-            <p className="mb-2 text-[rgba(0,0,0,0.8)">
-              <span className="font-semibold text-[#173da6]">Services : </span>
-              {post?.services?.map((service) => service.name_en).join(", ")}
-            </p>
-            <p className="mb-2 text-[rgba(0,0,0,0.8)">
-              <span className="font-semibold text-[#173da6]">Levels : </span>
-              {post?.levels?.map((level) => level.name_en).join(", ")}
-            </p>
-            <p className="mb-2 text-[rgba(0,0,0,0.8)">
-              <span className="font-semibold text-[#173da6]">
-                Categories :{" "}
-              </span>{" "}
-              {post?.categories?.map((category) => category.name_en).join(", ")}
-            </p>
-            <p className="mb-0 text-[rgba(0,0,0,0.8)">
-              <span className="font-semibold text-[#173da6]">Overview : </span>
-              <br />
-              {post?.excerpt}
-            </p>
-          </div>
-        </div>
+              <p
+                className="text-base sm:text-lg md:text-xl lg:text-lg xl:text-xl 
+               text-slate-600 leading-relaxed max-w-xl mx-auto lg:mx-0"
+              >
+                Plan, organize, and manage events with ease. From ticketing and scheduling to
+                real-time updates, our platform empowers organizers and attendees to create
+                unforgettable experiences.
+              </p>
+            </div>
+
+          </section>
+
+          <section className="flex-[0.4] flex  max-md:w-full  mt-6 ">
+            <div className=" px-4 py-6 rounded-lg bg-white">
+
+              {showOtp ? (
+                <OTPVerification setShowOtp={setShowOtp} />
+              ) : authView === "signup" ? (
+                <SignupForm switchToSignin={() => setAuthView("signin")} />
+              ) : (
+                <SigninForm
+                  setShowOtp={setShowOtp}
+                  switchToSignup={() => setAuthView("signup")}
+                />
+              )}
+            </div>
+
+          </section>
+        </main>
       </div>
 
-      <div className="content-container-box w-[40%] ms-6">
-        <h1 className="font-semibold text-[16px] mb-3">
-          Select payment method
-        </h1>
+      <EventList />
 
-        <p className="mb-0 text-[rgba(0,0,0,0.8)">
-          <span className="font-semibold text-[#173da6]">Price : </span>
-          NRs. {post?.price?.price}
-        </p>
 
-        <div className="mt-3 flex justify-between">
-          <Button className="payment-option" onClick={handleEsewaPayment}>
-            <img
-              src="https://seeklogo.com/images/E/esewa-logo-DA36F8FD2F-seeklogo.com.png"
-              alt="esewa"
-              width="50%"
-            />
-          </Button>
-          <Button className="payment-option ms-2">
-            <img
-              src="https://seeklogo.com/images/F/fonepay-logo-C9B7151FD6-seeklogo.com.png"
-              alt="fonepay"
-              width="50%"
-            />
-          </Button>
-        </div>
-      </div>
+
     </div>
   );
-};
+}

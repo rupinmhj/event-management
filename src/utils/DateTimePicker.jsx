@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { Calendar, ChevronLeft, ChevronRight, Clock } from "lucide-react";
 
-const DateTimePicker = ({ 
-  value, 
-  onChange, 
-  minDate, 
-  maxDate, 
+const DateTimePicker = ({
+  value,
+  onChange,
+  minDate,
+  maxDate,
   placeholder = "Select date and time",
   disabled = false,
   className = ""
@@ -24,18 +24,19 @@ const DateTimePicker = ({
   const selectedDateTime = value && !isNaN(new Date(value).getTime()) ? new Date(value) : null;
 
   const formatDateTime = (date) => {
+    console.log('---eventdate---', date)
     const dateStr = date.toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
     });
-    
-    const timeStr = date.toLocaleTimeString("en-US", { 
-      hour12: false, 
-      hour: '2-digit', 
-      minute: '2-digit' 
+
+    const timeStr = date.toLocaleTimeString("en-US", {
+      hour12: false,
+      hour: '2-digit',
+      minute: '2-digit'
     });
-    
+
     return `${dateStr} ${timeStr}`;
   };
 
@@ -64,7 +65,7 @@ const DateTimePicker = ({
 
   const handleDateSelect = (date) => {
     let newDateTime = new Date(date);
-    
+
     if (selectedDateTime) {
       // Preserve time when selecting new date
       newDateTime.setHours(selectedDateTime.getHours());
@@ -75,7 +76,7 @@ const DateTimePicker = ({
       newDateTime.setHours(now.getHours());
       newDateTime.setMinutes(now.getMinutes());
     }
-    
+
     onChange(newDateTime.toISOString());
     setCurrentMonth(date);
     setActiveTab("time");
@@ -105,7 +106,7 @@ const DateTimePicker = ({
   const TimeSelector = () => {
     const currentHour = selectedDateTime ? selectedDateTime.getHours() : new Date().getHours();
     const currentMinute = selectedDateTime ? selectedDateTime.getMinutes() : new Date().getMinutes();
-    
+
     const hours = Array.from({ length: 24 }, (_, i) => i);
     const minutes = Array.from({ length: 60 }, (_, i) => i);
 
@@ -120,9 +121,8 @@ const DateTimePicker = ({
                 <button
                   key={hour}
                   type="button"
-                  className={`w-full px-3 py-1 text-left text-sm hover:bg-gray-100 transition-colors ${
-                    hour === currentHour ? "bg-blue/40 text-white" : "text-gray-700"
-                  }`}
+                  className={`w-full px-3 py-1 text-left text-sm hover:bg-gray-100 transition-colors ${hour === currentHour ? "bg-blue/40 text-white" : "text-gray-700"
+                    }`}
                   onClick={() => handleTimeChange(hour, currentMinute)}
                 >
                   {String(hour).padStart(2, '0')}
@@ -139,9 +139,8 @@ const DateTimePicker = ({
                 <button
                   key={minute}
                   type="button"
-                  className={`w-full px-3 py-1 text-left text-sm hover:bg-gray-100 transition-colors ${
-                    minute === currentMinute ? "bg-blue/40 text-white" : "text-gray-700"
-                  }`}
+                  className={`w-full px-3 py-1 text-left text-sm hover:bg-gray-100 transition-colors ${minute === currentMinute ? "bg-blue/40 text-white" : "text-gray-700"
+                    }`}
                   onClick={() => handleTimeChange(currentHour, minute)}
                 >
                   {String(minute).padStart(2, '0')}
@@ -180,17 +179,16 @@ const DateTimePicker = ({
   return (
     <div className={`relative font-sans ${className}`}>
       <div
-        className={`flex items-center justify-between w-full px-3 py-2 text-sm border border-gray-300 rounded-md cursor-pointer bg-white transition-colors ${
-          disabled 
-            ? "bg-gray-100 cursor-not-allowed text-gray-400" 
-            : "hover:bg-gray-50"
-        }`}
+        className={`flex items-center justify-between w-full px-3 py-2 text-sm border border-gray-300 rounded-md cursor-pointer bg-white transition-colors ${disabled
+          ? "bg-gray-100 cursor-not-allowed text-gray-400"
+          : "hover:bg-gray-50"
+          }`}
         onClick={() => !disabled && setIsOpen(!isOpen)}
       >
         <span className={selectedDateTime ? "text-gray-900" : "text-gray-500"}>
           {selectedDateTime ? formatDateTime(selectedDateTime) : placeholder}
         </span>
-        <Clock className={`w-4 h-4 ${disabled ? "text-gray-300" : "text-gray-400"}`} /> 
+        <Clock className={`w-4 h-4 ${disabled ? "text-gray-300" : "text-gray-400"}`} />
       </div>
 
       {isOpen && !disabled && (
@@ -199,11 +197,10 @@ const DateTimePicker = ({
           <div className="flex border-b border-gray-200 mb-4">
             <button
               type="button"
-              className={`flex-1 px-3 py-2 text-sm font-medium transition-colors ${
-                activeTab === "date" 
-                  ? "border-b-2 border-blue/40 text-blue" 
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
+              className={`flex-1 px-3 py-2 text-sm font-medium transition-colors ${activeTab === "date"
+                ? "border-b-2 border-blue/40 text-blue"
+                : "text-gray-500 hover:text-gray-700"
+                }`}
               onClick={() => setActiveTab("date")}
             >
               <Calendar className="w-4 h-4 inline-block mr-1" />
@@ -211,11 +208,10 @@ const DateTimePicker = ({
             </button>
             <button
               type="button"
-              className={`flex-1 px-3 py-2 text-sm font-medium transition-colors ${
-                activeTab === "time" 
-                  ? "border-b-2 border-blue/40 text-blue" 
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
+              className={`flex-1 px-3 py-2 text-sm font-medium transition-colors ${activeTab === "time"
+                ? "border-b-2 border-blue/40 text-blue"
+                : "text-gray-500 hover:text-gray-700"
+                }`}
               onClick={() => setActiveTab("time")}
               disabled={!selectedDateTime}
             >
@@ -264,11 +260,10 @@ const DateTimePicker = ({
                     <button
                       key={year}
                       type="button"
-                      className={`p-2 rounded text-center text-sm transition-colors hover:bg-gray-100 ${
-                        currentMonth.getFullYear() === year
-                          ? "bg-blue/80 hover:text-blu text-white font-medium"
-                          : "text-gray-900"
-                      }`}
+                      className={`p-2 rounded text-center text-sm transition-colors hover:bg-gray-100 ${currentMonth.getFullYear() === year
+                        ? "bg-blue/80 hover:text-blu text-white font-medium"
+                        : "text-gray-900"
+                        }`}
                       onClick={() => {
                         const newDate = new Date(currentMonth);
                         newDate.setFullYear(year);
@@ -307,11 +302,10 @@ const DateTimePicker = ({
                             type="button"
                             onClick={() => !isDateDisabled(date) && handleDateSelect(date)}
                             disabled={isDateDisabled(date)}
-                            className={`w-full h-full text-xs rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-                              selectedDateTime && date.toDateString() === selectedDateTime.toDateString()
-                                ? "bg-blue/80 text-white"
-                                : "hover:bg-accent"
-                            }`}
+                            className={`w-full h-full text-xs rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${selectedDateTime && date.toDateString() === selectedDateTime.toDateString()
+                              ? "bg-blue/80 text-white"
+                              : "hover:bg-accent"
+                              }`}
                           >
                             {date.getDate()}
                           </button>

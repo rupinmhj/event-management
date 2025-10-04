@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { X, Upload } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
+import { Textarea } from '@/Components/ui/textarea';
+import { Label } from '@/Components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Eye } from 'lucide-react';
 import JoditEditor from 'jodit-react';
 import 'jodit/es2021/jodit.min.css';
@@ -91,8 +91,8 @@ const SubmissionModal = ({
                 formData.append("responses[0][value]", value);
             }
             formData.forEach((value, key) => {
-    console.log(key, value);
-});
+                console.log(key, value);
+            });
             await onSubmit(formData);
 
             // Reset form
@@ -131,15 +131,15 @@ const SubmissionModal = ({
 
     return (
         <Dialog open={isOpen} onOpenChange={handleClose}>
-            <DialogContent className="max-w-[80dvw] h-[80dvh] max-sm:w-[100dvw] bg-white border border-gray-200 ">
-                <DialogHeader>
-                    {/* <DialogTitle className="text-xl font-semibold text-gray-900">
-                        {isEditMode ? 'Edit Submission' : 'Submit'} {requirement.label}
-                    </DialogTitle> */}
+            <DialogContent className="max-w-[80dvw] h-[50dvh] max-3xl:h-[80dvh] max-sm:w-[100dvw] bg-white border border-gray-200  ">
+                <DialogHeader className=' max-h-20'>
+
+
                     <p className="text-[16px] text-blue/90 font-semibold">
                         Event: {event.title}
                     </p>
                 </DialogHeader>
+
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
@@ -288,7 +288,7 @@ const SubmissionModal = ({
                             type="button"
                             variant="outline"
                             onClick={handleClose}
-                            className="flex-1 border-gray-300 hover:bg-red-600 text-white hover:text-white bg-red-500"
+                            className="flex-1 hover:bg-red-600 text-white hover:text-white bg-red-500"
                             disabled={isSubmitting}
                         >
                             Cancel

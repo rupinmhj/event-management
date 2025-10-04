@@ -128,10 +128,10 @@ export const ChangePasswordForm = ({ user }) => {
             transition={{ duration: 0.3, delay: 0.15 }}
 
         >
-            <div className={`font-sans dark:bg-bgDark dark:text-textDark  ${user ==='user'?'pt-10':'pt-20'}`}>
-                {console.log('      user', user)    }
-                <div className="px-6 min-w-[420px] md:max-w-4xl mx-auto">
-                    <main className="pt-5">
+            <div className={`font-sans   ${user === 'user' ? 'pt-10' : 'pt-20'}`}>
+                {console.log('      user', user)}
+                <div className="px-6 min-w-[420px] md:max-w-4xl mx-auto bg-white/50 rounded-xl pb-10">
+                    <main className="pt-10">
                         <div className="mb-6">
                             <h2 className="text-2xl font-bold text-center text-gray-800 dark:text-white">
                                 Change Password
@@ -152,7 +152,7 @@ export const ChangePasswordForm = ({ user }) => {
                                         onChange={(e) => setOldPassword(e.target.value)}
                                         autoComplete="current-password"
                                         placeholder="Current Password"
-                                        className="w-full dark:bg-bgDark border border-gray-300 focus:border-blue-800 outline-none text-[12px] shadow-sm rounded-xl mt-3 pl-12 py-3 pr-12 dark:text-white dark:border-gray-600 dark:focus:border-gray-200"
+                                        className="w-full focus:outline-none focus:ring-2 focus:ring-blue-500 outline-none text-[12px] shadow-sm rounded-xl mt-3 pl-12 py-3 pr-12 dark:text-white dark:border-gray-600 dark:focus:border-gray-200"
                                     />
                                     <span
                                         onClick={() => setShowOldPassword(!showOldPassword)}
@@ -174,7 +174,7 @@ export const ChangePasswordForm = ({ user }) => {
                                         autoComplete="new-password"
                                         onChange={(e) => setNewPassword(e.target.value)}
                                         placeholder="New Password"
-                                        className="w-full dark:bg-bgDark border border-gray-300 focus:border-blue-800 outline-none text-[12px] shadow-sm rounded-xl mt-3 pl-12 py-3 pr-12 dark:text-white dark:border-gray-600 dark:focus:border-gray-200"
+                                        className="w-full focus:outline-none focus:ring-2 focus:ring-blue-500 outline-none text-[12px] shadow-sm rounded-xl mt-3 pl-12 py-3 pr-12 dark:text-white dark:border-gray-600 dark:focus:border-gray-200"
                                     />
                                     <span
                                         onClick={() => setShowNewPassword(!showNewPassword)}
@@ -196,7 +196,7 @@ export const ChangePasswordForm = ({ user }) => {
                                         autoComplete="new-password"
                                         onChange={(e) => setConfirmNewPassword(e.target.value)}
                                         placeholder="Confirm New Password"
-                                        className="w-full dark:bg-bgDark border border-gray-300 focus:border-blue-800 outline-none text-[12px] shadow-sm rounded-xl mt-3 pl-12 py-3 pr-12 dark:text-white dark:border-gray-600 dark:focus:border-gray-200"
+                                        className="w-full focus:outline-none focus:ring-2 focus:ring-blue-500 outline-none text-[12px] shadow-sm rounded-xl mt-3 pl-12 py-3 pr-12 dark:text-white dark:border-gray-600 dark:focus:border-gray-200"
                                     />
                                     <span
                                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
@@ -230,7 +230,7 @@ export const ChangePasswordForm = ({ user }) => {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className={`w-full bg-blue p-4 text-[16px] font-bold text-white rounded-xl mt-6 ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
+                                className={`w-full bg-blue p-3 text-[16px] font-bold text-white rounded-xl mt-6 ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
                             >
                                 {loading ? "Changing Password..." : "Change Password"}
                             </button>

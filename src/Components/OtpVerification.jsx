@@ -131,7 +131,7 @@ const OTPVerification = ({ setShowOtp }) => {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3, delay: 0.15 }}
         >
-            <div className="w-full max-w-md mx-auto animate-fade-in font-sans">
+            <div className="w-full max-w-md mx-auto animate-fade-in font-sans px-16">
                 <div className="mb-8 text-center">
                     <div className="w-16 h-16 bg-event-blue-light rounded-full flex items-center justify-center mx-auto mb-4">
                         <svg className="w-8 h-8 text-event-blue" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -159,7 +159,7 @@ const OTPVerification = ({ setShowOtp }) => {
                                 onChange={(e) => handleInputChange(index, e.target.value)}
                                 onKeyDown={(e) => handleKeyDown(index, e)}
                                 onPaste={handlePaste}
-                                className="w-12 h-12 text-center text-lg font-semibold border border-input-border rounded-lg bg-input focus:ring-2 focus:ring-ring focus:border-ring transition-colors"
+                                className="w-12 h-12 border-gray-500 text-center text-lg font-semibold border border-input-border rounded-lg bg-input focus:ring-2 focus:ring-ring focus:border-ring transition-colors"
                             />
                         ))}
                     </div>
@@ -171,7 +171,7 @@ const OTPVerification = ({ setShowOtp }) => {
                         onClick={handleVerify}
                         variant="event"
                         size="lg"
-                        className="w-full"
+                        className="w-full bg-blue/90 text-white hover:bg-blue/70"
                         disabled={!isOtpComplete || isVerifying}
                     >
                         {isVerifying ? (

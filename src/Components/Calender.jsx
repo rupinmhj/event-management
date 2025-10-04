@@ -10,8 +10,8 @@ import {
   Popover,
 } from "react-aria-components"
 
-import { Calendar } from "@/components/ui/calendar-rac"
-import { DateInput } from "@/components/ui/datefield-rac"
+import { Calendar } from "@/Components/ui/calendar-rac"
+import { DateInput } from "@/Components/ui/datefield-rac"
 
 export default function Calendar() {
   return (

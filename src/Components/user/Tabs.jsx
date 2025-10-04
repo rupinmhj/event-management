@@ -1,6 +1,6 @@
 import { BoxIcon, HouseIcon, PanelsTopLeftIcon } from "lucide-react"
 
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
+import { ScrollArea, ScrollBar } from "@/Components/ui/scroll-area"
 import {
   Tabs,
   TabsContent,

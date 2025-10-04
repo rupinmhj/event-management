@@ -1,22 +1,22 @@
 import React, { useContext } from "react"
-import { Button } from "@/components/ui/button"
+import { Button } from "@/Components/ui/button"
 import {
   NavigationMenu,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-} from "@/components/ui/navigation-menu"
+} from "@/Components/ui/navigation-menu"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
+} from "@/Components/ui/popover"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/Components/ui/dropdown-menu"
 import { Bell, HelpCircle, User } from "lucide-react"
 import AuthContext from "@/context/AuthContext"
 import { useNavigate } from "react-router-dom"
@@ -110,7 +110,7 @@ const Navbar = ({ mode }) => {
   const { logout } = useContext(AuthContext)
   return (
 
-    <header className="border-b font-sans bg-white">
+    <header className="border-b font-sans bg-white ">
       <div className="px-12 flex h-16 items-center justify-between gap-4">
         {/* Left side */}
         <div className="flex items-center gap-2">

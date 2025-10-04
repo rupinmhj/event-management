@@ -6,8 +6,8 @@ import {
   FaArrowLeft, FaUserCircle
 } from "react-icons/fa";
 import { toast, ToastContainer } from 'react-toastify';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
+import { Button } from "@/Components/ui/button";
 import useAxiosAuth from '@/hooks/useAxiosAuth';
 import AuthContext from '@/context/AuthContext';
 import { motion } from 'framer-motion';
@@ -15,9 +15,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import images from '@/assets/images';
 
 /* Reusable Detail Item Component */
-const DetailItem = ({ icon, label, value, className = "" }) => (
+const DetailItem = ({ label, value, className = "" }) => (
   <div className={`flex items-start gap-3 group ${className}`}>
-    <span className="text-muted-foreground mt-1 group-hover:text-primary transition-colors">{icon}</span>
     <div className="min-w-0 flex-1">
       <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{label}</p>
       <p className="text-sm font-medium text-foreground mt-1 break-words">{value}</p>
@@ -25,14 +24,11 @@ const DetailItem = ({ icon, label, value, className = "" }) => (
   </div>
 );
 
-const DetailItemDocument = ({ icon, label, value, className = "" }) => {
+const DetailItemDocument = ({ label, value, className = "" }) => {
   const hasDocument = Boolean(value);
 
   return (
     <div className={`flex items-start gap-3 group ${className}`}>
-      <span className="text-muted-foreground mt-1 group-hover:text-primary transition-colors">
-        {icon}
-      </span>
       <div className="min-w-0 flex-1">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
           {label}
@@ -92,7 +88,7 @@ const AdminUserProfileView = () => {
 
   const fetchUserData = useCallback(async () => {
     if (!authReady || !authTokens || !api || !userId) return;
-    
+
     try {
       setIsLoading(true);
       const response = await api.get(`/api/account/user-details/${userId}/`);
@@ -155,60 +151,10 @@ const AdminUserProfileView = () => {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3, delay: 0.15 }}
     >
-      <div className="min-h-screen px-4 sm:px-6 lg:px-8 py-12 pt-20">
+      <div className="min-h-screen px-4 sm:px-6 lg:px-8 md:py-12 mt-10">
         <div className="max-w-6xl mx-auto space-y-6">
-          {/* Back Button */}
-          {/* <Button 
-            onClick={() => navigate(-1)}
-            variant="outline" 
-            className="mb-4"
-          >
-            <FaArrowLeft className="mr-2 h-4 w-4" />
-            Back
-          </Button> */}
-
-          {/* Header Card */}
-          <div className="relative overflow-hidden rounded-xl border text-gray-800 shadow-lg hover:shadow-xl transition-all duration-300">
-            <div className="absolute inset-0" />
-            <div className="relative p-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-3">
-                    <FaUserCircle className="text-2xl text-blue-600" />
-                    <h1 className="text-[20px] font-bold text-gray-800">
-                      {userData.full_name_en || "User Profile"}
-                    </h1>
-                    <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
-                      {userData.profile_data?.user_detail?.role || "USER"}
-                    </span>
-                  </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 text-gray-500 pl-1">
-                    <span className="flex items-center gap-2 text-sm">
-                      <FaEnvelope />
-                      {userData.email || "—"}
-                    </span>
-                    <span className="flex items-center gap-2 text-sm">
-                      <FaPhone />
-                      {userData.phone_number || "—"}
-                    </span>
-                    <span className="flex items-center gap-2 text-sm">
-                      <FaMapMarkerAlt />
-                      {userData.profile_data?.address || "—"}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Profile Content */}
+          {/* Single Container for Profile */}
           <div className="rounded-xl border bg-card shadow-lg overflow-hidden">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FaUser className="text-blue-600" />
-                User Profile Details
-              </CardTitle>
-            </CardHeader>
             <div className="p-8">
               <div className="flex flex-col lg:flex-row gap-8">
                 {/* Profile Picture and Basic Info */}
@@ -221,76 +167,71 @@ const AdminUserProfileView = () => {
                     />
                     <div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-black/20 to-transparent opacity-0 transition-opacity duration-300" />
                   </div>
-                  <div className="text-center lg:text-left">
-                    <h2 className="text-xl font-semibold text-card-foreground">
-                      {userData.profile_data?.designation || "—"}
-                    </h2>
-                    <p className="text-sm text-muted-foreground">
-                      {userData.profile_data?.organization || "—"}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      User ID: {userData.id}
-                    </p>
+                  <div className="flex flex-col">
+                    <h1 className="text-[18px] font-bold text-gray-800">
+                      {userData.full_name_en}
+                    </h1>
+                    <div className="text-center lg:text-left">
+                      <h2 className="text-[13px] font-medium text-card-foreground">
+                        {userData.profile_data?.designation || ""}
+                      </h2>
+                      <p className="text-[11px] text-muted-foreground">
+                        {userData.profile_data?.organization || ""}
+                      </p>
+                      {/* <p className="text-[10px] text-muted-foreground mt-1">
+                        User ID: {userData.id}
+                      </p>
+                      <span className="inline-block mt-1 px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
+                        {userData.profile_data?.user_detail?.role || "USER"}
+                      </span> */}
+                    </div>
                   </div>
                 </div>
 
                 {/* Profile Information */}
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-card-foreground mb-6 flex items-center gap-2">
-                    <FaUser className="text-primary" />
-                    Personal Information
-                  </h3>
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-lg font-semibold text-card-foreground mb-6 flex items-center gap-2">
+                      Personal Information
+                    </h3>
+                  </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <DetailItem 
-                      icon={<FaUser />} 
-                      label="Full Name" 
-                      value={userData.full_name_en || "—"} 
-                    />
-                    <DetailItem 
-                      icon={<FaEnvelope />} 
-                      label="Email" 
-                      value={userData.email || "—"} 
-                    />
-                    <DetailItem 
-                      icon={<FaPhone />} 
-                      label="Phone Number" 
-                      value={userData.phone_number || "—"} 
-                    />
-                    <DetailItem 
-                      icon={<FaBirthdayCake />} 
-                      label="Date of Birth" 
-                      value={userData.profile_data?.date_of_birth || "—"} 
+                    <DetailItem
+                      label="Email"
+                      value={userData.email || "—"}
                     />
                     <DetailItem
-                      icon={<FaVenusMars />}
+                      label="Phone Number"
+                      value={userData.phone_number || "—"}
+                    />
+                    <DetailItem
+                      label="Date of Birth"
+                      value={userData.profile_data?.date_of_birth || "—"}
+                    />
+                    <DetailItem
                       label="Gender"
                       value={getGenderLabel(userData.profile_data?.sex)}
                     />
-                    <DetailItem 
-                      icon={<FaMapMarkerAlt />} 
-                      label="Address" 
-                      value={userData.profile_data?.address || "—"} 
-                    />
-                    <DetailItem 
-                      icon={<FaBuilding />} 
-                      label="Organization" 
-                      value={userData.profile_data?.organization || "—"} 
-                    />
-                    <DetailItem 
-                      icon={<FaIdBadge />} 
-                      label="Employee ID" 
-                      value={userData.profile_data?.employee_id || "—"} 
+                    <DetailItem
+                      label="Organization"
+                      value={userData.profile_data?.organization || "—"}
                     />
                     <DetailItem
-                      icon={<FaGraduationCap />}
-                      label="Education Level"
+                      label="Employee ID"
+                      value={userData.profile_data?.employee_id || "—"}
+                    />
+                    <DetailItem
+                      label="Address"
+                      value={userData.profile_data?.address || "—"}
+                    />
+                    <DetailItem
+                      label="Education"
                       value={getEducationLabel(userData.profile_data?.education_level)}
                     />
                     <DetailItemDocument
-                      icon={<FaFileAlt />}
-                      label="Support Document"
-                      value={userData.profile_data?.support_document}
+                      label="Document"
+                      value={userData.profile_data?.support_document || "No document uploaded"}
                       className="group cursor-pointer hover:bg-accent/50 -mx-2 px-2 py-2 rounded-lg transition-colors"
                     />
                   </div>
@@ -298,13 +239,10 @@ const AdminUserProfileView = () => {
                   {/* Bio Section */}
                   <div className="mt-8 p-4 rounded-lg bg-muted/30 border">
                     <DetailItem
-                      icon={<FaInfoCircle />}
                       label="Bio"
                       value={userData.profile_data?.bio || "No bio available"}
                     />
                   </div>
-
-                
                 </div>
               </div>
             </div>

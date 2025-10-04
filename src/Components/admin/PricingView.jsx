@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/Components/ui/card";
+import { Button } from "@/Components/ui/button";
 import { Ticket, Pencil, Trash2, Plus, DollarSign } from "lucide-react";
-import { TabsContent } from "@/components/ui/tabs";
+import { TabsContent } from "@/Components/ui/tabs";
 import useAxiosAuth from "@/hooks/useAxiosAuth";
 
 export const PricingView = () => {
@@ -11,9 +11,9 @@ export const PricingView = () => {
     const [loading, setLoading] = useState(true);
     const api = useAxiosAuth();
     const navigate = useNavigate();
-    const {id}=useParams();
-    const eventId=id;
-    
+    const { id } = useParams();
+    const eventId = id;
+
     useEffect(() => {
         const fetchTickets = async () => {
             if (!id) {
@@ -25,8 +25,8 @@ export const PricingView = () => {
                 const response = await api.get('/api/event/create-tickets/');
                 // Filter tickets for the current event
                 const eventTickets = response.data.filter(ticket => ticket.event == eventId);
-                console.log("eventId",eventId);
-                console.log("ticketId",response.data[0])
+                console.log("eventId", eventId);
+                console.log("ticketId", response.data[0])
                 setTicketsData(eventTickets);
                 console.log(eventTickets)
 
@@ -39,7 +39,7 @@ export const PricingView = () => {
         };
 
         fetchTickets();
-    }, [ api,id]);
+    }, [api, id]);
 
     const handleDeleteTicket = async (ticketId) => {
         if (!window.confirm("Are you sure you want to delete this ticket?")) {
@@ -65,8 +65,28 @@ export const PricingView = () => {
     };
 
     const formatDate = (dateString) => {
-        if (!dateString) return "—";
-        return new Date(dateString).toLocaleDateString();
+        console.log('dateString', dateString)
+        const date = new Date(dateString);
+
+        // Nepal timezone offset in minutes (+5:45 = 345 minutes)
+        const nepalOffset = 5 * 60 + 45;
+
+        // Convert date to UTC in milliseconds
+        const utc = date.getTime() + date.getTimezoneOffset() * 60000;
+
+        // Convert UTC to Nepal time
+        const nepalTime = new Date(utc + nepalOffset * 60 * 1000);
+        console.log('nepalTime', nepalTime)
+
+        // Format Nepali date/time
+        return nepalTime.toLocaleString("en-US", {
+            year: "numeric",
+            month: "short",  // e.g. Sep
+            day: "numeric",  // e.g. 29
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true     // 12-hour clock with AM/PM
+        });
     };
 
     if (loading) {
